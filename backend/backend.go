@@ -20,7 +20,7 @@ var (
 	// Client-side client ID from your Google Developer Console
 	// Same as in the front-end index.php
 	authorized_client_ids = []string{
-		"266670200080-to3o173goghk64b6a0t0i04o18nt2r3i.apps.googleusercontent.com",
+		"91166551948-u7j6ip1827e1cgf9fvafu1m2mgb529b9.apps.googleusercontent.com",
 	}
 
 	admin_users = map[string]bool{
