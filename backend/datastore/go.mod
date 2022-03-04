@@ -2,6 +2,4 @@ module datastore
 
 go 1.17
 
-require (
-	github.com/mattn/go-sqlite3 v1.14.12
-)
+replace github.com/mattn/go-sqlite3 => ./vendor/github.com/mattn/go-sqlite3
