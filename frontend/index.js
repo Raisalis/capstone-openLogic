@@ -149,6 +149,25 @@ function authenticatedBackendPOST(path_str, data_obj, id_token) {
    )
 }
 
+function showProofs(){
+   var proof=document.getElementById("proofValues");
+   if (proof.style.display === "block") {
+      proof.style.display = "none";
+   } else {
+      proof.style.display = "block";
+   }
+
+}
+
+function showStudents(){
+   var student=document.getElementById("studentPage");
+   if (student.style.display === "block") {
+      student.style.display = "none";
+   } else {
+      student.style.display = "block";
+   }
+}
+
 // For administrators only - backend requires valid admin token
 function getCSV() {
    backendPOST('proofs', { selection: 'downloadrepo' }).then(

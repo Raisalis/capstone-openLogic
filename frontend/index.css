@@ -132,3 +132,10 @@ textarea{
 		letter-spacing: .15rem;
 }
 
+#proofValues{
+	display: none;
+}
+
+#studentPage{
+	display: none;
+}
