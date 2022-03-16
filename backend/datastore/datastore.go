@@ -215,10 +215,10 @@ func (p *ProofStore) Store(proof Proof) error {
                      timeSubmitted = datetime('now'),
                      Conclusion = ?,
                      repoProblem = ?`)
-   defer stmt.Close()
    if err != nil {
       return errors.New("Transaction prepare error")
    }
+	defer stmt.Close()
 
    PremiseJSON, err := json.Marshal(proof.Premise)
    if err != nil {
