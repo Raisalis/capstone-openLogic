@@ -242,7 +242,7 @@ func main() {
 	ds.MaintainAdmins(admin_users)
 	
 	Env := &Env{ds} // Put the instance into a struct to share between threads
-	Env.ds.PopuplateTestUsersSectionsRosters()
+	Env.ds.PopulateTestUsersSectionsRosters()
 	Env.populateTestProofRow()
 
 	doClearDatabase := flag.Bool("cleardb", false, "Remove all proofs from the database")

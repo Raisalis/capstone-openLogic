@@ -54,7 +54,7 @@ type IProofStore interface {
 	GetRepoProofs() (error, []Proof)
 	GetUserProofs(user UserWithEmail) (error, []Proof)
 	GetUserCompletedProofs(user UserWithEmail) (error, []Proof)
-	PopuplateTestUsersSectionsRosters()
+	PopulateTestUsersSectionsRosters()
 	RemoveFromRoster(sectionName string, userEmail string) error
 	RemoveSection(sectionName string) error
 	Store(Proof) error
@@ -561,7 +561,7 @@ func (p *ProofStore) getSection(name string) (*Section, error) {
    return &section, nil
 }
 
-func (p *ProofStore) PopuplateTestUsersSectionsRosters() {
+func (p *ProofStore) PopulateTestUsersSectionsRosters() {
 	fmt.Println("\n========INSERT USER RECORDS========")
 	userInfo := []User{
 		{email: "psmithTEST@csumb.edu", firstName: "Paul", lastName: "Smith", admin: 1},

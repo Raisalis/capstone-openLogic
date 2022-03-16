@@ -11,7 +11,7 @@ import (
 func InitDB(dataSourceName string) (*ProofStore, error) {
 	log.Println("Initializing " + dataSourceName)
 	// declare variables and assign values simultaneously using :=
-	file, err := os.Create(dataSourceName) // Create the SQLite file
+	file, err := os.Create("db.sqlite3") // Create the SQLite file
 	if err != nil {                            // if an error occurred during database creation, log an error
 		return nil, err
 	}
