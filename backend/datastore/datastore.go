@@ -564,16 +564,16 @@ func (p *ProofStore) getSection(name string) (*Section, error) {
 func (p *ProofStore) PopuplateTestUsersSectionsRosters() {
 	fmt.Println("\n========INSERT USER RECORDS========")
 	userInfo := []User{
-		{email: "psmithTEST@csumb.com", firstName: "Paul", lastName: "Smith", admin: 1},
-		{email: "rmarksTEST@csumb.com", firstName: "Ryan", lastName: "Marks", admin: 0},
-		{email: "lramirezTEST@csumb.com", firstName: "LeAnne", lastName: "Ramirez", admin: 0}, 
-		{email: "abookerTEST@csumb.com", firstName: "Annette", lastName: "Booker", admin: 1}, 
-		{email: "mpotterTEST@csumb.com", firstName: "Maxwell", lastName: "Potter", admin: 0}, 
-		{email: "jduboisTEST@csumb.com", firstName: "Jeanne", lastName: "Dubois", admin: 0}, 
-		{email: "gsloneTEST@csumb.com", firstName: "Garrett", lastName: "Slone", admin: 1}, 
-		{email: "t1deleteTEST@csumb.com", firstName: "t1", lastName: "delete1", admin: 0}, 
-		{email: "t2deleteTEST@csumb.com", firstName: "t2", lastName: "delete2", admin: 0}, 
-		{email: "t3deleteTEST@csumb.com", firstName: "t3", lastName: "delete3", admin: 1},
+		{email: "psmithTEST@csumb.edu", firstName: "Paul", lastName: "Smith", admin: 1},
+		{email: "rmarksTEST@csumb.edu", firstName: "Ryan", lastName: "Marks", admin: 0},
+		{email: "lramirezTEST@csumb.edu", firstName: "LeAnne", lastName: "Ramirez", admin: 0}, 
+		{email: "abookerTEST@csumb.edu", firstName: "Annette", lastName: "Booker", admin: 1}, 
+		{email: "mpotterTEST@csumb.edu", firstName: "Maxwell", lastName: "Potter", admin: 0}, 
+		{email: "jduboisTEST@csumb.edu", firstName: "Jeanne", lastName: "Dubois", admin: 0}, 
+		{email: "gsloneTEST@csumb.edu", firstName: "Garrett", lastName: "Slone", admin: 1}, 
+		{email: "t1deleteTEST@csumb.edu", firstName: "t1", lastName: "delete1", admin: 0}, 
+		{email: "t2deleteTEST@csumb.edu", firstName: "t2", lastName: "delete2", admin: 0}, 
+		{email: "t3deleteTEST@csumb.edu", firstName: "t3", lastName: "delete3", admin: 1},
 	}
 
 	for _,v := range userInfo {
@@ -585,15 +585,15 @@ func (p *ProofStore) PopuplateTestUsersSectionsRosters() {
 
    sectionInfo := []Section{
       {
-         instructorEmail: "abooker@email.com",
+         instructorEmail: "abookerTEST@csumb.edu",
          name: "testSection 000-01",
       },
       {
-         instructorEmail: "psmith@email.com",
+         instructorEmail: "psmithTEST@csumb.edu",
          name: "testSection 000-02",
       },
       {
-         instructorEmail: "psmith@email.com",
+         instructorEmail: "psmithTEST@csumb.edu",
          name: "testSection 000-03",
       },
    }
@@ -609,42 +609,42 @@ func (p *ProofStore) PopuplateTestUsersSectionsRosters() {
    rosterInfo := []Roster{
       {
          sectionName: "testSection 000-01",
-         userEmail: "abooker@email.com",
+         userEmail: "abookerTEST@csumb.edu",
          role: "instructor",
       },
       {
 		sectionName: "testSection 000-01",
-         userEmail: "gslone@email.com",
+         userEmail: "gsloneTEST@csumb.edu",
          role: "ta",
       },
       {
 		sectionName: "testSection 000-01",
-         userEmail: "mpotter@email.com",
+         userEmail: "mpotterTEST@csumb.edu",
          role: "student",
       },
 	  {
 		sectionName: "testSection 000-02",
-		userEmail: "psmith@email.com",
+		userEmail: "psmithTEST@csumb.edu",
 		role: "instructor",
 	 },
 	 {
 		sectionName: "testSection 000-01",
-		userEmail: "jdubois@email.com",
+		userEmail: "jduboisTEST@csumb.edu",
 		role: "student",
 	 },
 	 {
 		sectionName: "testSection 000-02",
-		userEmail: "t1delete@email.com",
+		userEmail: "t1deleteTEST@csumb.edu",
 		role: "ta",
 	 },
 	 {
 		sectionName: "testSection 000-02",
-		userEmail: "t2delete@email.com",
+		userEmail: "t2deleteTEST@csumb.edu",
 		role: "student",
 	 },
 	 {
 		sectionName: "testSection 000-02",
-		userEmail: "t3delete@email.com",
+		userEmail: "t3deleteTEST@csumb.edu",
 		role: "student",
 	 },
    }
