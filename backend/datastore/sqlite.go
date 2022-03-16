@@ -3,6 +3,7 @@ package datastore
 import (
 	"database/sql"
 	"log"
+	"os"
 
 	_ "github.com/mattn/go-sqlite3" // import go-sqlite3 library
 )

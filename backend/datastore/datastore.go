@@ -54,6 +54,7 @@ type IProofStore interface {
 	GetRepoProofs() (error, []Proof)
 	GetUserProofs(user UserWithEmail) (error, []Proof)
 	GetUserCompletedProofs(user UserWithEmail) (error, []Proof)
+	PopuplateTestUsersSectionsRosters()
 	RemoveFromRoster(sectionName string, userEmail string) error
 	RemoveSection(sectionName string) error
 	Store(Proof) error
