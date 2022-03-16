@@ -254,7 +254,7 @@ func main() {
 		Env.clearDatabase()
 	}
 	if *doPopulateDatabase {
-		Env.populateTestData()
+		Env.populateTestProofRow()
 	}
 
 	// Initialize token auth/cache
