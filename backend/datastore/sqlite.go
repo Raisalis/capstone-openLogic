@@ -9,7 +9,7 @@ import (
 
 func InitDB(dataSourceName string) (*ProofStore, error) {
 	log.Println("Initializing test-db.sqlite3...")
-	declare variables and assign values simultaneously using :=
+	// declare variables and assign values simultaneously using :=
 	file, err := os.Create("test-db.sqlite3") // Create the SQLite file
 	if err != nil {                            // if an error occurred during database creation, log an error
 		return nil, err
