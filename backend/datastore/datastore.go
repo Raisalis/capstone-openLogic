@@ -90,7 +90,25 @@ func (p *ProofStore) GetAllAttemptedRepoProofs() (error, []Proof) {
 	if err != nil {
 		return err, nil
 	}
+	stmt, err := p.db.Prepare(`SELECT id, entryType, userSubmitted, proofName, proofType, Premise, Logic, Rules, proofCompleted, timeSubmitted, Conclusion, repoProblem
+								FROM proofs
+								INNER JOIN admin_repoproblems ON
+									proofs.Premise = admin_repoproblems.Premise AND
+									proofs.Conclusion = admin_repoproblems.Conclusion`)
+	if err != nil {
+		return err, nil
+	}
+	defer stmt.Close()
+	
+	rows, err := stmt.Query()
+	if err != nil {
+		return err, nil
+	}
+	defer rows.Close()
+
+	return getProofsFromRows(rows)
 }
+
 
 func (p *ProofStore) GetRepoProofs() (error, []Proof) {
 	stmt, err := p.db.Prepare("SELECT id, entryType, userSubmitted, proofName, proofType, Premise, Logic, Rules, proofCompleted, timeSubmitted, Conclusion, repoProblem FROM proofs WHERE repoProblem = 'true' AND userSubmitted IN (SELECT email FROM admins) ORDER BY userSubmitted")
