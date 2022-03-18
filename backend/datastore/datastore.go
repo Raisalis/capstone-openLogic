@@ -91,48 +91,6 @@ func (p *ProofStore) GetAllAttemptedRepoProofs() (error, []Proof) {
 		return err, nil
 	}
 
-func (p *ProofStore) Store(proof Proof) error {
-   tx, err := p.db.Begin()
-   if err != nil {
-      return errors.New("Database transaction begin error")
-   }
-   stmt, err := tx.Prepare(`INSERT INTO proofs (entryType,
-                     userSubmitted,
-                     proofName,
-                     proofType,
-                     Premise,
-                     Logic,
-                     Rules,
-                     proofCompleted,
-                     timeSubmitted,
-                     Conclusion,
-                     repoProblem)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), ?, ?)
-             ON CONFLICT (userSubmitted, proofName) DO UPDATE SET
-                     entryType = ?,
-                     proofType = ?,
-                     Premise = ?,
-                     Logic = ?,
-                     Rules = ?,
-                     proofCompleted = ?,
-                     timeSubmitted = datetime('now'),
-                     Conclusion = ?,
-                     repoProblem = ?`)
-   if err != nil {
-		log.Println(err.Error())
-      return errors.New("Transaction prepare error")
-   }
-	defer stmt.Close()
-	
-	rows, err := stmt.Query()
-	if err != nil {
-		return err, nil
-	}
-	defer rows.Close()
-
-	return getProofsFromRows(rows)
-}
-
 func (p *ProofStore) GetRepoProofs() (error, []Proof) {
 	stmt, err := p.db.Prepare("SELECT id, entryType, userSubmitted, proofName, proofType, Premise, Logic, Rules, proofCompleted, timeSubmitted, Conclusion, repoProblem FROM proofs WHERE repoProblem = 'true' AND userSubmitted IN (SELECT email FROM admins) ORDER BY userSubmitted")
 	if err != nil {
