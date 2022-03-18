@@ -3,7 +3,6 @@
   <head>
     <!-- standard metadata -->
     <meta charset="utf-8" />
-	  <!-- TEST COMMENT 6-->
 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -199,16 +198,17 @@
             <button onclick="showProofs()">View Proof Scores</button> <button onclick="showStudents()">Add/Drop Students</button>
             <div  id="proofValues">
                   <center>
-                  <select name="proofs" id="proofs">
+                  <select name="proofs" id="proofNameSelect">
                     <option >Select Proof</option>
                   </select>
               
-                  <select name="students" id="students">
-                    <option >Select Student</option>
+                  <select name="students" id="studentNameSelect">
+                    <option value="">Select Student</option>
                   </select>
                   <button>Show All Students</button>
                   <div class="content">
                     <button class="downloadCSV">Download Student Problems as CSV</button>
+                     
                   </div>
                 </center> 
             </div>
@@ -222,14 +222,12 @@
                         
                           <button>Drop Student</button>
                           <button>Drop Class</button>
-                         
+                        
                       </center>
             </div>
 
 <br>
       
-      </center>
-    </div>
   
   <div class="actions">
     <div class="ui black deny button">
