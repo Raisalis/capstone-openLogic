@@ -193,7 +193,7 @@ func (p *ProofStore) Store(proof Proof) error {
    if err != nil {
       return errors.New("Database transaction begin error")
    }
-   stmt, err := tx.Prepare(`INSERT INTO proofs (entryType,
+   stmt, err := tx.Prepare(`INSERT INTO proof (entryType,
                      userSubmitted,
                      proofName,
                      proofType,
@@ -216,6 +216,7 @@ func (p *ProofStore) Store(proof Proof) error {
                      Conclusion = ?,
                      repoProblem = ?`)
    if err != nil {
+      log.Println(err.Error())
       return errors.New("Transaction prepare error")
    }
 	defer stmt.Close()
