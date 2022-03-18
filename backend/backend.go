@@ -2,15 +2,13 @@ package main
 
 import (
 	"encoding/json"
-	// "fmt"
 	"io"
 	"log"
-	"flag"
 	"net/http"
+	"flag"
 
 	datastore "./datastore"
 	tokenauth "./google-token-auth"
-
 )
 
 var (
@@ -29,12 +27,10 @@ var (
         "sislam@csumb.edu":   true,
 		"gbruns@csumb.edu":   true,
 		"cohunter@csumb.edu": true,
-		"bkondo@csumb.edu":   true,
 	}
 
 	// When started via systemd, WorkingDirectory is set to one level above the public_html directory
-	// database_uri = "file:db.sqlite3?cache=shared&mode=rwc&_journal_mode=WAL" 
-	database_uri = "file:db.sqlite3?cache=shared&mode=rwc&_foreign_keys=on&_journal_mode=WAL"
+	database_uri = "file:db.sqlite3?cache=shared&mode=rwc&_journal_mode=WAL"
 )
 
 type userWithEmail interface {
@@ -175,33 +171,24 @@ func (env *Env) getProofs(w http.ResponseWriter, req *http.Request) {
 	log.Printf("%+v", req.URL.Query())
 }
 
-// This will delete all non-admin users, non-argument proofs, sections, and rosters, but not reset the auto_increment id
+// This will delete all rows, but not reset the auto_increment id
 func (env *Env) clearDatabase() {
-	if err := env.ds.EmptyUserTable(); err != nil {
+	if err := env.ds.Empty(); err != nil {
 		log.Fatal(err)
 	}
-	if err := env.ds.EmptyProofTable(); err != nil {
-		log.Fatal(err)
-	}
-	// if err := env.ds.EmptySectionTable(); err != nil {
-	// 	log.Fatal(err)
-	// }
-	// if err := env.ds.EmptyRosterTable(); err != nil {
-	// 	log.Fatal(err)
-	// }
 }
 
-func (env *Env) populateTestProofRow() {
+func (env *Env) populateTestData() {
 	err := env.ds.Store(datastore.Proof{
-		EntryType: "argument",
+		EntryType: "proof",
 		UserSubmitted: "gbruns@csumb.edu",
-		ProofName: "Repository - Code Test",
+		ProofName: "Repository - Problem 2",
 		ProofType: "prop",
-		Premise: []string{"P", "P -> Q", "Q -> R", "R -> S"},
+		Premise: []string{"P", "P -> Q", "Q -> R", "R -> S", "S -> T", "T -> U", "V -> W", "W -> X", "X -> Y", "Y -> X"},
 		Logic: []string{},
 		Rules: []string{},
 		ProofCompleted: "false",
-		Conclusion: "S",
+		Conclusion: "Y",
 		TimeSubmitted: "2019-04-29T01:45:44.452+0000",
 		RepoProblem: "true",
 	})
@@ -234,18 +221,16 @@ func (env *Env) populateTestProofRow() {
 func main() {
 	log.Println("Server initializing")
 
-	ds, err := datastore.InitDB(database_uri)
+	ds, err := datastore.New(database_uri)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer ds.Close()
 
 	// Add the admin users to the database for use in queries
-	ds.MaintainAdmins(admin_users)
+	ds.UpdateAdmins(admin_users)
 	
 	Env := &Env{ds} // Put the instance into a struct to share between threads
-	Env.ds.PopulateTestUsersSectionsRosters()
-	Env.populateTestProofRow()
 
 	doClearDatabase := flag.Bool("cleardb", false, "Remove all proofs from the database")
 	doPopulateDatabase := flag.Bool("populate", false, "Add sample data to the public repository.")
@@ -256,7 +241,7 @@ func main() {
 		Env.clearDatabase()
 	}
 	if *doPopulateDatabase {
-		Env.populateTestProofRow()
+		Env.populateTestData()
 	}
 
 	// Initialize token auth/cache
