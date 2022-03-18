@@ -207,6 +207,7 @@ func (env *Env) populateTestProofRow() {
 	})
 
 	if err != nil {
+		log.Println("err from bruns argument store")
 		log.Fatal(err)
 	}
 
@@ -225,6 +226,7 @@ func (env *Env) populateTestProofRow() {
 	})
 
 	if err != nil {
+		log.Println("err from kondo proof store")
 		log.Fatal(err)
 	}
 }

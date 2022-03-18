@@ -216,6 +216,7 @@ func (p *ProofStore) Store(proof Proof) error {
                      Conclusion = ?,
                      repoProblem = ?`)
    if err != nil {
+		log.Println(err.Error())
       return errors.New("Transaction prepare error")
    }
 	defer stmt.Close()
