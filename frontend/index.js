@@ -4,7 +4,8 @@ const repositoryData = {
    'userProofs': [],
    'repoProofs': [],
    'completedUserProofs': [],
-   'studentNames':[]
+   'studentNames':[],
+   'proofAverages':[]
 }
 
 let adminUsers = [];
@@ -134,7 +135,7 @@ function getProofs(){
    backendPOST('Proof', {selection: 'ProofName'}).then(   // 'class' and 'students' here is referring to whatever the table/data is actually called, i can't remember off the top of my head
    (data) => {
       console.log("loadProofs", data);
-      repositoryData.studentNames = data;       // would need to add 'studentNames': [] to the const repositoryData at the top of index.js
+      repositoryData.proofAverages = data;       // would need to add 'studentNames': [] to the const repositoryData at the top of index.js
 
       let elem = document.querySelector('#proofNameSelect');
       $(elem).empty();
@@ -150,6 +151,31 @@ function getProofs(){
       }, console.log
    );
 }
+
+function insertClass(){
+   var name=document.getElementById("className");
+   var students=[];
+   $.each($('#involveStudents').val().split(/\n/), function(i, line){
+      if(line){
+         students.push(line);
+      }
+   });
+   //waiting for tables to be ready to do rest
+}
+
+function dropClass(){
+   var x;
+   if(confirm("Are you sure you want to drop the whole class?")==true){
+      //waiting for tables to be ready to do rest
+   }
+}
+
+function dropStudent(){
+   var deadStudent= document.getElementById("dropStudent");
+   //waiting for tables to be ready to do rest
+}
+
+
 // Verifies signed in and valid token, then calls authenticatedBackendPOST
 // Returns a promise which resolves to the response body or undefined
 function backendPOST(path_str, data_obj) {

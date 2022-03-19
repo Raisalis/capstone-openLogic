@@ -205,7 +205,7 @@
                   <select name="students" id="studentNameSelect">
                     <option value="">Select Student</option>
                   </select>
-                  <button>Show All Students</button>
+                  <button onclick="getAllStudents()">Show All Students</button>
                   <div class="content">
                     <button class="downloadCSV">Download Student Problems as CSV</button>
                      
@@ -217,12 +217,19 @@
                   <center>  
                         
                           
-                          <button>Add Student</button>
-                        <button>Add Class</button>
+                          <button id="addStudent">Add Student</button>
+                          <div id="studentAddition">
+                            <input type="text" id="className" placeholder="Class name: major, section, semester">
+                            <textarea name="studentAdd" id="involveStudents" cols="1" rows="40"></textarea>
+                            <button onclick="insertClass()">Confirm Students</button>
+                          </div> 
+                          
                         
-                          <button>Drop Student</button>
-                          <button>Drop Class</button>
                         
+                          <button onclick="dropStudent()">Drop Student</button>
+                          <input type="text" id="dropStudent" placeholder="Student to drop">
+                          <button onclick="dropClass()">Drop Class</button>
+                          
                       </center>
             </div>
 
