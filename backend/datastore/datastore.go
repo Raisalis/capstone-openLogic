@@ -54,6 +54,7 @@ type IProofStore interface {
 	GetRepoProofs() (error, []Proof)
 	GetUserProofs(user UserWithEmail) (error, []Proof)
 	GetUserCompletedProofs(user UserWithEmail) (error, []Proof)
+   GetSections() ([]Section)
 	PopulateTestUsersSectionsRosters()
 	RemoveFromRoster(sectionName string, userEmail string) error
 	RemoveSection(sectionName string) error

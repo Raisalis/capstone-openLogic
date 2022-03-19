@@ -76,6 +76,7 @@ func createTables(db *sql.DB) (error) {
 		"userEmail" TEXT NOT NULL,
 		"role" TEXT NOT NULL
 			CHECK (role in ('instructor', 'ta', 'student')),
+		PRIMARY KEY (sectionName, userEmail),
 		FOREIGN KEY (sectionName) REFERENCES section (name)
 			ON UPDATE CASCADE
 			ON DELETE CASCADE,
@@ -122,27 +123,30 @@ func createTables(db *sql.DB) (error) {
 	statement.Exec()
 	log.Println("proof table created")
 
-	// createArgumentTableSQL := `CREATE TABLE IF NOT EXISTS argument (
-	// 	id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-	// 	userSubmitted TEXT,
-	// 	proofName TEXT,
-	// 	proofType TEXT
-	// 		CHECK (proofType in ('prop', 'fol')),
-	// 	Premise TEXT,
-	// 	timeSubmitted DATETIME,
-	// 	Conclusion TEXT,
-	// 	repoProblem TEXT
-	// 		CHECK (repoProblem in ('true', 'false')),
-	// 	FOREIGN KEY (userSubmitted) REFERENCES user (email)
-	// );`
+	createAssignmentTableSQL := `CREATE TABLE IF NOT EXISTS assignment (
+		instructorEmail TEXT,
+		sectionName TEXT,
+		name TEXT,
+		proofIds TEXT,
+		PRIMARY KEY (instructorEmail, sectionName, name),
+		FOREIGN KEY (instructorEmail) REFERENCES user (email),
+		FOREIGN KEY (sectionName) REFERENCES section (name)
+	);`
 
-	// log.Println("Creating argument table. . .")
-	// statement, err = db.Prepare(createArgumentTableSQL)
-	// if err != nil {
-	// 	return err
-	// }
-	// statement.Exec()
-	// log.Println("argument table created")
+	log.Println("Creating assignment table. . .")
+	statement, err = db.Prepare(createAssignmentTableSQL)
+	if err != nil {
+		return err
+	}
+	statement.Exec()
+	log.Println("assignment table created")
+
+	// proofs : Unique index on (userSubmitted, proofName, proofCompleted)
+	_, err = db.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_user_proof
+			ON proof (userSubmitted, proofName, proofCompleted)`)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

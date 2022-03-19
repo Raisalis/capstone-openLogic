@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	// "fmt"
+	"fmt"
 	"io"
 	"log"
 	"flag"
@@ -30,6 +30,7 @@ var (
 		"gbruns@csumb.edu":   true,
 		"cohunter@csumb.edu": true,
 		"bkondo@csumb.edu":   true,
+		"elarson@csumb.edu": true,
 	}
 
 	// When started via systemd, WorkingDirectory is set to one level above the public_html directory
@@ -175,6 +176,21 @@ func (env *Env) getProofs(w http.ResponseWriter, req *http.Request) {
 	log.Printf("%+v", req.URL.Query())
 }
 
+func (env *Env) getSections(w http.ResponseWriter, req *http.Request) {
+	var sections []datastore.Section
+	sections = env.ds.GetSections()
+
+	sectionsJSON, err := json.Marshal(sections)
+	if err != nil {
+		http.Error(w, "json marshal error", 500)
+		log.Println(err)
+		return
+	}
+
+	io.WriteString(w, string(sectionsJSON))
+	fmt.Fprintf(w, "All Sections: %+v", sections)
+}
+
 // This will delete all non-admin users, non-argument proofs, sections, and rosters, but not reset the auto_increment id
 func (env *Env) clearDatabase() {
 	if err := env.ds.EmptyUserTable(); err != nil {
@@ -272,6 +288,7 @@ func main() {
 	// Get admin users -- this is a public endpoint, no token required
 	// Can be changed to require token, but would reduce cacheability
 	http.Handle("/admins", http.HandlerFunc(getAdmins))
+	http.Handle("/sections", http.HandlerFunc(Env.getSections))
 	log.Println("Server started")
 	log.Fatal(http.ListenAndServe("127.0.0.1:"+(*portPtr), nil))
 }
