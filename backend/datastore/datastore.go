@@ -98,6 +98,37 @@ func (p *ProofStore) GetAllAttemptedRepoProofs() (error, []Proof) {
 	if err != nil {
 		return err, nil
 	}
+func (p *ProofStore) Store(proof Proof) error {
+   tx, err := p.db.Begin()
+   if err != nil {
+      return errors.New("Database transaction begin error")
+   }
+   stmt, err := tx.Prepare(`INSERT INTO proof (entryType,
+                     userSubmitted,
+                     proofName,
+                     proofType,
+                     Premise,
+                     Logic,
+                     Rules,
+                     proofCompleted,
+                     timeSubmitted,
+                     Conclusion,
+                     repoProblem)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), ?, ?)
+             ON CONFLICT (userSubmitted, proofName) DO UPDATE SET
+                     entryType = ?,
+                     proofType = ?,
+                     Premise = ?,
+                     Logic = ?,
+                     Rules = ?,
+                     proofCompleted = ?,
+                     timeSubmitted = datetime('now'),
+                     Conclusion = ?,
+                     repoProblem = ?`)
+   if err != nil {
+      log.Println(err.Error())
+      return errors.New("Transaction prepare error")
+   }
 	defer stmt.Close()
 	
 	rows, err := stmt.Query()

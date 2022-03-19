@@ -194,7 +194,7 @@ func (env *Env) populateTestData() {
 	})
 
 	if err != nil {
-		log.Println("err from bruns argument store")
+		log.Println("error from Store(gbruns argument)")
 		log.Fatal(err)
 	}
 
@@ -213,7 +213,7 @@ func (env *Env) populateTestData() {
 	})
 
 	if err != nil {
-		log.Println("err from kondo proof store")
+		log.Println("error from Store(bkondo proof)")
 		log.Fatal(err)
 	}
 }
