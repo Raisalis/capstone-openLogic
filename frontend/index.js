@@ -3,7 +3,9 @@
 const repositoryData = {
    'userProofs': [],
    'repoProofs': [],
-   'completedUserProofs': []
+   'completedUserProofs': [],
+   'studentNames':[],
+   'proofAverages':[]
 }
 
 let adminUsers = [];
@@ -106,6 +108,74 @@ class User {
    }
 }
 
+function getStudents(){
+
+
+   backendPOST('User', {selection: 'Name'}).then(   // 'class' and 'students' here is referring to whatever the table/data is actually called, i can't remember off the top of my head
+   (data) => {
+      console.log("loadStudentNames", data);
+      repositoryData.studentNames = data;       // would need to add 'studentNames': [] to the const repositoryData at the top of index.js
+
+      let elem = document.querySelector('#studentNameSelect');
+      $(elem).empty();
+
+      elem.appendChild(
+         new Option('Select...', null, true, true)
+      );
+
+      (data) && data.forEach( student => {
+         let option = new Option(proof.ProofName, proof.Id);
+         elem.appendChild(data);
+      });
+      }, console.log
+   );
+}
+
+function getProofs(){
+   backendPOST('Proof', {selection: 'ProofName'}).then(   // 'class' and 'students' here is referring to whatever the table/data is actually called, i can't remember off the top of my head
+   (data) => {
+      console.log("loadProofs", data);
+      repositoryData.proofAverages = data;       // would need to add 'studentNames': [] to the const repositoryData at the top of index.js
+
+      let elem = document.querySelector('#proofNameSelect');
+      $(elem).empty();
+
+      elem.appendChild(
+         new Option('Select...', null, true, true)
+      );
+
+      (data) && data.forEach( student => {
+         let option = new Option(proof.ProofName, proof.Id);
+         elem.appendChild(data);
+      });
+      }, console.log
+   );
+}
+
+function insertClass(){
+   var name=document.getElementById("className");
+   var students=[];
+   $.each($('#involveStudents').val().split(/\n/), function(i, line){
+      if(line){
+         students.push(line);
+      }
+   });
+   //waiting for tables to be ready to do rest
+}
+
+function dropClass(){
+   var x;
+   if(confirm("Are you sure you want to drop the whole class?")==true){
+      //waiting for tables to be ready to do rest
+   }
+}
+
+function dropStudent(){
+   var deadStudent= document.getElementById("dropStudent");
+   //waiting for tables to be ready to do rest
+}
+
+
 // Verifies signed in and valid token, then calls authenticatedBackendPOST
 // Returns a promise which resolves to the response body or undefined
 function backendPOST(path_str, data_obj) {
@@ -149,25 +219,6 @@ function authenticatedBackendPOST(path_str, data_obj, id_token) {
    )
 }
 
-function showProofs(){
-   var proof=document.getElementById("proofValues");
-   if (proof.style.display === "block") {
-      proof.style.display = "none";
-   } else {
-      proof.style.display = "block";
-   }
-
-}
-
-function showStudents(){
-   var student=document.getElementById("studentPage");
-   if (student.style.display === "block") {
-      student.style.display = "none";
-   } else {
-      student.style.display = "block";
-   }
-}
-
 // For administrators only - backend requires valid admin token
 function getCSV() {
    backendPOST('proofs', { selection: 'downloadrepo' }).then(
@@ -197,6 +248,40 @@ function getCSV() {
 	 downloadLink.click();
       }, console.log);
 }
+
+// Hides and displays the admin options
+function showProofs(){
+   var proofs=document.getElementById("proofValues");
+   var student= document.getElementById("studentPage");
+
+   if(proofs.style.display=== "block"){
+      proofs.style.display= "none";
+   }else{
+      proofs.style.display="block";
+   }
+   if(student.style.display=== "block"){
+      proofs.style.display= "none";
+   }
+   
+}
+
+function showStudents(){
+   var proofs=document.getElementById("proofValues");
+   var student= document.getElementById("studentPage");
+
+   if(student.style.display=== "block"){
+      student.style.display= "none";
+   }else{
+      student.style.display="block";
+   }
+   if(proofs.style.display=== "block"){
+      student.style.display= "none";
+   }
+}
+
+
+
+
 
 const prepareSelect = (selector, options) => {
    let elem = document.querySelector(selector);

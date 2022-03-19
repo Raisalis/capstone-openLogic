@@ -1,11 +1,11 @@
 package datastore
 
 import (
-   "database/sql"
-   "encoding/json"
-   "errors"
+	"database/sql"
+	"encoding/json"
+	"errors"
    "fmt"
-   "log"
+	"log"
 )
 
 var (
@@ -30,14 +30,12 @@ type Proof struct {
 	TimeSubmitted  string
 }
 
-// Spring2022 - proposed table: argument
-
 //type ProofStore interface {
 //	GetByUser(string) Proof
 //}
 
 type UserWithEmail interface {
-   GetEmail() string
+	GetEmail() string
 }
 
 type IProofStore interface {
@@ -63,7 +61,7 @@ type IProofStore interface {
 }
 
 type ProofStore struct {
-   db *sql.DB
+	db *sql.DB
 }
 
 // deprecated, see EmptyProofTable()
@@ -102,163 +100,139 @@ func getProofsFromRows(rows *sql.Rows) (error, []Proof) {
 }
 
 func (p *ProofStore) GetAllAttemptedRepoProofs() (error, []Proof) {
-   // Create 'admin_repoproblems' view
-   _, err := p.db.Exec(`DROP VIEW IF EXISTS admin_repoproblems`)
-   if err != nil {
-      return err, nil
-   }
+	// Create 'admin_repoproblems' view
+	_, err := p.db.Exec(`DROP VIEW IF EXISTS admin_repoproblems`)
+	if err != nil {
+		return err, nil
+	}
 
-   _, err = p.db.Exec(`CREATE VIEW admin_repoproblems (userSubmitted, Premise, Conclusion) AS SELECT userSubmitted, Premise, Conclusion FROM proof WHERE userSubmitted IN (SELECT email FROM user WHERE admin = 1)`)
-   if err != nil {
-      return err, nil
-   }
+	_, err = p.db.Exec(`CREATE VIEW admin_repoproblems (userSubmitted, Premise, Conclusion) AS SELECT userSubmitted, Premise, Conclusion FROM proofs WHERE userSubmitted IN (SELECT email FROM admins)`)
+	if err != nil {
+		return err, nil
+	}
+	stmt, err := p.db.Prepare(`SELECT id, entryType, userSubmitted, proofName, proofType, Premise, Logic, Rules, proofCompleted, timeSubmitted, Conclusion, repoProblem
+								FROM proofs
+								INNER JOIN admin_repoproblems ON
+									proofs.Premise = admin_repoproblems.Premise AND
+									proofs.Conclusion = admin_repoproblems.Conclusion`)
+	if err != nil {
+		return err, nil
+	}
+	defer stmt.Close()
+	
+	rows, err := stmt.Query()
+	if err != nil {
+		return err, nil
+	}
+	defer rows.Close()
 
-	stmt, err := p.db.Prepare(`SELECT id, entryType, userSubmitted, proofName, proofType, Premise, 
-                              Logic, Rules, proofCompleted, timeSubmitted, Conclusion, repoProblem
-                              FROM proof
-                              INNER JOIN admin_repoproblems ON
-                                 proofs.Premise = admin_repoproblems.Premise AND
-                                 proofs.Conclusion = admin_repoproblems.Conclusion`)
-   if err != nil {
-      return err, nil
-   }
-   defer stmt.Close()
-   
-   rows, err := stmt.Query()
-   if err != nil {
-      return err, nil
-   }
-   defer rows.Close()
-
-   return getProofsFromRows(rows)
+	return getProofsFromRows(rows)
 }
 
 func (p *ProofStore) GetRepoProofs() (error, []Proof) {
-   stmt, err := p.db.Prepare(`SELECT id, entryType, userSubmitted, proofName, proofType, Premise,  
-                              Logic, Rules, proofCompleted, timeSubmitted, Conclusion, repoProblem 
-                              FROM proof WHERE repoProblem = 'true' AND userSubmitted 
-                              IN (SELECT email FROM user WHERE admin = 1) ORDER BY userSubmitted`)
-   if err != nil {
-      return err, nil
-   }
-   defer stmt.Close()
+	stmt, err := p.db.Prepare("SELECT id, entryType, userSubmitted, proofName, proofType, Premise, Logic, Rules, proofCompleted, timeSubmitted, Conclusion, repoProblem FROM proofs WHERE repoProblem = 'true' AND userSubmitted IN (SELECT email FROM admins) ORDER BY userSubmitted")
+	if err != nil {
+		return err, nil
+	}
+	defer stmt.Close()
 
-   rows, err := stmt.Query()
-   if err != nil {
-      return err, nil
-   }
-   defer rows.Close()
+	rows, err := stmt.Query()
+	if err != nil {
+		return err, nil
+	}
+	defer rows.Close()
 
-   return getProofsFromRows(rows)
+	return getProofsFromRows(rows)
 }
 
-// retrieve unfinished proofs by user
 func (p *ProofStore) GetUserProofs(user UserWithEmail) (error, []Proof) {
-   stmt, err := p.db.Prepare(`SELECT id, entryType, userSubmitted, proofName, proofType, Premise, 
-                              Logic, Rules, proofCompleted, timeSubmitted, Conclusion, repoProblem 
-                              FROM proof WHERE userSubmitted = ? AND proofCompleted != 'true' AND proofName != 'n/a'`)
-   if err != nil {
-      return err, nil
-   }
-   defer stmt.Close()
+	stmt, err := p.db.Prepare("SELECT id, entryType, userSubmitted, proofName, proofType, Premise, Logic, Rules, proofCompleted, timeSubmitted, Conclusion, repoProblem FROM proofs WHERE userSubmitted = ? AND proofCompleted != 'true' AND proofName != 'n/a'")
+	if err != nil {
+		return err, nil
+	}
+	defer stmt.Close()
 
-   rows, err := stmt.Query(user.GetEmail())
-   if err != nil {
-      return err, nil
-   }
-   defer rows.Close()
+	rows, err := stmt.Query(user.GetEmail())
+	if err != nil {
+		return err, nil
+	}
+	defer rows.Close()
 
-   return getProofsFromRows(rows)
+	return getProofsFromRows(rows)
 }
 
 func (p *ProofStore) GetUserCompletedProofs(user UserWithEmail) (error, []Proof) {
-   stmt, err := p.db.Prepare(`SELECT id, entryType, userSubmitted, proofName, proofType, Premise, 
-                              Logic, Rules, proofCompleted, timeSubmitted, Conclusion, repoProblem 
-                              FROM proof WHERE userSubmitted = ? AND proofCompleted = 'true'`)
-   if err != nil {
-      return err, nil
-   }
-   defer stmt.Close()
+	stmt, err := p.db.Prepare("SELECT id, entryType, userSubmitted, proofName, proofType, Premise, Logic, Rules, proofCompleted, timeSubmitted, Conclusion, repoProblem FROM proofs WHERE userSubmitted = ? AND proofCompleted = 'true'")
+	if err != nil {
+		return err, nil
+	}
+	defer stmt.Close()
 
-   rows, err := stmt.Query(user.GetEmail())
-   if err != nil {
-      return err, nil
-   }
-   defer rows.Close()
+	rows, err := stmt.Query(user.GetEmail())
+	if err != nil {
+		return err, nil
+	}
+	defer rows.Close()
 
-   return getProofsFromRows(rows)
+	return getProofsFromRows(rows)
 }
 
 func (p *ProofStore) Store(proof Proof) error {
-   tx, err := p.db.Begin()
-   if err != nil {
-      return errors.New("Database transaction begin error")
-   }
-   stmt, err := tx.Prepare(`INSERT INTO proof (entryType,
-                     userSubmitted,
-                     proofName,
-                     proofType,
-                     Premise,
-                     Logic,
-                     Rules,
-                     proofCompleted,
-                     timeSubmitted,
-                     Conclusion,
-                     repoProblem)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), ?, ?)
-             ON CONFLICT (userSubmitted, proofName) DO UPDATE SET
-                     entryType = ?,
-                     proofType = ?,
-                     Premise = ?,
-                     Logic = ?,
-                     Rules = ?,
-                     proofCompleted = ?,
-                     timeSubmitted = datetime('now'),
-                     Conclusion = ?,
-                     repoProblem = ?`)
-   if err != nil {
-      log.Println(err.Error())
-      return errors.New("Transaction prepare error")
-   }
+	tx, err := p.db.Begin()
+	if err != nil {
+		return errors.New("Database transaction begin error")
+	}
+	stmt, err := tx.Prepare(`INSERT INTO proofs (entryType,
+							userSubmitted,
+							proofName,
+							proofType,
+							Premise,
+							Logic,
+							Rules,
+							proofCompleted,
+							timeSubmitted,
+							Conclusion,
+							repoProblem)
+				 VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), ?, ?)
+				 ON CONFLICT (userSubmitted, proofName, proofCompleted) DO UPDATE SET
+					 	entryType = ?,
+					 	proofType = ?,
+					 	Premise = ?,
+					 	Logic = ?,
+					 	Rules = ?,
+					 	timeSubmitted = datetime('now'),
+					 	Conclusion = ?,
+					 	repoProblem = ?`)
 	defer stmt.Close()
+	if err != nil {
+		return errors.New("Transaction prepare error")
+	}
 
-   PremiseJSON, err := json.Marshal(proof.Premise)
-   if err != nil {
-      return errors.New("Premise marshal error")
-   }
-   LogicJSON, err := json.Marshal(proof.Logic)
-   if err != nil {
-      return errors.New("Logic marshal error")
-   }
-   RulesJSON, err := json.Marshal(proof.Rules)
+	PremiseJSON, err := json.Marshal(proof.Premise)
+	if err != nil {
+		return errors.New("Premise marshal error")
+	}
+	LogicJSON, err := json.Marshal(proof.Logic)
+	if err != nil {
+		return errors.New("Logic marshal error")
+	}
+	RulesJSON, err := json.Marshal(proof.Rules)
 	if err != nil {
 		return errors.New("Rules marshal error")
 	}
-   _, err = stmt.Exec(proof.EntryType, proof.UserSubmitted, proof.ProofName, proof.ProofType,
-                     PremiseJSON, LogicJSON, RulesJSON, proof.ProofCompleted, proof.Conclusion, 
-                     proof.RepoProblem, proof.EntryType, proof.ProofType, PremiseJSON, LogicJSON, 
-                     RulesJSON, proof.ProofCompleted, proof.Conclusion, proof.RepoProblem)
-   if err != nil {
-      return errors.New("Statement exec error")
-   }
-   tx.Commit()
+	_, err = stmt.Exec(proof.EntryType, proof.UserSubmitted, proof.ProofName, proof.ProofType,
+		PremiseJSON, LogicJSON, RulesJSON, proof.ProofCompleted, proof.Conclusion, proof.RepoProblem,
+		proof.EntryType, proof.ProofType, PremiseJSON, LogicJSON, RulesJSON, proof.ProofCompleted,
+		proof.Conclusion, proof.RepoProblem)
+	if err != nil {
+		return errors.New("Statement exec error")
+	}
+	tx.Commit()
 
-   return nil
+	return nil
 }
 
 // ===== New Functions and Structs Spring Capstone 2022 =====
-
-// still using the previous proof table for all proofs and arguments
-// have not adapted to use separate argument table yet!
-// type Argument struct {
-//    Id             string   // SQL ID
-//    UserSubmitted  string	// Used for results, ignored on user input
-//    ProofName      string   // user-chosen name (repo problems start with 'Repository - ')
-//    ProofType      string   // 'prop' (propositional/tfl) or 'fol' (first order logic)
-//    Premise        []string // premises of the proof; an array of WFFs
-//    Conclusion     string   // conclusion of the proof
-//    TimeSubmitted  string
-// }
 
 // clear all proofs from proof table, retain arguments
 func (p *ProofStore) EmptyProofTable() error {
@@ -266,7 +240,6 @@ func (p *ProofStore) EmptyProofTable() error {
 	return err
 }
 
-// clear all users from user table, retain admins
 func (p *ProofStore) EmptyUserTable() error {
 	_, err := p.db.Exec(`DELETE FROM user WHERE admin = 0;`)
 	return err
@@ -296,10 +269,6 @@ type Display interface {
 
 func (user User) Display() (string) {
    return fmt.Sprintf("User: %s %s, %s, %d", user.firstName, user.lastName, user.email, user.admin)
-}
-
-func (section Section) Display() (string) {
-   return fmt.Sprintf("Section: %s, %s", section.name, section.instructorEmail)
 }
 
 func (roster Roster) Display() (string) {
@@ -566,19 +535,19 @@ func (p *ProofStore) getSection(name string) (*Section, error) {
 func (p *ProofStore) PopulateTestUsersSectionsRosters() {
 	fmt.Println("\n========INSERT USER RECORDS========")
 	userInfo := []User{
-		{email: "psmithTEST@csumb.edu", firstName: "Paul", lastName: "Smith", admin: 1},
-		{email: "rmarksTEST@csumb.edu", firstName: "Ryan", lastName: "Marks", admin: 0},
-		{email: "lramirezTEST@csumb.edu", firstName: "LeAnne", lastName: "Ramirez", admin: 0}, 
-		{email: "abookerTEST@csumb.edu", firstName: "Annette", lastName: "Booker", admin: 1}, 
-		{email: "mpotterTEST@csumb.edu", firstName: "Maxwell", lastName: "Potter", admin: 0}, 
-		{email: "jduboisTEST@csumb.edu", firstName: "Jeanne", lastName: "Dubois", admin: 0}, 
-		{email: "gsloneTEST@csumb.edu", firstName: "Garrett", lastName: "Slone", admin: 1}, 
-		{email: "t1deleteTEST@csumb.edu", firstName: "t1", lastName: "delete1", admin: 0}, 
-		{email: "t2deleteTEST@csumb.edu", firstName: "t2", lastName: "delete2", admin: 0}, 
-		{email: "t3deleteTEST@csumb.edu", firstName: "t3", lastName: "delete3", admin: 1},
+		{email: "psmithTEST@csumb.com", firstName: "Paul", lastName: "Smith", admin: 1},
+		{email: "rmarksTEST@csumb.com", firstName: "Ryan", lastName: "Marks", admin: 0},
+		{email: "lramirezTEST@csumb.com", firstName: "LeAnne", lastName: "Ramirez", admin: 0}, 
+		{email: "abookerTEST@csumb.com", firstName: "Annette", lastName: "Booker", admin: 1}, 
+		{email: "mpotterTEST@csumb.com", firstName: "Maxwell", lastName: "Potter", admin: 0}, 
+		{email: "jduboisTEST@csumb.com", firstName: "Jeanne", lastName: "Dubois", admin: 0}, 
+		{email: "gsloneTEST@csumb.com", firstName: "Garrett", lastName: "Slone", admin: 1}, 
+		{email: "t1deleteTEST@csumb.com", firstName: "t1", lastName: "delete1", admin: 0}, 
+		{email: "t2deleteTEST@csumb.com", firstName: "t2", lastName: "delete2", admin: 0}, 
+		{email: "t3deleteTEST@csumb.com", firstName: "t3", lastName: "delete3", admin: 1},
 	}
 
-	for _,v := range userInfo {
+   for _,v := range userInfo {
 		err := p.InsertUser(v)
 		if err != nil {
 			log.Printf("error from populateTest: InsertUser: %s for %s", err.Error(), v.email)
@@ -587,15 +556,15 @@ func (p *ProofStore) PopulateTestUsersSectionsRosters() {
 
    sectionInfo := []Section{
       {
-         instructorEmail: "abookerTEST@csumb.edu",
+         instructorEmail: "abooker@email.com",
          name: "testSection 000-01",
       },
       {
-         instructorEmail: "psmithTEST@csumb.edu",
+         instructorEmail: "psmith@email.com",
          name: "testSection 000-02",
       },
       {
-         instructorEmail: "psmithTEST@csumb.edu",
+         instructorEmail: "psmith@email.com",
          name: "testSection 000-03",
       },
    }
@@ -611,42 +580,42 @@ func (p *ProofStore) PopulateTestUsersSectionsRosters() {
    rosterInfo := []Roster{
       {
          sectionName: "testSection 000-01",
-         userEmail: "abookerTEST@csumb.edu",
+         userEmail: "abooker@email.com",
          role: "instructor",
       },
       {
 		sectionName: "testSection 000-01",
-         userEmail: "gsloneTEST@csumb.edu",
+         userEmail: "gslone@email.com",
          role: "ta",
       },
       {
 		sectionName: "testSection 000-01",
-         userEmail: "mpotterTEST@csumb.edu",
+         userEmail: "mpotter@email.com",
          role: "student",
       },
 	  {
 		sectionName: "testSection 000-02",
-		userEmail: "psmithTEST@csumb.edu",
+		userEmail: "psmith@email.com",
 		role: "instructor",
 	 },
 	 {
 		sectionName: "testSection 000-01",
-		userEmail: "jduboisTEST@csumb.edu",
+		userEmail: "jdubois@email.com",
 		role: "student",
 	 },
 	 {
 		sectionName: "testSection 000-02",
-		userEmail: "t1deleteTEST@csumb.edu",
+		userEmail: "t1delete@email.com",
 		role: "ta",
 	 },
 	 {
 		sectionName: "testSection 000-02",
-		userEmail: "t2deleteTEST@csumb.edu",
+		userEmail: "t2delete@email.com",
 		role: "student",
 	 },
 	 {
 		sectionName: "testSection 000-02",
-		userEmail: "t3deleteTEST@csumb.edu",
+		userEmail: "t3delete@email.com",
 		role: "student",
 	 },
    }
@@ -654,8 +623,8 @@ func (p *ProofStore) PopulateTestUsersSectionsRosters() {
 	for _,v := range rosterInfo {
 		err := p.InsertRoster(v)
 		if err != nil {
-			log.Printf("error from populateTest: InsertSection: %s for %s", err.Error(), v.userEmail)
-		}
-	}
-	
-}
+         log.Printf("error from populateTest: InsertSection: %s for %s", err.Error(), v.userEmail)
+      }
+   }
+
+} 

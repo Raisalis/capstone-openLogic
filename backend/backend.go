@@ -5,12 +5,11 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"flag"
 	"net/http"
+	"flag"
 
 	datastore "./datastore"
 	tokenauth "./google-token-auth"
-
 )
 
 var (
@@ -34,8 +33,7 @@ var (
 	}
 
 	// When started via systemd, WorkingDirectory is set to one level above the public_html directory
-	// database_uri = "file:db.sqlite3?cache=shared&mode=rwc&_journal_mode=WAL" 
-	database_uri = "file:db.sqlite3?cache=shared&mode=rwc&_foreign_keys=on&_journal_mode=WAL"
+	database_uri = "file:db.sqlite3?cache=shared&mode=rwc&_journal_mode=WAL"
 )
 
 type userWithEmail interface {

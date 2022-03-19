@@ -4,19 +4,17 @@ import (
 	"database/sql"
 	"log"
 	"os"
-
-	_ "github.com/mattn/go-sqlite3" // import go-sqlite3 library
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func InitDB(dataSourceName string) (*ProofStore, error) {
-	log.Println("Initializing " + dataSourceName)
-	// declare variables and assign values simultaneously using :=
-	file, err := os.Create("db.sqlite3") // Create the SQLite file
+	log.Println("Initializing test-db.sqlite3...")
+	file, err := os.Create("test-db.sqlite3") // Create the SQLite file
 	if err != nil {                            // if an error occurred during database creation, log an error
 		return nil, err
 	}
 	defer file.Close()
-	
+
 	sqliteDatabase, err := sql.Open("sqlite3", dataSourceName) // Open the created SQLite File
 	if err != nil {
 		return nil, err
@@ -27,13 +25,12 @@ func InitDB(dataSourceName string) (*ProofStore, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Println(dataSourceName + " opened")
+	log.Println("test-db.sqlite3 opened")
 
 	// if all went well, return the db and nil error
 	return &ProofStore{db: sqliteDatabase}, nil
 }
 
-// pass a db reference connection from main to method
 // create tables for user, section, and roster within the referenced db
 func createTables(db *sql.DB) (error) {
 	createUserTableSQL := `CREATE TABLE IF NOT EXISTS user(
@@ -90,38 +87,26 @@ func createTables(db *sql.DB) (error) {
 	if err != nil {
 		return err
 	}
-	statement.Exec()
-	log.Println("roster relation created")
 
-	// proof table from current proof-checker
-	// foreign key and checks added, leveraging entryType for now
-	createProofTableSQL := `CREATE TABLE IF NOT EXISTS proof (
+	// Initialize database tables
+	// proofs : [Premise, Logic, Rules] are JSON fields
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS proofs (
 		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-		entryType TEXT DEFAULT 'proof'
-			CHECK (entryType in ('proof', 'argument')),
+		entryType TEXT,
 		userSubmitted TEXT,
 		proofName TEXT,
-		proofType TEXT
-			CHECK (proofType in ('prop', 'fol')),
+		proofType TEXT,
 		Premise TEXT,
 		Logic TEXT,
 		Rules TEXT,
-		proofCompleted TEXT
-			CHECK (proofCompleted in ('true', 'false', 'error')),
+		proofCompleted TEXT,
 		timeSubmitted DATETIME,
 		Conclusion TEXT,
 		repoProblem TEXT
-			CHECK (repoProblem in ('true', 'false')),
-		FOREIGN KEY (userSubmitted) REFERENCES user (email)
-	);`
-
-	log.Println("Creating proof table. . .")
-	statement, err = db.Prepare(createProofTableSQL)
+	)`)
 	if err != nil {
 		return err
 	}
-	statement.Exec()
-	log.Println("proof table created")
 
 	createAssignmentTableSQL := `CREATE TABLE IF NOT EXISTS assignment (
 		instructorEmail TEXT,
