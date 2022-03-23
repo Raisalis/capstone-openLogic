@@ -43,17 +43,21 @@ type Env struct {
 	ds datastore.IProofStore
 }
 
+type FailedRoster struct {
+   email string
+   errorMsg string
+}
+
 func (env *Env) getAdmins(w http.ResponseWriter, req *http.Request) {
-	// type adminUsers struct {
-	// 	Admins []string
-	// }
-	// var admins adminUsers
+	type adminUsers struct {
+		Admins []string
+	}
+	var admins adminUsers
 	// for adminEmail := range admin_users {
 	// 	admins.Admins = append(admins.Admins, adminEmail)
 	// }
 
-	var admins []string
-	admins = env.ds.GetAdmins()
+	admins.Admins = env.ds.GetAdmins()
 
 	output, err := json.Marshal(admins)
 	if err != nil {
@@ -178,6 +182,38 @@ func (env *Env) getProofs(w http.ResponseWriter, req *http.Request) {
 }
 
 func (env *Env) getSections(w http.ResponseWriter, req *http.Request) {
+	user := req.Context().Value("tok").(userWithEmail)
+
+	if req.Method != "POST" || req.Body == nil {
+		http.Error(w, "Request not accepted.", 400)
+		return
+	}
+
+	// Accepted JSON fields must be defined here
+	type getProofRequest struct {
+		Selection string `json:"selection"`
+	}
+
+	var requestData getProofRequest
+
+	decoder := json.NewDecoder(req.Body)
+
+	if err := decoder.Decode(&requestData); err != nil {
+		http.Error(w, "Unable to decode request body.", 400)
+		return
+	}
+
+	log.Printf("%+v", requestData)
+
+	if len(requestData.Selection) == 0 {
+		http.Error(w, "Selection required", 400)
+		return
+	}
+
+	log.Printf("USER: %q", user)
+
+	var err error
+
 	var sections []datastore.Section
 	sections = env.ds.GetSections()
 
