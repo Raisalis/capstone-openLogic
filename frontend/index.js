@@ -20,6 +20,7 @@ function onSignIn(googleUser) {
    // This response will be cached after the first page load
    $.getJSON('/backend/admins', (admins) => {
       try {
+	 console.log(admins);
 	 adminUsers = admins['Admins'];
       } catch(e) {
 	 console.error('Unable to load admin users', e);
