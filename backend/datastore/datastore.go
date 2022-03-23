@@ -43,11 +43,13 @@ type IProofStore interface {
 	// Empty() error
 	EmptyProofTable() error
 	EmptyUserTable() error
-	// EmptySectionTable() error
-	// EmptyAssignmentTable() error
+	EmptySectionTable() error
+   EmptyRosterTable() error
+	EmptyAssignmentTable() error
 	InsertUser(user User) error
 	InsertSection(section Section) error
 	InsertRoster(rosterRow Roster) error
+   GetAdmins() ([]string)
 	GetAllAttemptedRepoProofs() (error, []Proof)
 	GetRepoProofs() (error, []Proof)
 	GetUserProofs(user UserWithEmail) (error, []Proof)
@@ -106,15 +108,17 @@ func (p *ProofStore) GetAllAttemptedRepoProofs() (error, []Proof) {
 		return err, nil
 	}
 
-	_, err = p.db.Exec(`CREATE VIEW admin_repoproblems (userSubmitted, Premise, Conclusion) AS SELECT userSubmitted, Premise, Conclusion FROM proofs WHERE userSubmitted IN (SELECT email FROM admins)`)
+	_, err = p.db.Exec(`CREATE VIEW admin_repoproblems (userSubmitted, Premise, Conclusion) 
+                        AS SELECT userSubmitted, Premise, Conclusion 
+                        FROM proof WHERE userSubmitted IN (SELECT email FROM user WHERE admin = 1)`)
 	if err != nil {
 		return err, nil
 	}
 	stmt, err := p.db.Prepare(`SELECT id, entryType, userSubmitted, proofName, proofType, Premise, Logic, Rules, proofCompleted, timeSubmitted, Conclusion, repoProblem
-								FROM proofs
+								FROM proof
 								INNER JOIN admin_repoproblems ON
-									proofs.Premise = admin_repoproblems.Premise AND
-									proofs.Conclusion = admin_repoproblems.Conclusion`)
+									proof.Premise = admin_repoproblems.Premise AND
+									proof.Conclusion = admin_repoproblems.Conclusion`)
 	if err != nil {
 		return err, nil
 	}
@@ -130,7 +134,9 @@ func (p *ProofStore) GetAllAttemptedRepoProofs() (error, []Proof) {
 }
 
 func (p *ProofStore) GetRepoProofs() (error, []Proof) {
-	stmt, err := p.db.Prepare("SELECT id, entryType, userSubmitted, proofName, proofType, Premise, Logic, Rules, proofCompleted, timeSubmitted, Conclusion, repoProblem FROM proofs WHERE repoProblem = 'true' AND userSubmitted IN (SELECT email FROM admins) ORDER BY userSubmitted")
+	stmt, err := p.db.Prepare(`SELECT id, entryType, userSubmitted, proofName, proofType, Premise, Logic, Rules, proofCompleted, timeSubmitted, Conclusion, repoProblem 
+                              FROM proof WHERE repoProblem = 'true' AND userSubmitted IN (SELECT email FROM user WHERE admin = 1) 
+                              ORDER BY userSubmitted`)
 	if err != nil {
 		return err, nil
 	}
@@ -146,7 +152,8 @@ func (p *ProofStore) GetRepoProofs() (error, []Proof) {
 }
 
 func (p *ProofStore) GetUserProofs(user UserWithEmail) (error, []Proof) {
-	stmt, err := p.db.Prepare("SELECT id, entryType, userSubmitted, proofName, proofType, Premise, Logic, Rules, proofCompleted, timeSubmitted, Conclusion, repoProblem FROM proofs WHERE userSubmitted = ? AND proofCompleted != 'true' AND proofName != 'n/a'")
+	stmt, err := p.db.Prepare(`SELECT id, entryType, userSubmitted, proofName, proofType, Premise, Logic, Rules, proofCompleted, timeSubmitted, Conclusion, repoProblem 
+                              FROM proof WHERE userSubmitted = ? AND proofCompleted != 'true' AND proofName != 'n/a'`)
 	if err != nil {
 		return err, nil
 	}
@@ -162,7 +169,8 @@ func (p *ProofStore) GetUserProofs(user UserWithEmail) (error, []Proof) {
 }
 
 func (p *ProofStore) GetUserCompletedProofs(user UserWithEmail) (error, []Proof) {
-	stmt, err := p.db.Prepare("SELECT id, entryType, userSubmitted, proofName, proofType, Premise, Logic, Rules, proofCompleted, timeSubmitted, Conclusion, repoProblem FROM proofs WHERE userSubmitted = ? AND proofCompleted = 'true'")
+	stmt, err := p.db.Prepare(`SELECT id, entryType, userSubmitted, proofName, proofType, Premise, Logic, Rules, proofCompleted, timeSubmitted, Conclusion, repoProblem 
+                              FROM proof WHERE userSubmitted = ? AND proofCompleted = 'true'`)
 	if err != nil {
 		return err, nil
 	}
@@ -182,7 +190,7 @@ func (p *ProofStore) Store(proof Proof) error {
 	if err != nil {
 		return errors.New("Database transaction begin error")
 	}
-	stmt, err := tx.Prepare(`INSERT INTO proofs (entryType,
+	stmt, err := tx.Prepare(`INSERT INTO proof (entryType,
 							userSubmitted,
 							proofName,
 							proofType,
@@ -221,9 +229,9 @@ func (p *ProofStore) Store(proof Proof) error {
 		return errors.New("Rules marshal error")
 	}
 	_, err = stmt.Exec(proof.EntryType, proof.UserSubmitted, proof.ProofName, proof.ProofType,
-		PremiseJSON, LogicJSON, RulesJSON, proof.ProofCompleted, proof.Conclusion, proof.RepoProblem,
-		proof.EntryType, proof.ProofType, PremiseJSON, LogicJSON, RulesJSON, proof.ProofCompleted,
-		proof.Conclusion, proof.RepoProblem)
+      PremiseJSON, LogicJSON, RulesJSON, proof.ProofCompleted, proof.Conclusion, 
+      proof.RepoProblem, proof.EntryType, proof.ProofType, PremiseJSON, LogicJSON, 
+      RulesJSON, proof.Conclusion, proof.RepoProblem)
 	if err != nil {
 		return errors.New("Statement exec error")
 	}
@@ -245,22 +253,37 @@ func (p *ProofStore) EmptyUserTable() error {
 	return err
 }
 
+func (p *ProofStore) EmptySectionTable() error {
+	_, err := p.db.Exec(`DELETE FROM section;`)
+	return err
+}
+
+func (p *ProofStore) EmptyRosterTable() error {
+	_, err := p.db.Exec(`DELETE FROM roster;`)
+	return err
+}
+
+func (p *ProofStore) EmptyAssignmentTable() error {
+	_, err := p.db.Exec(`DELETE FROM assignment;`)
+	return err
+}
+
 type User struct {
-   email string
-   firstName string
-   lastName string
-   admin int
+   Email string
+   FirstName string
+   LastName string
+   Admin int
 }
 
 type Section struct {
-   instructorEmail string
-   name string
+   InstructorEmail string
+   Name string
 }
 
 type Roster struct {
-   sectionName string
-   userEmail string
-   role string
+   SectionName string
+   UserEmail string
+   Role string
 }
 
 type Display interface {
@@ -268,11 +291,11 @@ type Display interface {
 }
 
 func (user User) Display() (string) {
-   return fmt.Sprintf("User: %s %s, %s, %d", user.firstName, user.lastName, user.email, user.admin)
+   return fmt.Sprintf("User: %s %s, %s, %d", user.FirstName, user.LastName, user.Email, user.Admin)
 }
 
 func (roster Roster) Display() (string) {
-   return fmt.Sprintf("Roster: %s, %s, %s", roster.sectionName, roster.userEmail, roster.role)
+   return fmt.Sprintf("Roster: %s, %s, %s", roster.SectionName, roster.UserEmail, roster.Role)
 }
 
 func (p *ProofStore) MaintainAdmins(admins map[string]bool) {
@@ -296,7 +319,7 @@ func (p *ProofStore) MaintainAdmins(admins map[string]bool) {
                log.Printf("error during MaintainAdmins: '%s' for %s\n", err.Error(), email)
             }
          } else {
-            p.InsertUser(User{email: email, firstName: "", lastName: "", admin:1})
+            p.InsertUser(User{Email: email, FirstName: "", LastName: "", Admin:1})
          }
          // log.Printf("admin: %s\n", email)
       } else {
@@ -325,7 +348,7 @@ func (p *ProofStore) InsertUser(user User) (error){
    }
    defer statement.Close()
 
-   _, err = statement.Exec(user.email, user.firstName, user.lastName, user.admin)
+   _, err = statement.Exec(user.Email, user.FirstName, user.LastName, user.Admin)
    if err != nil {
       log.Println("error: InsertUser: executing insertUserSQL statement")
       log.Println("-- ", err.Error())
@@ -345,7 +368,7 @@ func (p *ProofStore) InsertSection(section Section) (error) {
    }
    defer statement.Close()
 
-   _, err = statement.Exec(section.instructorEmail, section.name)
+   _, err = statement.Exec(section.InstructorEmail, section.Name)
    if err != nil {
       log.Println("error: InsertSection: statement.Exec(instructorEmail, name)")
       log.Println("-- ", err.Error())
@@ -365,7 +388,7 @@ func (p *ProofStore) InsertRoster(rosterRow Roster) (error) {
    }
    defer statement.Close()
 
-   _, err = statement.Exec(rosterRow.sectionName, rosterRow.userEmail, rosterRow.role)
+   _, err = statement.Exec(rosterRow.SectionName, rosterRow.UserEmail, rosterRow.Role)
    if err != nil {
       log.Println("error: InsertRoster: execution of insertRosterSQL statement")
       log.Println("-- ", err.Error())
@@ -424,8 +447,8 @@ func (p *ProofStore) GetUsers() ([]User) {
    var users []User
    for row.Next() { // Iterate and fetch the records from result cursor
       var user User
-      row.Scan(&user.email, &user.firstName, &user.lastName, &user.admin)
-      // fmt.Printf("User: %s %s, %s, %d\n", user.firstName, user.lastName, user.email, user.admin)
+      row.Scan(&user.Email, &user.FirstName, &user.LastName, &user.Admin)
+      // fmt.Printf("User: %s %s, %s, %d\n", user.FirstName, user.LastName, user.Email, user.Admin)
       users = append(users, user)
    }
    return users
@@ -454,7 +477,7 @@ func (p *ProofStore) GetSections() ([]Section){
                      FROM section JOIN user ON instructorEmail = user.email
                      ORDER BY name;`)
    if err != nil {
-      log.Fatalln("error: GetSections: ", err.Error())
+      log.Println("error: GetSections: ", err.Error())
    }
    defer row.Close()
 
@@ -462,9 +485,9 @@ func (p *ProofStore) GetSections() ([]Section){
    for row.Next() { // Iterate and fetch the records from result cursor
       var user User
       var section Section
-      row.Scan(&user.firstName, &user.lastName, &section.instructorEmail, &section.name)
-      // log.Println("section name check: ", name)
-      // fmt.Printf("Instructor: %s %s, email: %s, section: %s\n", user.firstName, user.lastName, section.instructorEmail, section.name)
+      row.Scan(&user.FirstName, &user.LastName, &section.InstructorEmail, &section.Name)
+      // log.Printf("section scan check: %+v", section)
+      // fmt.Printf("Instructor: %s %s, email: %s, section: %s\n", user.FirstName, user.LastName, section.InstructorEmail, section.Name)
       sections = append(sections, section)
    }
    return sections
@@ -489,10 +512,10 @@ func (p *ProofStore) GetRoster(sectionName string) ([]Roster) {
    var roster []Roster
    for rows.Next() { // Iterate and fetch the records from result cursor
       var rosterRow Roster
-      rosterRow.sectionName = sectionName
-      rows.Scan(&rosterRow.userEmail, &rosterRow.role)
+      rosterRow.SectionName = sectionName
+      rows.Scan(&rosterRow.UserEmail, &rosterRow.Role)
       // log.Println("section name check: ", name)
-      // fmt.Printf("Section: %s %s, email: %s, role: %s\n", rosterRow.section, rosterRow.userEmail, rosterRow.role)
+      // fmt.Printf("Section: %s %s, email: %s, role: %s\n", rosterRow.SectionName, rosterRow.UserEmail, rosterRow.Role)
       roster = append(roster, rosterRow)
    }
    return roster
@@ -501,10 +524,10 @@ func (p *ProofStore) GetRoster(sectionName string) ([]Roster) {
 func (p *ProofStore) getUser(email string) (*User, error) {
    var user User
    row := p.db.QueryRow("Select * from user where email = ?;", email).Scan(
-      &user.firstName,
-      &user.lastName,
-      &user.email,
-      &user.admin,
+      &user.FirstName,
+      &user.LastName,
+      &user.Email,
+      &user.Admin,
    )
 
    if row != nil {
@@ -519,8 +542,8 @@ func (p *ProofStore) getUser(email string) (*User, error) {
 func (p *ProofStore) getSection(name string) (*Section, error) {
    var section Section
    err := p.db.QueryRow("Select * from section where name = ?;", name).Scan(
-      &section.instructorEmail,
-      &section.name,
+      &section.InstructorEmail,
+      &section.Name,
    )
 
    if err != nil {
@@ -535,37 +558,37 @@ func (p *ProofStore) getSection(name string) (*Section, error) {
 func (p *ProofStore) PopulateTestUsersSectionsRosters() {
 	fmt.Println("\n========INSERT USER RECORDS========")
 	userInfo := []User{
-		{email: "psmithTEST@csumb.com", firstName: "Paul", lastName: "Smith", admin: 1},
-		{email: "rmarksTEST@csumb.com", firstName: "Ryan", lastName: "Marks", admin: 0},
-		{email: "lramirezTEST@csumb.com", firstName: "LeAnne", lastName: "Ramirez", admin: 0}, 
-		{email: "abookerTEST@csumb.com", firstName: "Annette", lastName: "Booker", admin: 1}, 
-		{email: "mpotterTEST@csumb.com", firstName: "Maxwell", lastName: "Potter", admin: 0}, 
-		{email: "jduboisTEST@csumb.com", firstName: "Jeanne", lastName: "Dubois", admin: 0}, 
-		{email: "gsloneTEST@csumb.com", firstName: "Garrett", lastName: "Slone", admin: 1}, 
-		{email: "t1deleteTEST@csumb.com", firstName: "t1", lastName: "delete1", admin: 0}, 
-		{email: "t2deleteTEST@csumb.com", firstName: "t2", lastName: "delete2", admin: 0}, 
-		{email: "t3deleteTEST@csumb.com", firstName: "t3", lastName: "delete3", admin: 1},
+		{Email: "psmithTEST@csumb.com", FirstName: "Paul", LastName: "Smith", Admin: 1},
+		{Email: "rmarksTEST@csumb.com", FirstName: "Ryan", LastName: "Marks", Admin: 0},
+		{Email: "lramirezTEST@csumb.com", FirstName: "LeAnne", LastName: "Ramirez", Admin: 0}, 
+		{Email: "abookerTEST@csumb.com", FirstName: "Annette", LastName: "Booker", Admin: 1}, 
+		{Email: "mpotterTEST@csumb.com", FirstName: "Maxwell", LastName: "Potter", Admin: 0}, 
+		{Email: "jduboisTEST@csumb.com", FirstName: "Jeanne", LastName: "Dubois", Admin: 0}, 
+		{Email: "gsloneTEST@csumb.com", FirstName: "Garrett", LastName: "Slone", Admin: 1}, 
+		{Email: "t1deleteTEST@csumb.com", FirstName: "t1", LastName: "delete1", Admin: 0}, 
+		{Email: "t2deleteTEST@csumb.com", FirstName: "t2", LastName: "delete2", Admin: 0}, 
+		{Email: "t3deleteTEST@csumb.com", FirstName: "t3", LastName: "delete3", Admin: 1},
 	}
 
    for _,v := range userInfo {
 		err := p.InsertUser(v)
 		if err != nil {
-			log.Printf("error from populateTest: InsertUser: %s for %s", err.Error(), v.email)
+			log.Printf("error from populateTest: InsertUser: %s for %s", err.Error(), v.Email)
 		}
 	}
 
    sectionInfo := []Section{
       {
-         instructorEmail: "abooker@email.com",
-         name: "testSection 000-01",
+         InstructorEmail: "abookerTEST@csumb.com",
+         Name: "testSection 000-01",
       },
       {
-         instructorEmail: "psmith@email.com",
-         name: "testSection 000-02",
+         InstructorEmail: "psmithTEST@csumb.com",
+         Name: "testSection 000-02",
       },
       {
-         instructorEmail: "psmith@email.com",
-         name: "testSection 000-03",
+         InstructorEmail: "psmithTEST@csumb.com",
+         Name: "testSection 000-03",
       },
    }
 
@@ -573,57 +596,57 @@ func (p *ProofStore) PopulateTestUsersSectionsRosters() {
    for _,v := range sectionInfo {
 		err := p.InsertSection(v)
 		if err != nil {
-			log.Printf("error from populateTest: InsertSection: %s for %s", err.Error(), v.instructorEmail)
+			log.Printf("error from populateTest: InsertSection: %s for %s", err.Error(), v.InstructorEmail)
 		}
 	}
 
    rosterInfo := []Roster{
       {
-         sectionName: "testSection 000-01",
-         userEmail: "abooker@email.com",
-         role: "instructor",
+         SectionName: "testSection 000-01",
+         UserEmail: "abookerTEST@csumb.com",
+         Role: "instructor",
       },
       {
-		sectionName: "testSection 000-01",
-         userEmail: "gslone@email.com",
-         role: "ta",
+         SectionName: "testSection 000-01",
+         UserEmail: "gsloneTEST@csumb.com",
+         Role: "ta",
       },
       {
-		sectionName: "testSection 000-01",
-         userEmail: "mpotter@email.com",
-         role: "student",
+         SectionName: "testSection 000-01",
+         UserEmail: "mpotterTEST@csumb.com",
+         Role: "student",
       },
 	  {
-		sectionName: "testSection 000-02",
-		userEmail: "psmith@email.com",
-		role: "instructor",
+		SectionName: "testSection 000-02",
+		UserEmail: "psmithTEST@csumb.com",
+		Role: "instructor",
 	 },
 	 {
-		sectionName: "testSection 000-01",
-		userEmail: "jdubois@email.com",
-		role: "student",
+		SectionName: "testSection 000-01",
+		UserEmail: "jduboisTEST@csumb.com",
+		Role: "student",
 	 },
 	 {
-		sectionName: "testSection 000-02",
-		userEmail: "t1delete@email.com",
-		role: "ta",
+		SectionName: "testSection 000-02",
+		UserEmail: "t1deleteTEST@csumb.com",
+		Role: "ta",
 	 },
 	 {
-		sectionName: "testSection 000-02",
-		userEmail: "t2delete@email.com",
-		role: "student",
+		SectionName: "testSection 000-02",
+		UserEmail: "t2deleteTEST@csumb.com",
+		Role: "student",
 	 },
 	 {
-		sectionName: "testSection 000-02",
-		userEmail: "t3delete@email.com",
-		role: "student",
+		SectionName: "testSection 000-02",
+		UserEmail: "t3deleteTEST@csumb.com",
+		Role: "student",
 	 },
    }
 	fmt.Println("\n========INSERT ROSTER RECORDS========")
 	for _,v := range rosterInfo {
 		err := p.InsertRoster(v)
 		if err != nil {
-         log.Printf("error from populateTest: InsertSection: %s for %s", err.Error(), v.userEmail)
+         log.Printf("error from populateTest: InsertSection: %s for %s", err.Error(), v.UserEmail)
       }
    }
 

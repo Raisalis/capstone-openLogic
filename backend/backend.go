@@ -2,14 +2,13 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"flag"
 
-	datastore "./datastore"
-	tokenauth "./google-token-auth"
+	"datastore"
+	"google-token-auth"
 )
 
 var (
@@ -33,7 +32,7 @@ var (
 	}
 
 	// When started via systemd, WorkingDirectory is set to one level above the public_html directory
-	database_uri = "file:db.sqlite3?cache=shared&mode=rwc&_journal_mode=WAL"
+	database_uri = "file:db.sqlite3?cache=shared&_foreign_keys=on&mode=rwc&_journal_mode=WAL"
 )
 
 type userWithEmail interface {
@@ -44,14 +43,18 @@ type Env struct {
 	ds datastore.IProofStore
 }
 
-func getAdmins(w http.ResponseWriter, req *http.Request) {
-	type adminUsers struct {
-		Admins []string
-	}
-	var admins adminUsers
-	for adminEmail := range admin_users {
-		admins.Admins = append(admins.Admins, adminEmail)
-	}
+func (env *Env) getAdmins(w http.ResponseWriter, req *http.Request) {
+	// type adminUsers struct {
+	// 	Admins []string
+	// }
+	// var admins adminUsers
+	// for adminEmail := range admin_users {
+	// 	admins.Admins = append(admins.Admins, adminEmail)
+	// }
+
+	var admins []string
+	admins = env.ds.GetAdmins()
+
 	output, err := json.Marshal(admins)
 	if err != nil {
 		http.Error(w, "Error returning admin users.", 500)
@@ -184,9 +187,11 @@ func (env *Env) getSections(w http.ResponseWriter, req *http.Request) {
 		log.Println(err)
 		return
 	}
-
+	
+	w.Header().Set("Content-Type", "application/json")
 	io.WriteString(w, string(sectionsJSON))
-	fmt.Fprintf(w, "All Sections: %+v", sections)
+	// fmt.Printf("All Sections JSON: %+v\n", sectionsJSON)
+	// fmt.Printf("All Sections: %+v\n\n", sections)
 }
 
 // This will delete all non-admin users, non-argument proofs, sections, and rosters, but not reset the auto_increment id
@@ -197,12 +202,12 @@ func (env *Env) clearDatabase() {
 	if err := env.ds.EmptyProofTable(); err != nil {
 		log.Fatal(err)
 	}
-	// if err := env.ds.EmptySectionTable(); err != nil {
-	// 	log.Fatal(err)
-	// }
-	// if err := env.ds.EmptyRosterTable(); err != nil {
-	// 	log.Fatal(err)
-	// }
+	if err := env.ds.EmptySectionTable(); err != nil {
+		log.Fatal(err)
+	}
+	if err := env.ds.EmptyRosterTable(); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (env *Env) populateTestProofRow() {
@@ -285,7 +290,7 @@ func main() {
 
 	// Get admin users -- this is a public endpoint, no token required
 	// Can be changed to require token, but would reduce cacheability
-	http.Handle("/admins", http.HandlerFunc(getAdmins))
+	http.Handle("/admins", http.HandlerFunc(Env.getAdmins))
 	http.Handle("/sections", http.HandlerFunc(Env.getSections))
 	log.Println("Server started")
 	log.Fatal(http.ListenAndServe("127.0.0.1:"+(*portPtr), nil))

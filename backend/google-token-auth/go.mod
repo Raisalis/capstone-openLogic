@@ -1,3 +1,3 @@
-module cohunter/google-token-auth
+module google-token-auth
 
 go 1.14

@@ -8,8 +8,8 @@ import (
 )
 
 func InitDB(dataSourceName string) (*ProofStore, error) {
-	log.Println("Initializing test-db.sqlite3...")
-	file, err := os.Create("test-db.sqlite3") // Create the SQLite file
+	log.Println("Initializing db.sqlite3...")
+	file, err := os.Create("db.sqlite3") // Create the SQLite file
 	if err != nil {                            // if an error occurred during database creation, log an error
 		return nil, err
 	}
@@ -25,7 +25,7 @@ func InitDB(dataSourceName string) (*ProofStore, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Println("test-db.sqlite3 opened")
+	log.Println("db.sqlite3 opened")
 
 	// if all went well, return the db and nil error
 	return &ProofStore{db: sqliteDatabase}, nil
@@ -46,11 +46,11 @@ func createTables(db *sql.DB) (error) {
 													 // Avoid SQL injection through prepared statements!
 	if err != nil { // if an error occurred during statement preparation, return
 		return err
+	} else {
+		statement.Exec() // execute the prepared SQL statement
+		log.Println("user table created")
 	}
 	defer statement.Close()
-
-	statement.Exec() // execute the prepared SQL statement
-	log.Println("user table created")
 
 	createSectionTableSQL := `CREATE TABLE IF NOT EXISTS section(
 		"instructorEmail" TEXT NOT NULL,
@@ -64,10 +64,11 @@ func createTables(db *sql.DB) (error) {
 	statement, err = db.Prepare(createSectionTableSQL)
 	if err != nil {
 		return err
+	} else {
+		statement.Exec()
+		log.Println("section table created")
 	}
-	statement.Exec()
-	log.Println("section table created")
-
+	
 	createRosterRelationSQL := `CREATE TABLE IF NOT EXISTS roster(
 		"sectionName" TEXT NOT NULL,
 		"userEmail" TEXT NOT NULL,
@@ -86,11 +87,15 @@ func createTables(db *sql.DB) (error) {
 	statement, err = db.Prepare(createRosterRelationSQL)
 	if err != nil {
 		return err
+	} else {
+		statement.Exec()
+		log.Println("roster relation created")
 	}
+	
 
-	// Initialize database tables
+	log.Println("Creating proof table. . .")
 	// proofs : [Premise, Logic, Rules] are JSON fields
-	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS proofs (
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS proof (
 		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 		entryType TEXT,
 		userSubmitted TEXT,
@@ -106,6 +111,8 @@ func createTables(db *sql.DB) (error) {
 	)`)
 	if err != nil {
 		return err
+	} else {
+		log.Println("proof table created")
 	}
 
 	createAssignmentTableSQL := `CREATE TABLE IF NOT EXISTS assignment (
@@ -122,15 +129,18 @@ func createTables(db *sql.DB) (error) {
 	statement, err = db.Prepare(createAssignmentTableSQL)
 	if err != nil {
 		return err
+	} else {
+		statement.Exec()
+		log.Println("assignment table created")
 	}
-	statement.Exec()
-	log.Println("assignment table created")
-
+	
 	// proofs : Unique index on (userSubmitted, proofName, proofCompleted)
 	_, err = db.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_user_proof
 			ON proof (userSubmitted, proofName, proofCompleted)`)
 	if err != nil {
 		return err
+	} else {
+		log.Println("unique index for (userSubmitted, proofName, proofCompleted) created")
 	}
 
 	return nil
