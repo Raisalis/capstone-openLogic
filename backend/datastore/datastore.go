@@ -24,6 +24,7 @@ type Proof struct {
 	Premise        []string // premises of the proof; an array of WFFs
 	Logic          []string // body of the proof; a JSON-encoded string
 	Rules          []string // deprecated; now always an empty string
+   EverCompleted  int      // 1 for true, 0 for false
 	ProofCompleted string   // 'true', 'false', or 'error'
 	Conclusion     string   // conclusion of the proof
 	RepoProblem    string   // 'true' if problem started from a repo problem, else 'false'
@@ -54,7 +55,7 @@ type IProofStore interface {
 	GetRepoProofs() (error, []Proof)
 	GetUserProofs(user UserWithEmail) (error, []Proof)
 	GetUserCompletedProofs(user UserWithEmail) (error, []Proof)
-   GetSections() ([]Section)
+   GetSections(userEmail string) ([]Section, error)
 	PopulateTestUsersSectionsRosters()
 	RemoveFromRoster(sectionName string, userEmail string) error
 	RemoveSection(sectionName string) error
@@ -80,7 +81,7 @@ func getProofsFromRows(rows *sql.Rows) (error, []Proof) {
 		var LogicJSON string
 		var RulesJSON string
 
-		err := rows.Scan(&userProof.Id, &userProof.EntryType, &userProof.UserSubmitted, &userProof.ProofName, &userProof.ProofType, &PremiseJSON, &LogicJSON, &RulesJSON, &userProof.ProofCompleted, &userProof.TimeSubmitted, &userProof.Conclusion, &userProof.RepoProblem)
+		err := rows.Scan(&userProof.Id, &userProof.EntryType, &userProof.UserSubmitted, &userProof.ProofName, &userProof.ProofType, &PremiseJSON, &LogicJSON, &RulesJSON, &userProof.EverCompleted, &userProof.ProofCompleted, &userProof.TimeSubmitted, &userProof.Conclusion, &userProof.RepoProblem)
 		if err != nil {
 			return err, nil
 		}
@@ -114,7 +115,7 @@ func (p *ProofStore) GetAllAttemptedRepoProofs() (error, []Proof) {
 	if err != nil {
 		return err, nil
 	}
-	stmt, err := p.db.Prepare(`SELECT id, entryType, userSubmitted, proofName, proofType, Premise, Logic, Rules, proofCompleted, timeSubmitted, Conclusion, repoProblem
+	stmt, err := p.db.Prepare(`SELECT id, entryType, userSubmitted, proofName, proofType, Premise, Logic, Rules, everCompleted, proofCompleted, timeSubmitted, Conclusion, repoProblem
 								FROM proof
 								INNER JOIN admin_repoproblems ON
 									proof.Premise = admin_repoproblems.Premise AND
@@ -134,7 +135,7 @@ func (p *ProofStore) GetAllAttemptedRepoProofs() (error, []Proof) {
 }
 
 func (p *ProofStore) GetRepoProofs() (error, []Proof) {
-	stmt, err := p.db.Prepare(`SELECT id, entryType, userSubmitted, proofName, proofType, Premise, Logic, Rules, proofCompleted, timeSubmitted, Conclusion, repoProblem 
+	stmt, err := p.db.Prepare(`SELECT id, entryType, userSubmitted, proofName, proofType, Premise, Logic, Rules, everCompleted, proofCompleted, timeSubmitted, Conclusion, repoProblem 
                               FROM proof WHERE repoProblem = 'true' AND userSubmitted IN (SELECT email FROM user WHERE admin = 1) 
                               ORDER BY userSubmitted`)
 	if err != nil {
@@ -152,8 +153,8 @@ func (p *ProofStore) GetRepoProofs() (error, []Proof) {
 }
 
 func (p *ProofStore) GetUserProofs(user UserWithEmail) (error, []Proof) {
-	stmt, err := p.db.Prepare(`SELECT id, entryType, userSubmitted, proofName, proofType, Premise, Logic, Rules, proofCompleted, timeSubmitted, Conclusion, repoProblem 
-                              FROM proof WHERE userSubmitted = ? AND proofCompleted != 'true' AND proofName != 'n/a'`)
+	stmt, err := p.db.Prepare(`SELECT id, entryType, userSubmitted, proofName, proofType, Premise, Logic, Rules, everCompleted, proofCompleted, timeSubmitted, Conclusion, repoProblem 
+                              FROM proof WHERE userSubmitted = ? AND everCompleted = 0 AND proofCompleted != 'true' AND proofName != 'n/a'`)
 	if err != nil {
 		return err, nil
 	}
@@ -169,7 +170,7 @@ func (p *ProofStore) GetUserProofs(user UserWithEmail) (error, []Proof) {
 }
 
 func (p *ProofStore) GetUserCompletedProofs(user UserWithEmail) (error, []Proof) {
-	stmt, err := p.db.Prepare(`SELECT id, entryType, userSubmitted, proofName, proofType, Premise, Logic, Rules, proofCompleted, timeSubmitted, Conclusion, repoProblem 
+	stmt, err := p.db.Prepare(`SELECT id, entryType, userSubmitted, proofName, proofType, Premise, Logic, Rules, everCompleted, proofCompleted, timeSubmitted, Conclusion, repoProblem 
                               FROM proof WHERE userSubmitted = ? AND proofCompleted = 'true'`)
 	if err != nil {
 		return err, nil
@@ -197,17 +198,19 @@ func (p *ProofStore) Store(proof Proof) error {
 							Premise,
 							Logic,
 							Rules,
+                     everCompleted,
 							proofCompleted,
 							timeSubmitted,
 							Conclusion,
 							repoProblem)
-				 VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), ?, ?)
+				 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), ?, ?)
 				 ON CONFLICT (userSubmitted, proofName, proofCompleted) DO UPDATE SET
 					 	entryType = ?,
 					 	proofType = ?,
 					 	Premise = ?,
 					 	Logic = ?,
 					 	Rules = ?,
+                  everCompleted = ?,
 					 	timeSubmitted = datetime('now'),
 					 	Conclusion = ?,
 					 	repoProblem = ?`)
@@ -229,9 +232,9 @@ func (p *ProofStore) Store(proof Proof) error {
 		return errors.New("Rules marshal error")
 	}
 	_, err = stmt.Exec(proof.EntryType, proof.UserSubmitted, proof.ProofName, proof.ProofType,
-      PremiseJSON, LogicJSON, RulesJSON, proof.ProofCompleted, proof.Conclusion, 
+      PremiseJSON, LogicJSON, RulesJSON, proof.EverCompleted, proof.ProofCompleted, proof.Conclusion, 
       proof.RepoProblem, proof.EntryType, proof.ProofType, PremiseJSON, LogicJSON, 
-      RulesJSON, proof.Conclusion, proof.RepoProblem)
+      RulesJSON, proof.EverCompleted, proof.Conclusion, proof.RepoProblem)
 	if err != nil {
 		return errors.New("Statement exec error")
 	}
@@ -472,25 +475,32 @@ func (p *ProofStore) GetAdmins() ([]string) {
 }
 
 // return array of current sections
-func (p *ProofStore) GetSections() ([]Section){
-   row, err := p.db.Query(`SELECT firstName, lastName, user.email, name
-                     FROM section JOIN user ON instructorEmail = user.email
-                     ORDER BY name;`)
+func (p *ProofStore) GetSections(userEmail string) ([]Section, error){
+   getSectionsSQL := `SELECT * FROM section where instructorEmail = ? ORDER BY name;`
+   statement, err := p.db.Prepare(getSectionsSQL)
    if err != nil {
-      log.Println("error: GetSections: ", err.Error())
+      log.Printf(`error: GetSections: preparation of getSectionsSQL statement
+                  -- %s`, err.Error())
+      return nil, err
    }
-   defer row.Close()
+   defer statement.Close()
+
+   rows, err := statement.Query(userEmail)
+   if err != nil {
+      log.Printf(`error: GetSections: Query of getSectionsSQL statement
+                  -- %s`, err.Error())
+      return nil, err
+   }
+   defer rows.Close()
 
    var sections []Section
-   for row.Next() { // Iterate and fetch the records from result cursor
-      var user User
+   for rows.Next() { // Iterate and fetch the records from result cursor
       var section Section
-      row.Scan(&user.FirstName, &user.LastName, &section.InstructorEmail, &section.Name)
-      // log.Printf("section scan check: %+v", section)
-      // fmt.Printf("Instructor: %s %s, email: %s, section: %s\n", user.FirstName, user.LastName, section.InstructorEmail, section.Name)
+      rows.Scan(&section.InstructorEmail, &section.Name)
+      log.Printf("section scan check: %+v", section)
       sections = append(sections, section)
    }
-   return sections
+   return sections, nil
 }
 
 func (p *ProofStore) GetRoster(sectionName string) ([]Roster) {
@@ -558,16 +568,20 @@ func (p *ProofStore) getSection(name string) (*Section, error) {
 func (p *ProofStore) PopulateTestUsersSectionsRosters() {
 	fmt.Println("\n========INSERT USER RECORDS========")
 	userInfo := []User{
-		{Email: "psmithTEST@csumb.com", FirstName: "Paul", LastName: "Smith", Admin: 1},
-		{Email: "rmarksTEST@csumb.com", FirstName: "Ryan", LastName: "Marks", Admin: 0},
-		{Email: "lramirezTEST@csumb.com", FirstName: "LeAnne", LastName: "Ramirez", Admin: 0}, 
-		{Email: "abookerTEST@csumb.com", FirstName: "Annette", LastName: "Booker", Admin: 1}, 
-		{Email: "mpotterTEST@csumb.com", FirstName: "Maxwell", LastName: "Potter", Admin: 0}, 
-		{Email: "jduboisTEST@csumb.com", FirstName: "Jeanne", LastName: "Dubois", Admin: 0}, 
-		{Email: "gsloneTEST@csumb.com", FirstName: "Garrett", LastName: "Slone", Admin: 1}, 
-		{Email: "t1deleteTEST@csumb.com", FirstName: "t1", LastName: "delete1", Admin: 0}, 
-		{Email: "t2deleteTEST@csumb.com", FirstName: "t2", LastName: "delete2", Admin: 0}, 
-		{Email: "t3deleteTEST@csumb.com", FirstName: "t3", LastName: "delete3", Admin: 1},
+		{Email: "psmithTEST@csumb.edu", FirstName: "Paul", LastName: "Smith", Admin: 1},
+		{Email: "rmarksTEST@csumb.edu", FirstName: "Ryan", LastName: "Marks", Admin: 0},
+		{Email: "lramirezTEST@csumb.edu", FirstName: "LeAnne", LastName: "Ramirez", Admin: 0}, 
+		{Email: "abookerTEST@csumb.edu", FirstName: "Annette", LastName: "Booker", Admin: 1}, 
+		{Email: "mpotterTEST@csumb.edu", FirstName: "Maxwell", LastName: "Potter", Admin: 0}, 
+		{Email: "jduboisTEST@csumb.edu", FirstName: "Jeanne", LastName: "Dubois", Admin: 0}, 
+      {Email: "jdoeTEST@csumb.edu", FirstName: "John", LastName: "Doe", Admin: 0}, 
+      {Email: "sadamsTEST@csumb.edu", FirstName: "Steven", LastName: "Adams", Admin: 0}, 
+		{Email: "gsloneTEST@csumb.edu", FirstName: "Garrett", LastName: "Slone", Admin: 1}, 
+		{Email: "t1deleteTEST@csumb.edu", FirstName: "t1", LastName: "delete1", Admin: 0}, 
+		{Email: "t2deleteTEST@csumb.edu", FirstName: "t2", LastName: "delete2", Admin: 0}, 
+		{Email: "t3deleteTEST@csumb.edu", FirstName: "t3", LastName: "delete3", Admin: 1},
+      {Email: "mkammerer@csumb.edu", FirstName: "Michael", LastName: "Kammerer", Admin: 1},
+      {Email: "jasbaker@csumb.edu", FirstName: "Jason", LastName: "Baker", Admin: 1},
 	}
 
    for _,v := range userInfo {
@@ -579,16 +593,20 @@ func (p *ProofStore) PopulateTestUsersSectionsRosters() {
 
    sectionInfo := []Section{
       {
-         InstructorEmail: "abookerTEST@csumb.com",
-         Name: "testSection 000-01",
+         InstructorEmail: "jasbaker@csumb.edu",
+         Name: "Baker Section",
       },
       {
-         InstructorEmail: "psmithTEST@csumb.com",
-         Name: "testSection 000-02",
+         InstructorEmail: "bkondo@csumb.edu",
+         Name: "Kondo Section",
       },
       {
-         InstructorEmail: "psmithTEST@csumb.com",
-         Name: "testSection 000-03",
+         InstructorEmail: "mkammerer@csumb.edu",
+         Name: "Kammerer Section",
+      },
+      {
+         InstructorEmail: "elarson@csumb.edu",
+         Name: "Larson Section",
       },
    }
 
@@ -602,43 +620,79 @@ func (p *ProofStore) PopulateTestUsersSectionsRosters() {
 
    rosterInfo := []Roster{
       {
-         SectionName: "testSection 000-01",
-         UserEmail: "abookerTEST@csumb.com",
+         SectionName: "Baker Section",
+         UserEmail: "jasbaker@csumb.edu",
          Role: "instructor",
       },
       {
-         SectionName: "testSection 000-01",
-         UserEmail: "gsloneTEST@csumb.com",
+         SectionName: "Baker Section",
+         UserEmail: "gsloneTEST@csumb.edu",
          Role: "ta",
       },
       {
-         SectionName: "testSection 000-01",
-         UserEmail: "mpotterTEST@csumb.com",
+         SectionName: "Baker Section",
+         UserEmail: "mpotterTEST@csumb.edu",
          Role: "student",
       },
 	  {
-		SectionName: "testSection 000-02",
-		UserEmail: "psmithTEST@csumb.com",
+		SectionName: "Kondo Section",
+		UserEmail: "bkondo@csumb.edu",
 		Role: "instructor",
 	 },
 	 {
-		SectionName: "testSection 000-01",
-		UserEmail: "jduboisTEST@csumb.com",
+		SectionName: "Kondo Section",
+		UserEmail: "jduboisTEST@csumb.edu",
 		Role: "student",
 	 },
 	 {
-		SectionName: "testSection 000-02",
-		UserEmail: "t1deleteTEST@csumb.com",
+		SectionName: "Kondo Section",
+		UserEmail: "t1deleteTEST@csumb.edu",
 		Role: "ta",
 	 },
 	 {
-		SectionName: "testSection 000-02",
-		UserEmail: "t2deleteTEST@csumb.com",
+		SectionName: "Kondo Section",
+		UserEmail: "t2deleteTEST@csumb.edu",
 		Role: "student",
 	 },
-	 {
-		SectionName: "testSection 000-02",
-		UserEmail: "t3deleteTEST@csumb.com",
+    {
+		SectionName: "Kammerer Section",
+		UserEmail: "mkammerer@csumb.edu",
+		Role: "instructor",
+	 },
+    {
+		SectionName: "Kammerer Section",
+		UserEmail: "psmithTEST@csumb.edu",
+		Role: "ta",
+	 },
+    {
+		SectionName: "Kammerer Section",
+		UserEmail: "rmarksTEST@csumb.edu",
+		Role: "student",
+	 },
+    
+    {
+		SectionName: "Kammerer Section",
+		UserEmail: "lramirezTEST@csumb.edu",
+		Role: "student",
+	 },
+    {
+		SectionName: "Larson Section",
+		UserEmail: "elarson@csumb.edu",
+		Role: "instructor",
+	 },
+    {
+		SectionName: "Kammerer Section",
+		UserEmail: "abookerTEST@csumb.edu",
+		Role: "ta",
+	 },
+    {
+		SectionName: "Larson Section",
+		UserEmail: "jdoeTEST@csumb.edu",
+		Role: "student",
+	 },
+    {
+		SectionName: "Larson Section",
+		UserEmail: "sadamsTEST@csumb.edu",
 		Role: "student",
 	 },
    }
@@ -649,5 +703,5 @@ func (p *ProofStore) PopulateTestUsersSectionsRosters() {
          log.Printf("error from populateTest: InsertSection: %s for %s", err.Error(), v.UserEmail)
       }
    }
-
+   fmt.Println("\n========INSERTIONS COMPLETED========\n")
 } 

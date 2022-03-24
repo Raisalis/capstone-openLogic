@@ -104,6 +104,7 @@ func createTables(db *sql.DB) (error) {
 		Premise TEXT,
 		Logic TEXT,
 		Rules TEXT,
+		everCompleted INTEGER,
 		proofCompleted TEXT,
 		timeSubmitted DATETIME,
 		Conclusion TEXT,

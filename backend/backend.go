@@ -182,40 +182,27 @@ func (env *Env) getProofs(w http.ResponseWriter, req *http.Request) {
 }
 
 func (env *Env) getSections(w http.ResponseWriter, req *http.Request) {
-	user := req.Context().Value("tok").(userWithEmail)
+	log.Println("inside backend.go: getSections")
+	userEmail := req.URL.Query().Get("user")
 
-	if req.Method != "POST" || req.Body == nil {
+	if req.Method != "GET" || userEmail == "" {
 		http.Error(w, "Request not accepted.", 400)
 		return
 	}
 
-	// Accepted JSON fields must be defined here
-	type getProofRequest struct {
-		Selection string `json:"selection"`
-	}
-
-	var requestData getProofRequest
-
-	decoder := json.NewDecoder(req.Body)
-
-	if err := decoder.Decode(&requestData); err != nil {
-		http.Error(w, "Unable to decode request body.", 400)
-		return
-	}
-
-	log.Printf("%+v", requestData)
-
-	if len(requestData.Selection) == 0 {
-		http.Error(w, "Selection required", 400)
-		return
-	}
-
-	log.Printf("USER: %q", user)
+	log.Printf("USER: %q\n", userEmail)
 
 	var err error
 
 	var sections []datastore.Section
-	sections = env.ds.GetSections()
+	sections, err = env.ds.GetSections(userEmail)
+	if err != nil {
+		http.Error(w, "db access error", 500)
+		log.Println(err)
+		return
+	}
+
+	log.Printf("All Sections: %+v\n\n", sections)
 
 	sectionsJSON, err := json.Marshal(sections)
 	if err != nil {
@@ -227,7 +214,6 @@ func (env *Env) getSections(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	io.WriteString(w, string(sectionsJSON))
 	// fmt.Printf("All Sections JSON: %+v\n", sectionsJSON)
-	// fmt.Printf("All Sections: %+v\n\n", sections)
 }
 
 // This will delete all non-admin users, non-argument proofs, sections, and rosters, but not reset the auto_increment id
@@ -255,6 +241,7 @@ func (env *Env) populateTestProofRow() {
 		Premise: []string{"P", "P -> Q", "Q -> R", "R -> S"},
 		Logic: []string{},
 		Rules: []string{},
+		EverCompleted: 0,
 		ProofCompleted: "false",
 		Conclusion: "S",
 		TimeSubmitted: "2019-04-29T01:45:44.452+0000",
@@ -274,6 +261,7 @@ func (env *Env) populateTestProofRow() {
 		Premise: []string{"P", "P -> Q", "Q -> R", "R -> S"},
 		Logic: []string{"[{\"wffstr\":\"P\",\"jstr\":\"Pr\"},{\"wffstr\":\"P → Q\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q → R\",\"jstr\":\"Pr\"},{\"wffstr\":\"R → S\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q\",\"jstr\":\"1, 2 →E\"},{\"wffstr\":\"R\",\"jstr\":\"3, 5 →E\"},{\"wffstr\":\"S\",\"jstr\":\"4, 6 →E\"}]"},
 		Rules: []string{},
+		EverCompleted: 1,
 		ProofCompleted: "true",
 		Conclusion: "S",
 		TimeSubmitted: "2022-03-14T03:41:44.452+0000",
