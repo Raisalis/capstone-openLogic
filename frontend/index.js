@@ -109,10 +109,10 @@ class User {
    }
 }
 
-function getStudents(){
+function ViewClasses(){
 
 
-   backendPOST('User', {selection: 'Name'}).then(   // 'class' and 'students' here is referring to whatever the table/data is actually called, i can't remember off the top of my head
+   backendPOST('User', {selection: 'Email'}).then(   // 'class' and 'students' here is referring to whatever the table/data is actually called, i can't remember off the top of my head
    (data) => {
       console.log("loadStudentNames", data);
       repositoryData.studentNames = data;       // would need to add 'studentNames': [] to the const repositoryData at the top of index.js
@@ -130,9 +130,7 @@ function getStudents(){
       });
       }, console.log
    );
-}
 
-function getProofs(){
    backendPOST('Proof', {selection: 'ProofName'}).then(   // 'class' and 'students' here is referring to whatever the table/data is actually called, i can't remember off the top of my head
    (data) => {
       console.log("loadProofs", data);
@@ -152,6 +150,8 @@ function getProofs(){
       }, console.log
    );
 }
+
+
 
 function insertClass(){
    var name=document.getElementById("className");
@@ -175,6 +175,16 @@ function dropStudent(){
    var deadStudent= document.getElementById("dropStudent");
    //waiting for tables to be ready to do rest
 }
+
+function showDrop(){
+   var dropper= document.getElementById("hiddenDrop");
+   if(dropper.style.display=== "block"){
+      dropper.style.display= "none";
+   }else{
+      dropper.style.display="block";
+   }
+}
+
 
 
 // Verifies signed in and valid token, then calls authenticatedBackendPOST

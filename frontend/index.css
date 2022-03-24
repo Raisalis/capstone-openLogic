@@ -138,3 +138,7 @@ textarea{
 #studentPage{
 	display: none;
 }
+
+#hiddenDrop{
+	display: none;
+}

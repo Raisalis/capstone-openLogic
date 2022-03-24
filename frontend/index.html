@@ -196,21 +196,32 @@
   </div>
   
       
-            <button onclick="showProofs()">View Proof Scores</button> <button onclick="showStudents()">Add/Drop Students</button>
+            <button onclick="showProofs(),ViewClasses()">View Classes</button> <button onclick="showStudents()">Add Students</button>
             <div  id="proofValues">
                   <center>
-                  <select name="proofs" id="proofNameSelect">
-                    <option >Select Proof</option>
-                  </select>
-              
-                  <select name="students" id="studentNameSelect">
-                    <option value="">Select Student</option>
-                  </select>
-                  <button onclick="getAllStudents()">Show All Students</button>
-                  <div class="content">
-                    <button class="downloadCSV">Download Student Problems as CSV</button>
-                     
-                  </div>
+                    <select name="proofs" id="proofNameSelect">
+                      <option >Select Proof</option>
+                    </select>
+                    <select name="students" id="studentNameSelect">
+                      <option value="">Select Student</option>
+                    </select>
+                    <button onclick="getAllStudents()">Show All Students</button>
+                    <div class="content">
+                      <button class="downloadCSV">Download Student Problems as CSV</button>
+                      
+                    </div>
+                    <button onclick="showDrop()">Student to Drop</button>
+                    <div id="hiddenDrop">
+                      
+                    <input type="text" id="dropStudent" placeholder="Student to drop">
+                    <button onclick="dropStudent()">Drop Student</button>
+                    <button onclick="dropClass()">Drop Class</button>
+                    
+                    </div>
+                    
+
+                    
+                   
                 </center> 
             </div>
             
@@ -218,18 +229,13 @@
                   <center>  
                         
                           
-                          <button id="addStudent">Add Student</button>
+                          <button id="addStudent">Add Student/Class</button>
                           <div id="studentAddition">
                             <input type="text" id="className" placeholder="Class name: major, section, semester">
-                            <textarea name="studentAdd" id="involveStudents" cols="1" rows="40"></textarea>
+                            <textarea name="studentAdd" id="involveStudents" cols="1" rows="40" placeholder="Enter student(s)"></textarea>
                             <button onclick="insertClass()">Confirm Students</button>
                           </div> 
-                          
-                        
-                        
-                          <button onclick="dropStudent()">Drop Student</button>
-                          <input type="text" id="dropStudent" placeholder="Student to drop">
-                          <button onclick="dropClass()">Drop Class</button>
+
                           
                       </center>
             </div>
