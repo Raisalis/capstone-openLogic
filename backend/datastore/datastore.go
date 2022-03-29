@@ -56,6 +56,8 @@ type IProofStore interface {
 	GetUserProofs(user UserWithEmail) (error, []Proof)
 	GetUserCompletedProofs(user UserWithEmail) (error, []Proof)
    GetSections(userEmail string) ([]Section, error)
+   GetRoster(sectionName string) ([]Roster, error)
+   GetCompletedProofsBySection(sectionName string) ([]RosterAndProof, error)
 	PopulateTestUsersSectionsRosters()
 	RemoveFromRoster(sectionName string, userEmail string) error
 	RemoveSection(sectionName string) error
@@ -503,19 +505,23 @@ func (p *ProofStore) GetSections(userEmail string) ([]Section, error){
    return sections, nil
 }
 
-func (p *ProofStore) GetRoster(sectionName string) ([]Roster) {
-   selectSectionSql := `Select userEmail, role from roster where sectionName = ? order by role desc, userEmail`
-   statement, err := p.db.Prepare(selectSectionSql)
+// ----- Work In Progress (WIP) ----- March 25 - 28
+// get students and tas from roster for a given section name
+func (p *ProofStore) GetRoster(sectionName string) ([]Roster, error) {
+   selectRoserSql := `SELECT userEmail, role FROM roster WHERE sectionName = ? AND role != "instructor" ORDER BY role, userEmail`
+   statement, err := p.db.Prepare(selectRoserSql)
    if err != nil {
-      log.Println("--err during preparation of selectSectionSql statement")
-      log.Fatalln("--", err.Error())
+      log.Printf(`error: GetRoster: during preparation of selectRoserSql statement
+                  -- %s`, err.Error())
+      return nil, err
    }
    defer statement.Close()
 
    rows, err := statement.Query(sectionName)
    if err != nil {
-      log.Println("err during execution of selectSectionSql statement")
-      log.Println("--", err.Error())
+      log.Printf(`error: GetRoster: during execution of selectRoserSql statement
+                  -- %s`, err.Error())
+      return nil, err
    }
    defer rows.Close()
 
@@ -524,12 +530,63 @@ func (p *ProofStore) GetRoster(sectionName string) ([]Roster) {
       var rosterRow Roster
       rosterRow.SectionName = sectionName
       rows.Scan(&rosterRow.UserEmail, &rosterRow.Role)
-      // log.Println("section name check: ", name)
-      // fmt.Printf("Section: %s %s, email: %s, role: %s\n", rosterRow.SectionName, rosterRow.UserEmail, rosterRow.Role)
+      // log.Println("roster Scan check: %+v", rosterRow)
       roster = append(roster, rosterRow)
    }
-   return roster
+   return roster, nil
 }
+
+type RosterAndProof struct {
+   RowRoster Roster
+   RowProof Proof
+}
+
+func (p *ProofStore) GetCompletedProofsBySection(sectionName string) ([]RosterAndProof, error) {
+   selectProofsSQL := `SELECT * FROM roster JOIN proof ON userEmail = userSubmitted
+                        WHERE sectionName = ? AND role = 'student' AND entryType = 'proof' AND everCompleted = 1 AND proofCompleted = 'true' AND repoProblem = 'true'
+                        ORDER BY userEmail;`
+   statement, err := p.db.Prepare(selectProofsSQL)
+   if err != nil {
+      log.Printf(`error: GetCompletedProofsBySection: during preparation of selectProofsSQL statement
+                  -- %s`, err.Error())
+      return nil, err
+   }
+   defer statement.Close()
+
+   rows, err := statement.Query(sectionName)
+   if err != nil {
+      log.Printf(`error: GetCompletedProofsBySection: during execution of selectProofsSQL statement
+                  -- %s`, err.Error())
+      return nil, err
+   }
+   defer rows.Close()
+
+   var completedProofs []RosterAndProof
+   for rows.Next() {
+      var row RosterAndProof
+      var PremiseJSON string
+      var LogicJSON string
+      var RulesJSON string
+      rows.Scan(&row.RowRoster.SectionName, &row.RowRoster.UserEmail, &row.RowRoster.Role, &row.RowProof.Id, &row.RowProof.EntryType, 
+                  &row.RowProof.UserSubmitted, &row.RowProof.ProofName, &row.RowProof.ProofType, &PremiseJSON, &LogicJSON, &RulesJSON, 
+                  &row.RowProof.EverCompleted, &row.RowProof.ProofCompleted, &row.RowProof.TimeSubmitted, &row.RowProof.Conclusion, &row.RowProof.RepoProblem)
+
+      if err = json.Unmarshal([]byte(PremiseJSON), &row.RowProof.Premise); err != nil {
+         return nil, err
+      }
+      if err = json.Unmarshal([]byte(LogicJSON), &row.RowProof.Logic); err != nil {
+         return nil, err
+      }
+      if err = json.Unmarshal([]byte(RulesJSON), &row.RowProof.Rules); err != nil {
+         return nil, err
+      }
+
+      completedProofs = append(completedProofs, row)
+   }
+
+   return completedProofs, nil
+}
+// ----- End WIP -----
 
 func (p *ProofStore) getUser(email string) (*User, error) {
    var user User

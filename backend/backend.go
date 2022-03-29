@@ -182,7 +182,7 @@ func (env *Env) getProofs(w http.ResponseWriter, req *http.Request) {
 }
 
 func (env *Env) getSections(w http.ResponseWriter, req *http.Request) {
-	log.Println("inside backend.go: getSections")
+	// log.Println("inside backend.go: getSections")
 	userEmail := req.URL.Query().Get("user")
 
 	if req.Method != "GET" || userEmail == "" {
@@ -215,6 +215,69 @@ func (env *Env) getSections(w http.ResponseWriter, req *http.Request) {
 	io.WriteString(w, string(sectionsJSON))
 	// fmt.Printf("All Sections JSON: %+v\n", sectionsJSON)
 }
+
+// ----- Work In Progress (WIP) ----- March 25
+func (env *Env) getRoster(w http.ResponseWriter, req *http.Request) {
+	// log.Println("inside backend.go: getRoster")
+	sectionName := req.URL.Query().Get("section")
+
+	if req.Method != "GET" || sectionName == "" {
+		http.Error(w, "Request not accepted.", 400)
+		return
+	}
+
+	log.Printf("for section: %q\n", sectionName)
+
+	roster, err := env.ds.GetRoster(sectionName)
+	if err != nil {
+		http.Error(w, "db access error", 500)
+		log.Println(err)
+		return
+	}
+
+	log.Printf("full roster: %+v\n\n", roster)
+
+	rosterJSON, err := json.Marshal(roster)
+	if err != nil {
+		http.Error(w, "json marshal error", 500)
+		log.Println(err)
+		return
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	io.WriteString(w, string(rosterJSON))
+	// log.Printf("marshalled rosterJSON: %+v\n", rosterJSON)
+}
+
+func (env *Env) getCompletedProofsBySection(w http.ResponseWriter, req *http.Request) {
+	log.Println("inside backend.go: getCompletedProofsBySection")
+	sectionName := req.URL.Query().Get("section")
+
+	if req.Method != "GET" || sectionName == "" {
+		http.Error(w, "Request not accepted.", 400)
+		return
+	}
+
+	log.Printf("for section: %q\n", sectionName)
+
+	proofs, err := env.ds.GetCompletedProofsBySection(sectionName)
+	if err != nil {
+		http.Error(w, "db access error", 500)
+		log.Println(err)
+		return
+	}
+
+	proofsJSON, err := json.Marshal(proofs)
+	if err != nil {
+		http.Error(w, "json marshal error", 500)
+		log.Println(err)
+		return
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	io.WriteString(w, string(proofsJSON))
+}
+// ----- End WIP -----
 
 // This will delete all non-admin users, non-argument proofs, sections, and rosters, but not reset the auto_increment id
 func (env *Env) clearDatabase() {
@@ -255,7 +318,7 @@ func (env *Env) populateTestProofRow() {
 
 	err = env.ds.Store(datastore.Proof{
 		EntryType: "proof",
-		UserSubmitted: "bkondo@csumb.edu",
+		UserSubmitted: "jduboisTEST@csumb.edu",
 		ProofName: "Repository - Code Test",
 		ProofType: "prop",
 		Premise: []string{"P", "P -> Q", "Q -> R", "R -> S"},
@@ -272,6 +335,21 @@ func (env *Env) populateTestProofRow() {
 		log.Println("error from Store(bkondo proof)")
 		log.Fatal(err)
 	}
+
+	err = env.ds.Store(datastore.Proof{
+		EntryType: "proof",
+		UserSubmitted: "jduboiTEST@csumb.edu",
+		ProofName: "Repository - Code Test",
+		ProofType: "prop",
+		Premise: []string{"P", "P -> Q", "Q -> R", "R -> S"},
+		Logic: []string{"[{\"wffstr\":\"P\",\"jstr\":\"Pr\"},{\"wffstr\":\"P → Q\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q → R\",\"jstr\":\"Pr\"},{\"wffstr\":\"R → S\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q\",\"jstr\":\"1, 2 →E\"},{\"wffstr\":\"R\",\"jstr\":\"3, 5 →E\"}]"},
+		Rules: []string{},
+		EverCompleted: 1,
+		ProofCompleted: "false",
+		Conclusion: "S",
+		TimeSubmitted: "2022-03-14T03:10:44.452+0000",
+		RepoProblem: "true",
+	})
 }
 
 func main() {
@@ -316,6 +394,8 @@ func main() {
 	// Can be changed to require token, but would reduce cacheability
 	http.Handle("/admins", http.HandlerFunc(Env.getAdmins))
 	http.Handle("/sections", http.HandlerFunc(Env.getSections))
+	http.Handle("/roster", http.HandlerFunc(Env.getRoster))
+	http.Handle("/proofs-by-section", http.HandlerFunc(Env.getCompletedProofsBySection))
 	log.Println("Server started")
 	log.Fatal(http.ListenAndServe("127.0.0.1:"+(*portPtr), nil))
 }
