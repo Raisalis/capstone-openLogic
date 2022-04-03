@@ -49,6 +49,7 @@ function processProofCheckResponse(text, context) {
    if (res.issues.length == 0) {
       if (res.concReached == true) {
          context.proofCompleted = "true";
+         context.everCompleted = "true";
          restext += '<span style="font-size: 150%; color: green;">☺</span> Congratulations! This proof is correct.';
       } else {
          context.proofCompleted = "false";
