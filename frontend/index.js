@@ -391,18 +391,24 @@ $(document).ready(function() {
       // always an empty array.
       let Logic = [JSON.stringify(proofData)],
           Rules = [];
-
-      let entryType = "proof"; // What is this meant to be used for?
+      
+      let entryType = "";
+      if (adminUsers.indexOf(User.email)) {
+         entryType = "argument";
+      } else {
+         entryType = "proof";
+      }
 
       let proofName = $('.proofNameSpan').text() || "n/a";
       let repoProblem = $('#repoProblem').val() || "false";
       let proofType = predicateSettings ? "fol" : "prop";
 
+      let everCompleted = event.detail.everCompleted;
       let proofCompleted = event.detail.proofCompleted;
       let conclusion = event.detail.wantedConc;
 
       let postData = new Proof(entryType, proofName, proofType, Premises, Logic, Rules,
-			       proofCompleted, conclusion, repoProblem);
+			       everCompleted, proofCompleted, conclusion, repoProblem);
 
       console.log('saving proof', postData);
       backendPOST('saveproof', postData).then(
