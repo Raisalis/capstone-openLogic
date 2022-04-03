@@ -104,6 +104,7 @@ func (env *Env) saveProof(w http.ResponseWriter, req *http.Request) {
 
 func (env *Env) getProofs(w http.ResponseWriter, req *http.Request) {
 	user := req.Context().Value("tok").(userWithEmail)
+	log.Println("backend.go: getProofs(): 'tok': " + user.GetEmail())
 
 	if req.Method != "POST" || req.Body == nil {
 		http.Error(w, "Request not accepted.", 400)
@@ -163,6 +164,7 @@ func (env *Env) getProofs(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if err != nil {
+		log.Println("error: backend.go: getProofs(): " + err.Error())
 		http.Error(w, "Query error", 500)
 		return
 	}
@@ -304,7 +306,7 @@ func (env *Env) populateTestProofRow() {
 		Premise: []string{"P", "P -> Q", "Q -> R", "R -> S"},
 		Logic: []string{},
 		Rules: []string{},
-		EverCompleted: 0,
+		EverCompleted: "false",
 		ProofCompleted: "false",
 		Conclusion: "S",
 		TimeSubmitted: "2019-04-29T01:45:44.452+0000",
@@ -318,36 +320,81 @@ func (env *Env) populateTestProofRow() {
 
 	err = env.ds.Store(datastore.Proof{
 		EntryType: "proof",
-		UserSubmitted: "jduboisTEST@csumb.edu",
-		ProofName: "Repository - Code Test",
-		ProofType: "prop",
-		Premise: []string{"P", "P -> Q", "Q -> R", "R -> S"},
-		Logic: []string{"[{\"wffstr\":\"P\",\"jstr\":\"Pr\"},{\"wffstr\":\"P → Q\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q → R\",\"jstr\":\"Pr\"},{\"wffstr\":\"R → S\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q\",\"jstr\":\"1, 2 →E\"},{\"wffstr\":\"R\",\"jstr\":\"3, 5 →E\"},{\"wffstr\":\"S\",\"jstr\":\"4, 6 →E\"}]"},
-		Rules: []string{},
-		EverCompleted: 1,
-		ProofCompleted: "true",
-		Conclusion: "S",
-		TimeSubmitted: "2022-03-14T03:41:44.452+0000",
-		RepoProblem: "true",
-	})
-
-	if err != nil {
-		log.Println("error from Store(bkondo proof)")
-		log.Fatal(err)
-	}
-
-	err = env.ds.Store(datastore.Proof{
-		EntryType: "proof",
 		UserSubmitted: "jduboiTEST@csumb.edu",
 		ProofName: "Repository - Code Test",
 		ProofType: "prop",
 		Premise: []string{"P", "P -> Q", "Q -> R", "R -> S"},
 		Logic: []string{"[{\"wffstr\":\"P\",\"jstr\":\"Pr\"},{\"wffstr\":\"P → Q\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q → R\",\"jstr\":\"Pr\"},{\"wffstr\":\"R → S\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q\",\"jstr\":\"1, 2 →E\"},{\"wffstr\":\"R\",\"jstr\":\"3, 5 →E\"}]"},
 		Rules: []string{},
-		EverCompleted: 1,
+		EverCompleted: "false",
 		ProofCompleted: "false",
 		Conclusion: "S",
 		TimeSubmitted: "2022-03-14T03:10:44.452+0000",
+		RepoProblem: "true",
+	})
+
+	if err != nil {
+		log.Println("error: populateTestProofRow() from Store(student-proof1f)")
+		log.Fatal(err)
+	}
+
+	err = env.ds.Store(datastore.Proof{
+		EntryType: "proof",
+		UserSubmitted: "jduboisTEST@csumb.edu",
+		ProofName: "Repository - Code Test",
+		ProofType: "prop",
+		Premise: []string{"P", "P -> Q", "Q -> R", "R -> S"},
+		Logic: []string{"[{\"wffstr\":\"P\",\"jstr\":\"Pr\"},{\"wffstr\":\"P → Q\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q → R\",\"jstr\":\"Pr\"},{\"wffstr\":\"R → S\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q\",\"jstr\":\"1, 2 →E\"},{\"wffstr\":\"R\",\"jstr\":\"3, 5 →E\"},{\"wffstr\":\"S\",\"jstr\":\"4, 6 →E\"}]"},
+		Rules: []string{},
+		EverCompleted: "true",
+		ProofCompleted: "true",
+		Conclusion: "S",
+		TimeSubmitted: "2022-03-14T03:41:44.452+0000",
+		RepoProblem: "true",
+	})
+
+	err = env.ds.Store(datastore.Proof{
+		EntryType: "argument",
+		UserSubmitted: "bkondo@csumb.edu",
+		ProofName: "Repository - Code Test 2",
+		ProofType: "prop",
+		Premise: []string{"P", "P -> Q", "Q -> R"},
+		Logic: []string{},
+		Rules: []string{},
+		EverCompleted: "false",
+		ProofCompleted: "false",
+		Conclusion: "Q",
+		TimeSubmitted: "2022-04-03T00:44:49Z",
+		RepoProblem: "true",
+	})
+
+	err = env.ds.Store(datastore.Proof{
+		EntryType: "proof",
+		UserSubmitted: "jduboisTEST@csumb.edu",
+		ProofName: "Repository - Code Test 2",
+		ProofType: "prop",
+		Premise: []string{"P", "P -> Q", "Q -> R"},
+		Logic: []string{"[{\"wffstr\":\"P\",\"jstr\":\"Pr\"},{\"wffstr\":\"P → Q\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q → R\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q\",\"jstr\":\"1, 2 →E\"},{\"wffstr\":\"R\",\"jstr\":\"3, 5 →E\"}]"},
+		Rules: []string{},
+		EverCompleted: "false",
+		ProofCompleted: "false",
+		Conclusion: "Q",
+		TimeSubmitted: "2022-04-03T00:44:49Z",
+		RepoProblem: "true",
+	})
+
+	err = env.ds.Store(datastore.Proof{
+		EntryType: "proof",
+		UserSubmitted: "t1deleteTEST@csumb.edu",
+		ProofName: "Repository - Code Test 2",
+		ProofType: "prop",
+		Premise: []string{"P", "P -> Q", "Q -> R"},
+		Logic: []string{"[{\"wffstr\":\"P\",\"jstr\":\"Pr\"},{\"wffstr\":\"P → Q\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q → R\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q\",\"jstr\":\"1, 2 →E\"}]"},
+		Rules: []string{},
+		EverCompleted: "true",
+		ProofCompleted: "true",
+		Conclusion: "Q",
+		TimeSubmitted: "2022-04-03T00:44:49Z",
 		RepoProblem: "true",
 	})
 }

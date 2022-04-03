@@ -24,7 +24,7 @@ type Proof struct {
 	Premise        []string // premises of the proof; an array of WFFs
 	Logic          []string // body of the proof; a JSON-encoded string
 	Rules          []string // deprecated; now always an empty string
-   EverCompleted  int      // 1 for true, 0 for false
+   EverCompleted  string   // 'true', 'false'
 	ProofCompleted string   // 'true', 'false', or 'error'
 	Conclusion     string   // conclusion of the proof
 	RepoProblem    string   // 'true' if problem started from a repo problem, else 'false'
@@ -117,11 +117,12 @@ func (p *ProofStore) GetAllAttemptedRepoProofs() (error, []Proof) {
 	if err != nil {
 		return err, nil
 	}
-	stmt, err := p.db.Prepare(`SELECT id, entryType, userSubmitted, proofName, proofType, Premise, Logic, Rules, everCompleted, proofCompleted, timeSubmitted, Conclusion, repoProblem
-								FROM proof
-								INNER JOIN admin_repoproblems ON
-									proof.Premise = admin_repoproblems.Premise AND
-									proof.Conclusion = admin_repoproblems.Conclusion`)
+	stmt, err := p.db.Prepare(`SELECT id, entryType, proof.userSubmitted, proofName, proofType, proof.Premise, Logic, Rules, 
+                                    everCompleted, proofCompleted, timeSubmitted, proof.Conclusion, repoProblem
+								      FROM proof INNER JOIN admin_repoproblems 
+                                 ON proof.Premise = admin_repoproblems.Premise AND proof.Conclusion = admin_repoproblems.Conclusion
+                              WHERE entryType = 'proof'
+                              ORDER BY proof.userSubmitted, proofName, timeSubmitted;`)
 	if err != nil {
 		return err, nil
 	}
@@ -156,7 +157,7 @@ func (p *ProofStore) GetRepoProofs() (error, []Proof) {
 
 func (p *ProofStore) GetUserProofs(user UserWithEmail) (error, []Proof) {
 	stmt, err := p.db.Prepare(`SELECT id, entryType, userSubmitted, proofName, proofType, Premise, Logic, Rules, everCompleted, proofCompleted, timeSubmitted, Conclusion, repoProblem 
-                              FROM proof WHERE userSubmitted = ? AND everCompleted = 0 AND proofCompleted != 'true' AND proofName != 'n/a'`)
+                              FROM proof WHERE userSubmitted = ? AND everCompleted = 'false' AND proofCompleted != 'true' AND proofName != 'n/a'`)
 	if err != nil {
 		return err, nil
 	}
@@ -543,7 +544,7 @@ type RosterAndProof struct {
 
 func (p *ProofStore) GetCompletedProofsBySection(sectionName string) ([]RosterAndProof, error) {
    selectProofsSQL := `SELECT * FROM roster JOIN proof ON userEmail = userSubmitted
-                        WHERE sectionName = ? AND role = 'student' AND entryType = 'proof' AND everCompleted = 1 AND proofCompleted = 'true' AND repoProblem = 'true'
+                        WHERE sectionName = ? AND role = 'student' AND entryType = 'proof' AND everCompleted = 'true' AND proofCompleted = 'true' AND repoProblem = 'true'
                         ORDER BY userEmail;`
    statement, err := p.db.Prepare(selectProofsSQL)
    if err != nil {
