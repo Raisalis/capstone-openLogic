@@ -218,7 +218,6 @@ func (env *Env) getSections(w http.ResponseWriter, req *http.Request) {
 	// fmt.Printf("All Sections JSON: %+v\n", sectionsJSON)
 }
 
-// ----- Work In Progress (WIP) ----- March 25
 func (env *Env) getRoster(w http.ResponseWriter, req *http.Request) {
 	// log.Println("inside backend.go: getRoster")
 	sectionName := req.URL.Query().Get("section")
@@ -279,6 +278,45 @@ func (env *Env) getCompletedProofsBySection(w http.ResponseWriter, req *http.Req
 	w.Header().Set("Content-Type", "application/json")
 	io.WriteString(w, string(proofsJSON))
 }
+
+// ----- Work In Progress (WIP) ----- April 6
+// add a section based on current admin user and given sectionName
+func (env *Env) addSection(w http.ResponseWriter, req *http.Request) {
+	log.Println("inside backend.go: addSection")
+	user := req.Context().Value("tok").(userWithEmail)
+
+	if req.Method != "POST" || req.Body == nil {
+		http.Error(w, "Request not accepted.", 400)
+		return
+	}
+
+	// Accepted JSON fields must be defined here
+	type reqBody struct {
+		SectionName string `json:"sectionName"`
+	}
+
+	var requestData reqBody
+
+	decoder := json.NewDecoder(req.Body)
+
+	if err := decoder.Decode(&requestData); err != nil {
+		http.Error(w, "Unable to decode request body.", 400)
+		return
+	}
+	log.Printf("user: [%q], requestData: %+v", user.GetEmail(), requestData)
+
+	err := env.ds.InsertSection(datastore.Section{InstructorEmail: user.GetEmail(), Name: requestData.SectionName})
+	if err != nil {
+		http.Error(w, "db insertion error", 500)
+		log.Println(err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	io.WriteString(w, `{"success": "true"}`)
+}
+
+
 // ----- End WIP -----
 
 // This will delete all non-admin users, non-argument proofs, sections, and rosters, but not reset the auto_increment id
@@ -436,13 +474,17 @@ func main() {
 
 	// method user : POST : JSON -> [proof, proof, ...]
 	http.Handle("/proofs", tokenauth.WithValidToken(http.HandlerFunc(Env.getProofs)))
+	
+	http.Handle("/sections", tokenauth.WithValidToken(http.HandlerFunc(Env.getSections)))
+	http.Handle("/roster", tokenauth.WithValidToken(http.HandlerFunc(Env.getRoster)))
+	http.Handle("/add-section", tokenauth.WithValidToken(http.HandlerFunc(Env.addSection)))
+	// http.Handle("/add-roster", tokenauth.WithValidToken(http.HandlerFunc(Env.getRoster)))
+	http.Handle("/completed-proofs-by-section", tokenauth.WithValidToken(http.HandlerFunc(Env.getCompletedProofsBySection)))
 
 	// Get admin users -- this is a public endpoint, no token required
 	// Can be changed to require token, but would reduce cacheability
 	http.Handle("/admins", http.HandlerFunc(Env.getAdmins))
-	http.Handle("/sections", http.HandlerFunc(Env.getSections))
-	http.Handle("/roster", http.HandlerFunc(Env.getRoster))
-	http.Handle("/proofs-by-section", http.HandlerFunc(Env.getCompletedProofsBySection))
+	
 	log.Println("Server started")
 	log.Fatal(http.ListenAndServe("127.0.0.1:"+(*portPtr), nil))
 }

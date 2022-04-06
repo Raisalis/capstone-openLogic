@@ -122,7 +122,7 @@ func (p *ProofStore) GetAllAttemptedRepoProofs() (error, []Proof) {
 								      FROM proof INNER JOIN admin_repoproblems 
                                  ON proof.Premise = admin_repoproblems.Premise AND proof.Conclusion = admin_repoproblems.Conclusion
                               WHERE entryType = 'proof'
-                              ORDER BY proof.userSubmitted, proofName, timeSubmitted;`)
+                              ORDER BY proof.userSubmitted, proofName, proofCompleted;`)
 	if err != nil {
 		return err, nil
 	}
@@ -365,6 +365,11 @@ func (p *ProofStore) InsertUser(user User) (error){
 
 func (p *ProofStore) InsertSection(section Section) (error) {
    // log.Println("Inserting section record. . .")
+   if section.Name == "" {
+      err := errors.New("section insertion err: no name given")
+      return err
+   }
+
    insertSectionSQL := `INSERT INTO section(instructorEmail, name) VALUES (?, ?);`
    statement, err := p.db.Prepare(insertSectionSQL)
    if err != nil {
@@ -506,7 +511,6 @@ func (p *ProofStore) GetSections(userEmail string) ([]Section, error){
    return sections, nil
 }
 
-// ----- Work In Progress (WIP) ----- March 25 - 28
 // get students and tas from roster for a given section name
 func (p *ProofStore) GetRoster(sectionName string) ([]Roster, error) {
    selectRoserSql := `SELECT userEmail, role FROM roster WHERE sectionName = ? AND role != "instructor" ORDER BY role, userEmail`
@@ -587,7 +591,6 @@ func (p *ProofStore) GetCompletedProofsBySection(sectionName string) ([]RosterAn
 
    return completedProofs, nil
 }
-// ----- End WIP -----
 
 func (p *ProofStore) getUser(email string) (*User, error) {
    var user User
