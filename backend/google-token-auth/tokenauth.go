@@ -99,7 +99,7 @@ func Verify(token string) (TokenData, bool) {
 // Assumes the request is NOT cross-origin, and so does not send CORS headers
 func WithValidToken(next http.Handler) http.Handler {
 	return http.HandlerFunc(func (w http.ResponseWriter, req *http.Request) {
-		if req.Method != "POST" || req.Body == nil {
+		if req.Method == "POST" && req.Body == nil {
 			http.Error(w, "Request not authorized.", 401);
 			return
 		}
