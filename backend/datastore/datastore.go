@@ -345,6 +345,12 @@ func (p *ProofStore) MaintainAdmins(admins map[string]bool) {
 // pass a db reference connection from main to method with additional parameters
 func (p *ProofStore) InsertUser(user User) (error){
    // log.Println("Inserting user record. . .")
+   // check if user already exists, if so return nil
+   _, err := p.getUser(user.Email)
+   if err == nil {
+      return nil
+   }
+
    insertUserSQL := `INSERT INTO user(email, firstName, lastName, admin) VALUES (?, ?, ?, ?);`
    statement, err := p.db.Prepare(insertUserSQL)
    if err != nil {

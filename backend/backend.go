@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"flag"
+	"fmt"
 
 	"datastore"
 	"google-token-auth"
@@ -29,6 +30,8 @@ var (
 		"cohunter@csumb.edu": true,
 		"bkondo@csumb.edu":   true,
 		"elarson@csumb.edu": true,
+		"jasbaker@csumb.edu": true,
+		"mkammerer@csumb.edu": true,
 	}
 
 	// When started via systemd, WorkingDirectory is set to one level above the public_html directory
@@ -307,7 +310,13 @@ func (env *Env) addSection(w http.ResponseWriter, req *http.Request) {
 
 	err := env.ds.InsertSection(datastore.Section{InstructorEmail: user.GetEmail(), Name: requestData.SectionName})
 	if err != nil {
-		http.Error(w, "db insertion error", 500)
+		http.Error(w, "db section insertion error", 500)
+		log.Println(err)
+		return
+	}
+	err = env.ds.InsertRoster(datastore.Roster{SectionName: requestData.SectionName, UserEmail: user.GetEmail(), Role: "instructor"})
+	if err != nil {
+		http.Error(w, "db roster insertion error", 500)
 		log.Println(err)
 		return
 	}
@@ -316,7 +325,61 @@ func (env *Env) addSection(w http.ResponseWriter, req *http.Request) {
 	io.WriteString(w, `{"success": "true"}`)
 }
 
+func (env *Env) addRoster(w http.ResponseWriter, req *http.Request) {
+	log.Println("inside backend.go: addRoster")
 
+	if req.Method != "POST" || req.Body == nil {
+		http.Error(w, "Request not accepted.", 400)
+		return
+	}
+
+	// Accepted JSON fields must be defined here
+	type reqBody struct {
+		SectionName string `json:"sectionName"`
+		StudentEmails []string `json:"studentEmails"`
+		TaEmails []string `json:"taEmails"`
+	}
+
+	var requestData reqBody
+
+	decoder := json.NewDecoder(req.Body)
+
+	if err := decoder.Decode(&requestData); err != nil {
+		http.Error(w, "Unable to decode request body.", 400)
+		return
+	}
+
+	type insertionErr struct {
+		Email string `json:"email"`
+		Msg string `json:"msg"`
+	}
+	var insertionErrList []insertionErr
+	for _,email:= range requestData.StudentEmails {
+		// working here! adjust for InsertRoster - need to grab sectionName, email, and role
+		err := env.ds.InsertUser(datastore.User{Email: email, FirstName: "", LastName: "", Admin: 0})
+		err = env.ds.InsertRoster(datastore.Roster{SectionName: requestData.SectionName, UserEmail: email, Role: "student"})
+		if err != nil {
+			insertionErrList = append(insertionErrList, insertionErr{Email: email, Msg: err.Error()})
+		}
+	}
+	for _,email:= range requestData.TaEmails {
+		// working here! adjust for InsertRoster - need to grab sectionName, email, and role
+		err := env.ds.InsertUser(datastore.User{Email: email, FirstName: "", LastName: "", Admin: 1})
+		err = env.ds.InsertRoster(datastore.Roster{SectionName: requestData.SectionName, UserEmail: email, Role: "ta"})
+		if err != nil {
+			insertionErrList = append(insertionErrList, insertionErr{Email: email, Msg: err.Error()})
+		}
+	}
+	
+	if len(insertionErrList) != 0 {
+		w.Header().Set("Content-Type", "application/json")
+		io.WriteString(w, fmt.Sprintf(`{"success": "false", "errors": %+v}`, insertionErrList))
+		return 
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	io.WriteString(w, `{"success": "true"}`)
+}
 // ----- End WIP -----
 
 // This will delete all non-admin users, non-argument proofs, sections, and rosters, but not reset the auto_increment id
@@ -478,7 +541,7 @@ func main() {
 	http.Handle("/sections", tokenauth.WithValidToken(http.HandlerFunc(Env.getSections)))
 	http.Handle("/roster", tokenauth.WithValidToken(http.HandlerFunc(Env.getRoster)))
 	http.Handle("/add-section", tokenauth.WithValidToken(http.HandlerFunc(Env.addSection)))
-	// http.Handle("/add-roster", tokenauth.WithValidToken(http.HandlerFunc(Env.getRoster)))
+	http.Handle("/add-roster", tokenauth.WithValidToken(http.HandlerFunc(Env.addRoster)))
 	http.Handle("/completed-proofs-by-section", tokenauth.WithValidToken(http.HandlerFunc(Env.getCompletedProofsBySection)))
 
 	// Get admin users -- this is a public endpoint, no token required
