@@ -188,19 +188,38 @@ func (env *Env) getProofs(w http.ResponseWriter, req *http.Request) {
 
 func (env *Env) getSections(w http.ResponseWriter, req *http.Request) {
 	// log.Println("inside backend.go: getSections")
-	userEmail := req.URL.Query().Get("user")
+	// userEmail := req.URL.Query().Get("user")
 
-	if req.Method != "GET" || userEmail == "" {
+	if req.Method != "GET" || req.Body == nil {
 		http.Error(w, "Request not accepted.", 400)
 		return
 	}
 
-	log.Printf("USER: %q\n", userEmail)
+	// Accepted JSON fields must be defined here
+	type getSectionsRequest struct {
+		User string `json:"user"`
+	}
+	// CURRENT working place!!!
+	var requestData getSectionsRequest
+
+	decoder := json.NewDecoder(req.Body)
+
+	if err := decoder.Decode(&requestData); err != nil {
+		http.Error(w, "Unable to decode request body.", 400)
+		return
+	}
+
+	log.Printf("%+v", requestData)
+
+	if requestData.User == "" {
+		http.Error(w, "user required", 400)
+		return
+	}
 
 	var err error
 
 	var sections []datastore.Section
-	sections, err = env.ds.GetSections(userEmail)
+	sections, err = env.ds.GetSections(requestData.User)
 	if err != nil {
 		http.Error(w, "db access error", 500)
 		log.Println(err)
@@ -538,6 +557,7 @@ func main() {
 	// method user : POST : JSON -> [proof, proof, ...]
 	http.Handle("/proofs", tokenauth.WithValidToken(http.HandlerFunc(Env.getProofs)))
 	
+	// spr2022 GETs : use JSON req.body for arguments 
 	http.Handle("/sections", tokenauth.WithValidToken(http.HandlerFunc(Env.getSections)))
 	http.Handle("/roster", tokenauth.WithValidToken(http.HandlerFunc(Env.getRoster)))
 	http.Handle("/add-section", tokenauth.WithValidToken(http.HandlerFunc(Env.addSection)))
