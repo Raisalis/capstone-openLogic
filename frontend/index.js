@@ -159,6 +159,13 @@ async function insertClass(){
    
    //waiting for tables to be ready to do rest
    //will work on the rest after figuring out how to get function call properly
+   backendPOST('add-roster', {sectionName: name, studentEmails: student}).then(
+      (data) => {
+         console.log("loadProofs", data);
+         repositoryData.studentNames = data;       // would need to add 'studentNames': [] to the const repositoryData at the top of index.js
+   
+         }, console.log
+   );
 }
 
 async function dropClass(){
@@ -166,7 +173,8 @@ async function dropClass(){
    if(confirm("Are you sure you want to drop the whole class?")==true){
       //waiting for tables to be ready to do rest
       //temporary idea
-      //RemoveSection(x);
+      
+      // backendPOST('drop-roster', {sectionName:x});
    }
 }
 
@@ -174,9 +182,9 @@ async function dropStudent(){
    var deadToClass=document.getElementById("sectionToRemoveStudent")
    var deadStudent= document.getElementById("dropStudent");
    //waiting for tables to be ready to do rest
-   // if(confirm("Are you sure you want to drop this student?")==true){
-   //    RemoveFromRoster(deadToClass,deadStudent);
-   // }
+   if(confirm("Are you sure you want to drop this student?")==true){
+      //backendPOST('drop-roster', {sectionName:deadToClass, studentEmails:deadStudent});
+   }
    
 }
 
