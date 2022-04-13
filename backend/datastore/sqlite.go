@@ -117,12 +117,11 @@ func createTables(db *sql.DB) (error) {
 	}
 
 	createAssignmentTableSQL := `CREATE TABLE IF NOT EXISTS assignment (
-		instructorEmail TEXT,
 		sectionName TEXT,
 		name TEXT,
 		proofIds TEXT,
-		PRIMARY KEY (instructorEmail, sectionName, name),
-		FOREIGN KEY (instructorEmail) REFERENCES user (email),
+		visibility TEXT,
+		PRIMARY KEY (sectionName, name),
 		FOREIGN KEY (sectionName) REFERENCES section (name)
 	);`
 
