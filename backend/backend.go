@@ -139,6 +139,7 @@ func (env *Env) getProofs(w http.ResponseWriter, req *http.Request) {
 
 	var err error
 	var proofs []datastore.Proof
+	var sectionProofs []datastore.SectionProofs
 
 	switch requestData.Selection {
 	case "user":
@@ -147,7 +148,8 @@ func (env *Env) getProofs(w http.ResponseWriter, req *http.Request) {
 
 	case "repo":
 		log.Println("repo selection")
-		err, proofs = env.ds.GetRepoProofs()
+		// get repo problems associated with the sections that the user is in
+		err, sectionProofs = env.ds.GetRepoProofs(user)
 
 	case "completedrepo":
 		log.Println("completedrepo selection")
@@ -173,7 +175,13 @@ func (env *Env) getProofs(w http.ResponseWriter, req *http.Request) {
 	}
 
 	log.Printf("%+v", proofs)
-	userProofsJSON, err := json.Marshal(proofs)
+	var userProofsJSON []byte
+	if proofs != nil {
+		userProofsJSON, err = json.Marshal(proofs)
+	} else {
+		userProofsJSON, err = json.Marshal(sectionProofs)
+	}
+	
 	if err != nil {
 		http.Error(w, "json marshal error", 500)
 		log.Print(err)
@@ -423,7 +431,7 @@ func (env *Env) populateTestProofRow() {
 		UserSubmitted: "gbruns@csumb.edu",
 		ProofName: "Repository - Code Test",
 		ProofType: "prop",
-		Premise: []string{"P", "P -> Q", "Q -> R", "R -> S"},
+		Premise: []string{"P", "P → Q", "Q → R", "R → S"},
 		Logic: []string{},
 		Rules: []string{},
 		EverCompleted: "false",
@@ -443,7 +451,7 @@ func (env *Env) populateTestProofRow() {
 		UserSubmitted: "jduboiTEST@csumb.edu",
 		ProofName: "Repository - Code Test",
 		ProofType: "prop",
-		Premise: []string{"P", "P -> Q", "Q -> R", "R -> S"},
+		Premise: []string{"P", "P → Q", "Q → R", "R → S"},
 		Logic: []string{"[{\"wffstr\":\"P\",\"jstr\":\"Pr\"},{\"wffstr\":\"P → Q\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q → R\",\"jstr\":\"Pr\"},{\"wffstr\":\"R → S\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q\",\"jstr\":\"1, 2 →E\"},{\"wffstr\":\"R\",\"jstr\":\"3, 5 →E\"}]"},
 		Rules: []string{},
 		EverCompleted: "false",
@@ -463,7 +471,7 @@ func (env *Env) populateTestProofRow() {
 		UserSubmitted: "jduboisTEST@csumb.edu",
 		ProofName: "Repository - Code Test",
 		ProofType: "prop",
-		Premise: []string{"P", "P -> Q", "Q -> R", "R -> S"},
+		Premise: []string{"P", "P → Q", "Q → R", "R → S"},
 		Logic: []string{"[{\"wffstr\":\"P\",\"jstr\":\"Pr\"},{\"wffstr\":\"P → Q\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q → R\",\"jstr\":\"Pr\"},{\"wffstr\":\"R → S\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q\",\"jstr\":\"1, 2 →E\"},{\"wffstr\":\"R\",\"jstr\":\"3, 5 →E\"},{\"wffstr\":\"S\",\"jstr\":\"4, 6 →E\"}]"},
 		Rules: []string{},
 		EverCompleted: "true",
@@ -478,7 +486,7 @@ func (env *Env) populateTestProofRow() {
 		UserSubmitted: "bkondo@csumb.edu",
 		ProofName: "Repository - Code Test 2",
 		ProofType: "prop",
-		Premise: []string{"P", "P -> Q", "Q -> R"},
+		Premise: []string{"P", "P → Q", "Q → R"},
 		Logic: []string{},
 		Rules: []string{},
 		EverCompleted: "false",
@@ -493,7 +501,7 @@ func (env *Env) populateTestProofRow() {
 		UserSubmitted: "jduboisTEST@csumb.edu",
 		ProofName: "Repository - Code Test 2",
 		ProofType: "prop",
-		Premise: []string{"P", "P -> Q", "Q -> R"},
+		Premise: []string{"P", "P → Q", "Q → R"},
 		Logic: []string{"[{\"wffstr\":\"P\",\"jstr\":\"Pr\"},{\"wffstr\":\"P → Q\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q → R\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q\",\"jstr\":\"1, 2 →E\"},{\"wffstr\":\"R\",\"jstr\":\"3, 5 →E\"}]"},
 		Rules: []string{},
 		EverCompleted: "false",
@@ -508,7 +516,7 @@ func (env *Env) populateTestProofRow() {
 		UserSubmitted: "t1deleteTEST@csumb.edu",
 		ProofName: "Repository - Code Test 2",
 		ProofType: "prop",
-		Premise: []string{"P", "P -> Q", "Q -> R"},
+		Premise: []string{"P", "P → Q", "Q → R"},
 		Logic: []string{"[{\"wffstr\":\"P\",\"jstr\":\"Pr\"},{\"wffstr\":\"P → Q\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q → R\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q\",\"jstr\":\"1, 2 →E\"}]"},
 		Rules: []string{},
 		EverCompleted: "true",

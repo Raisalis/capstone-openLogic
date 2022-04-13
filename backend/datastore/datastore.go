@@ -31,6 +31,11 @@ type Proof struct {
 	TimeSubmitted  string
 }
 
+type SectionProofs struct {
+   SectionName string
+   ProofList []Proof
+}
+
 //type ProofStore interface {
 //	GetByUser(string) Proof
 //}
@@ -52,7 +57,7 @@ type IProofStore interface {
 	InsertRoster(rosterRow Roster) error
    GetAdmins() ([]string)
 	GetAllAttemptedRepoProofs() (error, []Proof)
-	GetRepoProofs() (error, []Proof)
+	GetRepoProofs(user UserWithEmail) (error, []SectionProofs)
 	GetUserProofs(user UserWithEmail) (error, []Proof)
 	GetUserCompletedProofs(user UserWithEmail) (error, []Proof)
    GetSections(userEmail string) ([]Section, error)
@@ -137,22 +142,55 @@ func (p *ProofStore) GetAllAttemptedRepoProofs() (error, []Proof) {
 	return getProofsFromRows(rows)
 }
 
-func (p *ProofStore) GetRepoProofs() (error, []Proof) {
-	stmt, err := p.db.Prepare(`SELECT id, entryType, userSubmitted, proofName, proofType, Premise, Logic, Rules, everCompleted, proofCompleted, timeSubmitted, Conclusion, repoProblem 
-                              FROM proof WHERE repoProblem = 'true' AND userSubmitted IN (SELECT email FROM user WHERE admin = 1) 
-                              ORDER BY userSubmitted`)
-	if err != nil {
+func (p *ProofStore) GetRepoProofs(user UserWithEmail) (error, []SectionProofs) {
+	// stmt, err := p.db.Prepare(`SELECT id, entryType, userSubmitted, proofName, proofType, Premise, Logic, Rules, everCompleted, proofCompleted, timeSubmitted, Conclusion, repoProblem 
+   //                            FROM proof WHERE repoProblem = 'true' AND userSubmitted IN (SELECT email FROM user WHERE admin = 1) 
+   //                            ORDER BY userSubmitted`)
+	// if err != nil {
+	// 	return err, nil
+	// }
+	// defer stmt.Close()
+
+	// rows, err := stmt.Query(user.GetEmail())
+	// if err != nil {
+	// 	return err, nil
+	// }
+	// defer rows.Close()
+
+	// return getProofsFromRows(rows)
+
+   // ---- WIP Apr 13
+   sections, err := p.GetSections(user.GetEmail())
+   if err != nil {
 		return err, nil
 	}
-	defer stmt.Close()
 
-	rows, err := stmt.Query()
-	if err != nil {
-		return err, nil
-	}
-	defer rows.Close()
+   stmt, err := p.db.Prepare(`SELECT id, entryType, userSubmitted, proofName, proofType, Premise, Logic, Rules, everCompleted, proofCompleted, timeSubmitted, Conclusion, repoProblem 
+                              FROM proof JOIN section on userSubmitted = instructorEmail
+                              WHERE repoProblem = 'true' AND userSubmitted IN (SELECT instructorEmail FROM section WHERE name = ?) 
+                              ORDER BY proofName`)
 
-	return getProofsFromRows(rows)
+   if err != nil {
+      return err, nil
+   }
+   defer stmt.Close()
+
+   var repoList []SectionProofs
+   var sectionProofList SectionProofs
+   for _,section:= range sections {
+      sectionProofList.SectionName = section.Name
+
+      rows, err := stmt.Query(section.Name)
+      if err != nil {
+         return err, nil
+      }
+      defer rows.Close()
+
+      _,sectionProofList.ProofList = getProofsFromRows(rows)
+      repoList = append(repoList, sectionProofList)
+   }
+
+   return nil, repoList
 }
 
 func (p *ProofStore) GetUserProofs(user UserWithEmail) (error, []Proof) {
@@ -490,8 +528,8 @@ func (p *ProofStore) GetAdmins() ([]string) {
 
 // return array of current sections
 func (p *ProofStore) GetSections(userEmail string) ([]Section, error){
-   getSectionsSQL := `SELECT * FROM section where instructorEmail = ? ORDER BY name;`
-   statement, err := p.db.Prepare(getSectionsSQL)
+   statement, err := p.db.Prepare(`SELECT instructorEmail, name FROM section JOIN roster ON section.name = roster.sectionName 
+                                    WHERE roster.userEmail = ?`)
    if err != nil {
       log.Printf(`error: GetSections: preparation of getSectionsSQL statement
                   -- %s`, err.Error())
@@ -506,7 +544,7 @@ func (p *ProofStore) GetSections(userEmail string) ([]Section, error){
       return nil, err
    }
    defer rows.Close()
-
+   
    var sections []Section
    for rows.Next() { // Iterate and fetch the records from result cursor
       var section Section
