@@ -212,11 +212,21 @@
                     </div>
                     <button onclick="showDrop()">Student to Drop</button>
                     <div id="hiddenDrop">
-                      
-                    <input type="text" id="dropStudent" placeholder="Student to drop">
-                    <button onclick="dropStudent()">Drop Student</button>
-                    <button onclick="dropClass()">Drop Class</button>
-                    
+                      <input type="text" name="" id="sectionToRemoveStudent" placeholder="Class Section">
+                      <br>
+                      <input type="text" id="dropStudent" placeholder="Student to drop (by email)">
+                      <br>
+                      <button onclick="dropStudent()">Drop Student</button>
+                      <div>
+                        
+
+                    <button onclick="showDropClass()">Drop A Class</button>
+                      <div id="howToDropClass">
+                        <br>
+                        <input type="text" name="" id="dropSectionName" placeholder="enter section name to drop">
+                        <br>
+                        <button onclick="dropClass()">Drop Class</button>
+                      </div>
                     </div>
                     
 
@@ -231,8 +241,13 @@
                           
                           <button id="addStudent">Add Student/Class</button>
                           <div id="studentAddition">
-                            <input type="text" id="className" placeholder="Class name: major, section, semester">
-                            <textarea name="studentAdd" id="involveStudents" cols="1" rows="40" placeholder="Enter student(s)"></textarea>
+                            <input type="text" id="className" size="40" placeholder="Class name, major, section, semester">
+                            <br>
+                            
+                            
+                            <!--<input type="text" placeholder="Amount of students">-->
+                            <input name="studentAdd" id="involveStudents" placeholder="Enter student email"></input>
+                            <br>
                             <button onclick="insertClass()">Confirm Students</button>
                           </div> 
 
