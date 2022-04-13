@@ -112,7 +112,7 @@ class User {
 function ViewClasses(){
 
 
-   backendPOST('User', {selection: 'Email'}).then(   // 'class' and 'students' here is referring to whatever the table/data is actually called, i can't remember off the top of my head
+   backendGET('User', {selection: 'Email'}).then(   // 'class' and 'students' here is referring to whatever the table/data is actually called, i can't remember off the top of my head
    (data) => {
       console.log("loadStudentNames", data);
       repositoryData.studentNames = data;       // would need to add 'studentNames': [] to the const repositoryData at the top of index.js
@@ -131,7 +131,7 @@ function ViewClasses(){
       }, console.log
    );
 
-   backendPOST('Proof', {selection: 'ProofName'}).then(   // 'class' and 'students' here is referring to whatever the table/data is actually called, i can't remember off the top of my head
+   backendGET('Proof', {selection: 'ProofName'}).then(   // 'class' and 'students' here is referring to whatever the table/data is actually called, i can't remember off the top of my head
    (data) => {
       console.log("loadProofs", data);
       repositoryData.proofAverages = data;       // would need to add 'studentNames': [] to the const repositoryData at the top of index.js
@@ -153,27 +153,31 @@ function ViewClasses(){
 
 
 
-function insertClass(){
+async function insertClass(){
    var name=document.getElementById("className");
-   var students=[];
-   $.each($('#involveStudents').val().split(/\n/), function(i, line){
-      if(line){
-         students.push(line);
-      }
-   });
+   var student= document.getElementById("involvedStudents");
+   
    //waiting for tables to be ready to do rest
+   //will work on the rest after figuring out how to get function call properly
 }
 
-function dropClass(){
-   var x;
+async function dropClass(){
+   var x=document.getElementById("dropSectionName");
    if(confirm("Are you sure you want to drop the whole class?")==true){
       //waiting for tables to be ready to do rest
+      //temporary idea
+      //RemoveSection(x);
    }
 }
 
-function dropStudent(){
+async function dropStudent(){
+   var deadToClass=document.getElementById("sectionToRemoveStudent")
    var deadStudent= document.getElementById("dropStudent");
    //waiting for tables to be ready to do rest
+   // if(confirm("Are you sure you want to drop this student?")==true){
+   //    RemoveFromRoster(deadToClass,deadStudent);
+   // }
+   
 }
 
 function showDrop(){
@@ -185,7 +189,14 @@ function showDrop(){
    }
 }
 
-
+function showDropClass(){
+   var dropper= document.getElementById("howToDropClass");
+   if(dropper.style.display=== "block"){
+      dropper.style.display= "none";
+   }else{
+      dropper.style.display="block";
+   }
+}
 
 // Verifies signed in and valid token, then calls authenticatedBackendPOST
 // Returns a promise which resolves to the response body or undefined
@@ -209,11 +220,52 @@ function backendPOST(path_str, data_obj) {
    }
 }
 
+function backendGET(path_str, data_obj) {
+   if (!User.isSignedIn()) {
+      console.warn('Cannot send POST request to backend from unknown user.');
+      if (sessionStorage.getItem('loginPromptShown') == null) {
+	 alert('You are not signed in.\nTo save your work, please sign in and then try again, or refresh the page.');
+	 sessionStorage.setItem('loginPromptShown', "true");
+      }
+      
+      return Promise.reject( 'Unauthenticated user' );
+   }
+
+   if (User.isTokenExpired()) {
+      console.warn('Token expired; attempting to refresh token.');
+      return User.refreshToken().then(
+	 (googleUser) => authenticatedBackendGET(path_str, data_obj, googleUser.id_token));
+   } else {
+      return authenticatedBackendGET(path_str, data_obj, User.getIdToken());
+   }
+}
+
 // Send a POST request to the backend, with auth token included
 function authenticatedBackendPOST(path_str, data_obj, id_token) {
    return $.ajax({
       url: '/backend/' + path_str,
       method: 'POST',
+      data: JSON.stringify(data_obj),
+      dataType: 'json',
+      contentType: 'application/json; charset=utf-8',
+      headers: {
+	 'X-Auth-Token': id_token
+      }
+   }).then(
+      (data, textStatus, jqXHR) => {
+	 return data;
+      },
+      (jqXHR, textStatus, errorThrown) => {
+	 console.error(textStatus, errorThrown);
+      }
+   )
+}
+
+
+function authenticatedBackendGET(path_str, data_obj, id_token) {
+   return $.ajax({
+      url: '/backend/' + path_str,
+      method: 'GET',
       data: JSON.stringify(data_obj),
       dataType: 'json',
       contentType: 'application/json; charset=utf-8',

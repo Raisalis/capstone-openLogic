@@ -142,3 +142,7 @@ textarea{
 #hiddenDrop{
 	display: none;
 }
+
+#howToDropClass{
+	display: none;
+}
