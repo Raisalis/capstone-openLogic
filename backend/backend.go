@@ -25,6 +25,7 @@ var (
 	}
 
 	admin_users = map[string]bool{
+		"abiblarz@csumb.edu": true,
         "sislam@csumb.edu":   true,
 		"gbruns@csumb.edu":   true,
 		"cohunter@csumb.edu": true,
@@ -51,6 +52,7 @@ type FailedRoster struct {
    errorMsg string
 }
 
+// return a list of current admin emails
 func (env *Env) getAdmins(w http.ResponseWriter, req *http.Request) {
 	type adminUsers struct {
 		Admins []string
@@ -73,6 +75,7 @@ func (env *Env) getAdmins(w http.ResponseWriter, req *http.Request) {
 	io.WriteString(w, string(output))
 }
 
+// add a proof entry or update a preexisting proof entry
 func (env *Env) saveProof(w http.ResponseWriter, req *http.Request) {
 	var user userWithEmail
 	user = req.Context().Value("tok").(userWithEmail)
@@ -194,6 +197,7 @@ func (env *Env) getProofs(w http.ResponseWriter, req *http.Request) {
 	log.Printf("%+v", req.URL.Query())
 }
 
+// return section entries given a userEmail
 func (env *Env) getSections(w http.ResponseWriter, req *http.Request) {
 	// log.Println("inside backend.go: getSections")
 	// userEmail := req.URL.Query().Get("user")
@@ -248,6 +252,7 @@ func (env *Env) getSections(w http.ResponseWriter, req *http.Request) {
 	// fmt.Printf("All Sections JSON: %+v\n", sectionsJSON)
 }
 
+// return student and ta roster entries given a sectionName
 func (env *Env) getRoster(w http.ResponseWriter, req *http.Request) {
 	// log.Println("inside backend.go: getRoster")
 	sectionName := req.URL.Query().Get("section")
@@ -280,6 +285,7 @@ func (env *Env) getRoster(w http.ResponseWriter, req *http.Request) {
 	// log.Printf("marshalled rosterJSON: %+v\n", rosterJSON)
 }
 
+// return proof entries completed by students associated with a given section 
 func (env *Env) getCompletedProofsBySection(w http.ResponseWriter, req *http.Request) {
 	log.Println("inside backend.go: getCompletedProofsBySection")
 	sectionName := req.URL.Query().Get("section")
@@ -309,7 +315,6 @@ func (env *Env) getCompletedProofsBySection(w http.ResponseWriter, req *http.Req
 	io.WriteString(w, string(proofsJSON))
 }
 
-// ----- Work In Progress (WIP) ----- April 6
 // add a section based on current admin user and given sectionName
 func (env *Env) addSection(w http.ResponseWriter, req *http.Request) {
 	log.Println("inside backend.go: addSection")
@@ -352,6 +357,7 @@ func (env *Env) addSection(w http.ResponseWriter, req *http.Request) {
 	io.WriteString(w, `{"success": "true"}`)
 }
 
+// add a roster entry: requires sectionName, studentEmails, and taEmails 
 func (env *Env) addRoster(w http.ResponseWriter, req *http.Request) {
 	log.Println("inside backend.go: addRoster")
 
@@ -397,17 +403,86 @@ func (env *Env) addRoster(w http.ResponseWriter, req *http.Request) {
 			insertionErrList = append(insertionErrList, insertionErr{Email: email, Msg: err.Error()})
 		}
 	}
+
+	insertionErrJSON, err := json.Marshal(insertionErrList)
+	if err != nil {
+		http.Error(w, "json marshal error", 500)
+		log.Print(err)
+		return
+	}
 	
 	if len(insertionErrList) != 0 {
 		w.Header().Set("Content-Type", "application/json")
-		io.WriteString(w, fmt.Sprintf(`{"success": "false", "errors": %+v}`, insertionErrList))
+		io.WriteString(w, fmt.Sprintf(`{"success": "false", "errors": %+v}`, string(insertionErrJSON)))
 		return 
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	io.WriteString(w, `{"success": "true"}`)
 }
-// ----- End WIP -----
+
+// remove 1 roster entry, based on user email and section name
+func (env *Env) removeFromRoster(w http.ResponseWriter, req *http.Request) {
+	if req.Method != "POST" || req.Body == nil {
+		http.Error(w, "Request not accepted.", 400)
+		return
+	}
+
+	type reqBody struct {
+		SectionName string `json:"sectionName"`
+		UserEmail string `json:"userEmail"`
+	}
+
+	var requestData reqBody
+
+	decoder := json.NewDecoder(req.Body)
+
+	if err := decoder.Decode(&requestData); err != nil {
+		http.Error(w, "Unable to decode request body.", 400)
+		return
+	}
+
+	err := env.ds.RemoveFromRoster(requestData.SectionName, requestData.UserEmail)
+	if err != nil {
+		http.Error(w, "db roster deletion error", 500)
+		log.Println(err)
+		return
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	io.WriteString(w, `{"success": "true"}`)
+}
+
+// remove section entry and associated roster entries, given a section name
+func (env *Env) removeSection(w http.ResponseWriter, req *http.Request) {
+	if req.Method != "POST" || req.Body == nil {
+		http.Error(w, "Request not accepted.", 400)
+		return
+	}
+
+	type reqBody struct {
+		SectionName string `json:"sectionName"`
+	}
+
+	var requestData reqBody
+
+	decoder := json.NewDecoder(req.Body)
+
+	if err := decoder.Decode(&requestData); err != nil {
+		http.Error(w, "Unable to decode request body.", 400)
+		return
+	}
+
+	err := env.ds.RemoveSection(requestData.SectionName)
+	if err != nil {
+		http.Error(w, "db section deletion error", 500)
+		log.Println(err)
+		return
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	io.WriteString(w, `{"success": "true"}`)
+}
 
 // This will delete all non-admin users, non-argument proofs, sections, and rosters, but not reset the auto_increment id
 func (env *Env) clearDatabase() {
@@ -568,9 +643,13 @@ func main() {
 	// spr2022 GETs : use JSON req.body for arguments 
 	http.Handle("/sections", tokenauth.WithValidToken(http.HandlerFunc(Env.getSections)))
 	http.Handle("/roster", tokenauth.WithValidToken(http.HandlerFunc(Env.getRoster)))
+	http.Handle("/completed-proofs-by-section", tokenauth.WithValidToken(http.HandlerFunc(Env.getCompletedProofsBySection)))
+
+	// spr2022 POST (delete has also been treated as POST) : use JSON req.body for arguments 
 	http.Handle("/add-section", tokenauth.WithValidToken(http.HandlerFunc(Env.addSection)))
 	http.Handle("/add-roster", tokenauth.WithValidToken(http.HandlerFunc(Env.addRoster)))
-	http.Handle("/completed-proofs-by-section", tokenauth.WithValidToken(http.HandlerFunc(Env.getCompletedProofsBySection)))
+	http.Handle("/remove-from-roster", tokenauth.WithValidToken(http.HandlerFunc(Env.removeFromRoster)))
+	http.Handle("/remove-section", tokenauth.WithValidToken(http.HandlerFunc(Env.removeSection)))
 
 	// Get admin users -- this is a public endpoint, no token required
 	// Can be changed to require token, but would reduce cacheability
