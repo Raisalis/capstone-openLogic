@@ -402,17 +402,19 @@ function loadRepoProofs() {
             new Option('Select...', null, true, true)
 	 );
 
-	 let currentRepoUser;
-	 (data) && data.forEach( proof => {
-            if (currentRepoUser !== proof.UserSubmitted) {
-               currentRepoUser = proof.UserSubmitted;
+	 let currentSectionName;
+	 (data) && data.forEach( section => {
+            if (currentSectionName !== section.SectionName) {
+               currentSectionName = section.SectionName;
                elem.appendChild(
-		  new Option(proof.UserSubmitted, null, false, false)
+		            new Option(section.SectionName, null, false, false)
                );
             }
-            elem.appendChild(
-               new Option(proof.ProofName, proof.Id)
-            );
+            section.ProofList.forEach( proof => {
+               elem.appendChild(
+                  new Option(proof.ProofName, proof.Id)
+               );
+            });
 	 });
 
 	 // Make section headers not selectable
