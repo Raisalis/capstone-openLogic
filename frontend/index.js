@@ -410,11 +410,13 @@ function loadRepoProofs() {
 	 (data) && data.forEach( section => {
             if (currentSectionName !== section.SectionName) {
                currentSectionName = section.SectionName;
+               console.log(section.SectionName);
                elem.appendChild(
 		            new Option(section.SectionName, null, false, false)
                );
             }
             section.ProofList.forEach( proof => {
+               console.log(proof);
                elem.appendChild(
                   new Option(proof.ProofName, proof.Id)
                );
