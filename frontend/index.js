@@ -453,7 +453,7 @@ $(document).ready(function() {
           Rules = [];
       
       let entryType = "";
-      if (adminUsers.indexOf(User.email)) {
+      if (adminUsers.indexOf(User.email) && proofName.startsWith('Repository - ')) {
          entryType = "argument";
       } else {
          entryType = "proof";
