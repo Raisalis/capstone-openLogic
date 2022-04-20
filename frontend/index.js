@@ -173,21 +173,25 @@ async function insertClass(){
 }
 
 async function dropClass(){
-   var x=document.getElementById.value("dropSectionName");
+   var x=document.getElementById("dropSectionName").value;
    if(confirm("Are you sure you want to drop the whole class?")==true){
       //waiting for tables to be ready to do rest
       //temporary idea
-      
+      backendPOST('remove-roster',{sectionName: x});
       // backendPOST('add-roster', {sectionName:x});
+
+      alert("Class deleted");
    }
 }
 
 async function dropStudent(){
-   var deadToClass=document.getElementById.value("sectionToRemoveStudent")
-   var deadStudent= document.getElementById.value("dropStudent");
+   var deadToClass=document.getElementById("sectionToRemoveStudent").value;
+   var deadStudent= document.getElementById("dropStudent").value;
    //waiting for tables to be ready to do rest
    if(confirm("Are you sure you want to drop this student?")==true){
       //backendPOST('add-roster', {sectionName:deadToClass, studentEmails:deadStudent});
+      backendPOST("remove-from-roster", {sectionName:deadToClass, userEmail:deadStudent});
+      alert("Student removed");
    }
    
 }
