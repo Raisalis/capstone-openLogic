@@ -159,13 +159,20 @@ async function insertClass(){
    console.log(students);
    
    //will work on the rest after figuring out how to get function call properly
+
+   await backendPOST('add-section',{sectionName:name}).then(
+      (data) =>{
+         console.log('add section',data);
+      }
+   );
    backendPOST('add-roster', {sectionName: name, studentEmails: students}).then(
       (data) => {
-         console.log("loadProofs", data);
-         repositoryData.studentNames = data;       
+         console.log("add roster", data);
+                
          
-      }, console.log
+      }
    );
+   
 
    
       //InsertSection(name, students);
