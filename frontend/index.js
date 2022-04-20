@@ -112,10 +112,10 @@ class User {
 function ViewClasses(){
 
 
-   backendGET('User', {selection: 'Email'}).then(   // 'class' and 'students' here is referring to whatever the table/data is actually called, i can't remember off the top of my head
+   backendGET('User', {selection: 'Email'}).then(   
    (data) => {
       console.log("loadStudentNames", data);
-      repositoryData.studentNames = data;       // would need to add 'studentNames': [] to the const repositoryData at the top of index.js
+      repositoryData.studentNames = data;       
 
       let elem = document.querySelector('#studentNameSelect');
       $(elem).empty();
@@ -131,10 +131,10 @@ function ViewClasses(){
       }, console.log
    );
 
-   backendGET('Proof', {selection: 'ProofName'}).then(   // 'class' and 'students' here is referring to whatever the table/data is actually called, i can't remember off the top of my head
+   backendGET('Proof', {selection: 'ProofName'}).then(   
    (data) => {
       console.log("loadProofs", data);
-      repositoryData.proofAverages = data;       // would need to add 'studentNames': [] to the const repositoryData at the top of index.js
+      repositoryData.proofAverages = data;      
 
       let elem = document.querySelector('#proofNameSelect');
       $(elem).empty();
@@ -154,36 +154,40 @@ function ViewClasses(){
 
 
 async function insertClass(){
-   var name=document.getElementById("className");
-   var student= document.getElementById("involvedStudents");
+   var name=document.getElementById("className").value;
+   var students= $("#involveStudents").value.split(",");
+   console.log(students);
    
-   //waiting for tables to be ready to do rest
    //will work on the rest after figuring out how to get function call properly
-   backendPOST('add-roster', {sectionName: name, studentEmails: student}).then(
+   backendPOST('add-roster', {sectionName: name, studentEmails: students}).then(
       (data) => {
          console.log("loadProofs", data);
-         repositoryData.studentNames = data;       // would need to add 'studentNames': [] to the const repositoryData at the top of index.js
-   
-         }, console.log
+         repositoryData.studentNames = data;       
+         
+      }, console.log
    );
+
+   
+      //InsertSection(name, students);
+      alert("Your submission was accepted");
 }
 
 async function dropClass(){
-   var x=document.getElementById("dropSectionName");
+   var x=document.getElementById.value("dropSectionName");
    if(confirm("Are you sure you want to drop the whole class?")==true){
       //waiting for tables to be ready to do rest
       //temporary idea
       
-      // backendPOST('drop-roster', {sectionName:x});
+      // backendPOST('add-roster', {sectionName:x});
    }
 }
 
 async function dropStudent(){
-   var deadToClass=document.getElementById("sectionToRemoveStudent")
-   var deadStudent= document.getElementById("dropStudent");
+   var deadToClass=document.getElementById.value("sectionToRemoveStudent")
+   var deadStudent= document.getElementById.value("dropStudent");
    //waiting for tables to be ready to do rest
    if(confirm("Are you sure you want to drop this student?")==true){
-      //backendPOST('drop-roster', {sectionName:deadToClass, studentEmails:deadStudent});
+      //backendPOST('add-roster', {sectionName:deadToClass, studentEmails:deadStudent});
    }
    
 }
@@ -402,17 +406,21 @@ function loadRepoProofs() {
             new Option('Select...', null, true, true)
 	 );
 
-	 let currentRepoUser;
-	 (data) && data.forEach( proof => {
-            if (currentRepoUser !== proof.UserSubmitted) {
-               currentRepoUser = proof.UserSubmitted;
+	 let currentSectionName;
+	 (data) && data.forEach( section => {
+            if (currentSectionName !== section.SectionName) {
+               currentSectionName = section.SectionName;
+               console.log(section.SectionName);
                elem.appendChild(
-		  new Option(proof.UserSubmitted, null, false, false)
+		            new Option(section.SectionName, null, false, false)
                );
             }
-            elem.appendChild(
-               new Option(proof.ProofName, proof.Id)
-            );
+            section.ProofList.forEach( proof => {
+               console.log(proof);
+               elem.appendChild(
+                  new Option(proof.ProofName, proof.Id)
+               );
+            });
 	 });
 
 	 // Make section headers not selectable
