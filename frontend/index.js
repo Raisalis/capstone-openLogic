@@ -155,8 +155,8 @@ function ViewClasses(){
 
 async function insertClass(){
    var name=document.getElementById("className").value;
-   var students= $("#involvedStudents").value.split(",");
-   
+   var students= $("#involvedStudents").value;
+   console.log(students);
    
    //will work on the rest after figuring out how to get function call properly
    backendPOST('add-roster', {sectionName: name, studentEmails: students}).then(
