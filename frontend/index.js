@@ -177,8 +177,8 @@ async function dropClass(){
    if(confirm("Are you sure you want to drop the whole class?")==true){
       //waiting for tables to be ready to do rest
       //temporary idea
-      backendPOST('remove-roster',{sectionName: x});
-      // backendPOST('add-roster', {sectionName:x});
+      backendPOST('remove-section',{sectionName: x});
+      
 
       alert("Class deleted");
    }
