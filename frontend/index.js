@@ -155,7 +155,7 @@ function ViewClasses(){
 
 async function insertClass(){
    var name=document.getElementById("className").value;
-   var students= $("#involveStudents").value.split(",");
+   var students= $("#involveStudents").val().split(",");
    console.log(students);
    
    //will work on the rest after figuring out how to get function call properly
@@ -174,6 +174,7 @@ async function insertClass(){
 
 async function dropClass(){
    var x=document.getElementById("dropSectionName").value;
+   console.log(x);
    if(confirm("Are you sure you want to drop the whole class?")==true){
       //waiting for tables to be ready to do rest
       //temporary idea
@@ -187,9 +188,11 @@ async function dropClass(){
 async function dropStudent(){
    var deadToClass=document.getElementById("sectionToRemoveStudent").value;
    var deadStudent= document.getElementById("dropStudent").value;
+   console.log(deadStudent);
+   console.log(deadStudent);
    //waiting for tables to be ready to do rest
    if(confirm("Are you sure you want to drop this student?")==true){
-      //backendPOST('add-roster', {sectionName:deadToClass, studentEmails:deadStudent});
+      
       backendPOST("remove-from-roster", {sectionName:deadToClass, userEmail:deadStudent});
       alert("Student removed");
    }
@@ -213,6 +216,11 @@ function showDropClass(){
       dropper.style.display="block";
    }
 }
+
+
+// function showClassAssignment(){
+//    backendGET()
+// }
 
 // Verifies signed in and valid token, then calls authenticatedBackendPOST
 // Returns a promise which resolves to the response body or undefined
