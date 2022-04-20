@@ -194,8 +194,8 @@ async function dropClass(){
 
 async function dropStudent(){
    var deadToClass=document.getElementById("sectionToRemoveStudent").value;
-   var deadStudent= document.getElementById("dropStudent").value;
-   console.log(deadStudent);
+   var deadStudent= document.getElementById("dropKid").value;
+   console.log(deadToClass);
    console.log(deadStudent);
    //waiting for tables to be ready to do rest
    if(confirm("Are you sure you want to drop this student?")==true){
@@ -253,7 +253,7 @@ function backendPOST(path_str, data_obj) {
 
 function backendGET(path_str, data_obj) {
    if (!User.isSignedIn()) {
-      console.warn('Cannot send POST request to backend from unknown user.');
+      console.warn('Cannot send GET request to backend from unknown user.');
       if (sessionStorage.getItem('loginPromptShown') == null) {
 	 alert('You are not signed in.\nTo save your work, please sign in and then try again, or refresh the page.');
 	 sessionStorage.setItem('loginPromptShown', "true");
