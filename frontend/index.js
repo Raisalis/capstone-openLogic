@@ -154,8 +154,8 @@ function ViewClasses(){
 
 
 async function insertClass(){
-   var name=document.getElementById.value("className");
-   var students= $("#involvedStudents").val().split('\n');
+   var name=document.getElementById("className").value;
+   var students= $("#involvedStudents").val().split(',');
    
    
    //will work on the rest after figuring out how to get function call properly
