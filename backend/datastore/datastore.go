@@ -632,6 +632,7 @@ func (p *ProofStore) GetRoster(sectionName string) ([]Roster, error) {
 
 func (p *ProofStore) GetAssignmentProofs(assignment Assignment) ([]Proof, error) {
    // get proofs by ids in assignment.proofIds
+   log.Println("in datastore: GetAssignmentProofs")
    selectProofIdsSQL := `SELECT proofIds FROM assignment WHERE sectionName = ?, name = ?;`
    statement, err := p.db.Prepare(selectProofIdsSQL)
    defer statement.Close()

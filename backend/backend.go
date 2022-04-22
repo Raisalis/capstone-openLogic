@@ -9,7 +9,7 @@ import (
 	"net/http"
 
 	"datastore"
-	tokenauth "google-token-auth"
+	"google-token-auth"
 )
 
 var (
