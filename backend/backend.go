@@ -2,14 +2,14 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
-	"flag"
-	"fmt"
 
 	"datastore"
-	"google-token-auth"
+	tokenauth "google-token-auth"
 )
 
 var (
@@ -25,13 +25,13 @@ var (
 	}
 
 	admin_users = map[string]bool{
-		"abiblarz@csumb.edu": true,
-        "sislam@csumb.edu":   true,
-		"gbruns@csumb.edu":   true,
-		"cohunter@csumb.edu": true,
-		"bkondo@csumb.edu":   true,
-		"elarson@csumb.edu": true,
-		"jasbaker@csumb.edu": true,
+		"abiblarz@csumb.edu":  true,
+		"sislam@csumb.edu":    true,
+		"gbruns@csumb.edu":    true,
+		"cohunter@csumb.edu":  true,
+		"bkondo@csumb.edu":    true,
+		"elarson@csumb.edu":   true,
+		"jasbaker@csumb.edu":  true,
 		"mkammerer@csumb.edu": true,
 	}
 
@@ -48,8 +48,8 @@ type Env struct {
 }
 
 type FailedRoster struct {
-   email string
-   errorMsg string
+	email    string
+	errorMsg string
 }
 
 // return a list of current admin emails
@@ -79,7 +79,7 @@ func (env *Env) getAdmins(w http.ResponseWriter, req *http.Request) {
 func (env *Env) saveProof(w http.ResponseWriter, req *http.Request) {
 	var user userWithEmail
 	user = req.Context().Value("tok").(userWithEmail)
-	
+
 	var submittedProof datastore.Proof
 
 	// read the JSON-encoded value from the HTTP request and store it in submittedProof
@@ -157,7 +157,7 @@ func (env *Env) getProofs(w http.ResponseWriter, req *http.Request) {
 	case "completedrepo":
 		log.Println("completedrepo selection")
 		err, proofs = env.ds.GetUserCompletedProofs(user)
-	
+
 	case "downloadrepo":
 		log.Println("downloadrepo selection")
 		if !admin_users[user.GetEmail()] {
@@ -184,7 +184,7 @@ func (env *Env) getProofs(w http.ResponseWriter, req *http.Request) {
 	} else {
 		userProofsJSON, err = json.Marshal(sectionProofs)
 	}
-	
+
 	if err != nil {
 		http.Error(w, "json marshal error", 500)
 		log.Print(err)
@@ -246,7 +246,7 @@ func (env *Env) getSections(w http.ResponseWriter, req *http.Request) {
 		log.Println(err)
 		return
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	io.WriteString(w, string(sectionsJSON))
 	// fmt.Printf("All Sections JSON: %+v\n", sectionsJSON)
@@ -255,23 +255,75 @@ func (env *Env) getSections(w http.ResponseWriter, req *http.Request) {
 // return student and ta roster entries given a sectionName
 func (env *Env) getRoster(w http.ResponseWriter, req *http.Request) {
 	// log.Println("inside backend.go: getRoster")
-	sectionName := req.URL.Query().Get("section")
 
-	if req.Method != "GET" || sectionName == "" {
+	/*
+		sectionName := req.URL.Query().Get("section")
+
+
+		if req.Method != "GET" || sectionName == "" {
+			http.Error(w, "Request not accepted.", 400)
+			return
+		}
+
+		log.Printf("for section: %q\n", sectionName)
+
+		roster, err := env.ds.GetRoster(sectionName)
+		if err != nil {
+			http.Error(w, "db access error", 500)
+			log.Println(err)
+			return
+		}
+		log.Printf("full roster: %+v\n\n", roster)
+
+		rosterJSON, err := json.Marshal(roster)
+		if err != nil {
+			http.Error(w, "json marshal error", 500)
+			log.Println(err)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		io.WriteString(w, string(rosterJSON))
+		// log.Printf("marshalled rosterJSON: %+v\n", rosterJSON)
+	*/
+
+	if req.Method != "GET" || req.Body == nil {
 		http.Error(w, "Request not accepted.", 400)
 		return
 	}
 
-	log.Printf("for section: %q\n", sectionName)
+	// Accepted JSON fields must be defined here
+	type getRosterRequest struct {
+		SectionName string `json:"sectionName"`
+	}
 
-	roster, err := env.ds.GetRoster(sectionName)
+	var requestData getRosterRequest
+
+	decoder := json.NewDecoder(req.Body)
+
+	if err := decoder.Decode(&requestData); err != nil {
+		http.Error(w, "Unable to decode request body.", 400)
+		return
+	}
+
+	log.Printf("%+v", requestData)
+
+	if requestData.SectionName == "" {
+		http.Error(w, "section required", 400)
+		return
+	}
+
+	var err error
+
+	var roster []datastore.Roster
+	roster, err = env.ds.GetRoster(requestData.SectionName)
 	if err != nil {
 		http.Error(w, "db access error", 500)
 		log.Println(err)
 		return
 	}
 
-	log.Printf("full roster: %+v\n\n", roster)
+	log.Printf("Roster: %+v\n\n", roster)
 
 	rosterJSON, err := json.Marshal(roster)
 	if err != nil {
@@ -279,15 +331,14 @@ func (env *Env) getRoster(w http.ResponseWriter, req *http.Request) {
 		log.Println(err)
 		return
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	io.WriteString(w, string(rosterJSON))
-	// log.Printf("marshalled rosterJSON: %+v\n", rosterJSON)
 }
 
-// return proof entries completed by students associated with a given section 
+// return proof entries completed by students associated with a given section
 func (env *Env) getCompletedProofsBySection(w http.ResponseWriter, req *http.Request) {
-	log.Println("inside backend.go: getCompletedProofsBySection")
+	/* log.Println("inside backend.go: getCompletedProofsBySection")
 	sectionName := req.URL.Query().Get("section")
 
 	if req.Method != "GET" || sectionName == "" {
@@ -310,9 +361,59 @@ func (env *Env) getCompletedProofsBySection(w http.ResponseWriter, req *http.Req
 		log.Println(err)
 		return
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	io.WriteString(w, string(proofsJSON))
+	*/
+
+	if req.Method != "GET" || req.Body == nil {
+		http.Error(w, "Request not accepted.", 400)
+		return
+	}
+
+	// Accepted JSON fields must be defined here
+	type getgetCompletedProofsBySectionRequest struct {
+		SectionName string `json:"sectionName"`
+	}
+
+	var requestData getgetCompletedProofsBySectionRequest
+
+	decoder := json.NewDecoder(req.Body)
+
+	if err := decoder.Decode(&requestData); err != nil {
+		http.Error(w, "Unable to decode request body.", 400)
+		return
+	}
+
+	log.Printf("%+v", requestData)
+
+	if requestData.SectionName == "" {
+		http.Error(w, "section required", 400)
+		return
+	}
+
+	var err error
+
+	var proofs []datastore.RosterAndProof
+	proofs, err = env.ds.GetCompletedProofsBySection(requestData.SectionName)
+	if err != nil {
+		http.Error(w, "db access error", 500)
+		log.Println(err)
+		return
+	}
+
+	log.Printf("Roster: %+v\n\n", proofs)
+
+	proofsJSON, err := json.Marshal(proofs)
+	if err != nil {
+		http.Error(w, "json marshal error", 500)
+		log.Println(err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	io.WriteString(w, string(proofsJSON))
+
 }
 
 // get all assignments associated with a specific section
@@ -362,7 +463,7 @@ func (env *Env) addSection(w http.ResponseWriter, req *http.Request) {
 	io.WriteString(w, `{"success": "true"}`)
 }
 
-// add a roster entry: requires sectionName, studentEmails, and taEmails 
+// add a roster entry: requires sectionName, studentEmails, and taEmails
 func (env *Env) addRoster(w http.ResponseWriter, req *http.Request) {
 	log.Println("inside backend.go: addRoster")
 
@@ -373,9 +474,9 @@ func (env *Env) addRoster(w http.ResponseWriter, req *http.Request) {
 
 	// Accepted JSON fields must be defined here
 	type reqBody struct {
-		SectionName string `json:"sectionName"`
+		SectionName   string   `json:"sectionName"`
 		StudentEmails []string `json:"studentEmails"`
-		TaEmails []string `json:"taEmails"`
+		TaEmails      []string `json:"taEmails"`
 	}
 
 	var requestData reqBody
@@ -389,10 +490,10 @@ func (env *Env) addRoster(w http.ResponseWriter, req *http.Request) {
 
 	type insertionErr struct {
 		Email string `json:"email"`
-		Msg string `json:"msg"`
+		Msg   string `json:"msg"`
 	}
 	var insertionErrList []insertionErr
-	for _,email:= range requestData.StudentEmails {
+	for _, email := range requestData.StudentEmails {
 		// working here! adjust for InsertRoster - need to grab sectionName, email, and role
 		err := env.ds.InsertUser(datastore.User{Email: email, FirstName: "", LastName: "", Admin: 0})
 		err = env.ds.InsertRoster(datastore.Roster{SectionName: requestData.SectionName, UserEmail: email, Role: "student"})
@@ -400,7 +501,7 @@ func (env *Env) addRoster(w http.ResponseWriter, req *http.Request) {
 			insertionErrList = append(insertionErrList, insertionErr{Email: email, Msg: err.Error()})
 		}
 	}
-	for _,email:= range requestData.TaEmails {
+	for _, email := range requestData.TaEmails {
 		// working here! adjust for InsertRoster - need to grab sectionName, email, and role
 		err := env.ds.InsertUser(datastore.User{Email: email, FirstName: "", LastName: "", Admin: 1})
 		err = env.ds.InsertRoster(datastore.Roster{SectionName: requestData.SectionName, UserEmail: email, Role: "ta"})
@@ -415,11 +516,11 @@ func (env *Env) addRoster(w http.ResponseWriter, req *http.Request) {
 		log.Print(err)
 		return
 	}
-	
+
 	if len(insertionErrList) != 0 {
 		w.Header().Set("Content-Type", "application/json")
 		io.WriteString(w, fmt.Sprintf(`{"success": "false", "errors": %+v}`, string(insertionErrJSON)))
-		return 
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -435,7 +536,7 @@ func (env *Env) removeFromRoster(w http.ResponseWriter, req *http.Request) {
 
 	type reqBody struct {
 		SectionName string `json:"sectionName"`
-		UserEmail string `json:"userEmail"`
+		UserEmail   string `json:"userEmail"`
 	}
 
 	var requestData reqBody
@@ -453,7 +554,7 @@ func (env *Env) removeFromRoster(w http.ResponseWriter, req *http.Request) {
 		log.Println(err)
 		return
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	io.WriteString(w, `{"success": "true"}`)
 }
@@ -484,7 +585,7 @@ func (env *Env) removeSection(w http.ResponseWriter, req *http.Request) {
 		log.Println(err)
 		return
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	io.WriteString(w, `{"success": "true"}`)
 }
@@ -516,9 +617,9 @@ func (env *Env) populateTestProofRow() {
 		Rules: []string{},
 		EverCompleted: "false",
 		ProofCompleted: "false",
-		Conclusion: "S",
-		TimeSubmitted: "2019-04-29T01:45:44.452+0000",
-		RepoProblem: "true",
+		Conclusion:     "S",
+		TimeSubmitted:  "2019-04-29T01:45:44.452+0000",
+		RepoProblem:    "true",
 	})
 
 	if err != nil {
@@ -527,18 +628,18 @@ func (env *Env) populateTestProofRow() {
 	}
 
 	err = env.ds.Store(datastore.Proof{
-		EntryType: "proof",
-		UserSubmitted: "jduboiTEST@csumb.edu",
-		ProofName: "Repository - Code Test",
-		ProofType: "prop",
-		Premise: []string{"P", "P → Q", "Q → R", "R → S"},
-		Logic: []string{"[{\"wffstr\":\"P\",\"jstr\":\"Pr\"},{\"wffstr\":\"P → Q\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q → R\",\"jstr\":\"Pr\"},{\"wffstr\":\"R → S\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q\",\"jstr\":\"1, 2 →E\"},{\"wffstr\":\"R\",\"jstr\":\"3, 5 →E\"}]"},
-		Rules: []string{},
-		EverCompleted: "false",
+		EntryType:      "proof",
+		UserSubmitted:  "jduboiTEST@csumb.edu",
+		ProofName:      "Repository - Code Test",
+		ProofType:      "prop",
+		Premise:        []string{"P", "P → Q", "Q → R", "R → S"},
+		Logic:          []string{"[{\"wffstr\":\"P\",\"jstr\":\"Pr\"},{\"wffstr\":\"P → Q\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q → R\",\"jstr\":\"Pr\"},{\"wffstr\":\"R → S\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q\",\"jstr\":\"1, 2 →E\"},{\"wffstr\":\"R\",\"jstr\":\"3, 5 →E\"}]"},
+		Rules:          []string{},
+		EverCompleted:  "false",
 		ProofCompleted: "false",
-		Conclusion: "S",
-		TimeSubmitted: "2022-03-14T03:10:44.452+0000",
-		RepoProblem: "true",
+		Conclusion:     "S",
+		TimeSubmitted:  "2022-03-14T03:10:44.452+0000",
+		RepoProblem:    "true",
 	})
 
 	if err != nil {
@@ -547,63 +648,63 @@ func (env *Env) populateTestProofRow() {
 	}
 
 	err = env.ds.Store(datastore.Proof{
-		EntryType: "proof",
-		UserSubmitted: "jduboisTEST@csumb.edu",
-		ProofName: "Repository - Code Test",
-		ProofType: "prop",
-		Premise: []string{"P", "P → Q", "Q → R", "R → S"},
-		Logic: []string{"[{\"wffstr\":\"P\",\"jstr\":\"Pr\"},{\"wffstr\":\"P → Q\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q → R\",\"jstr\":\"Pr\"},{\"wffstr\":\"R → S\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q\",\"jstr\":\"1, 2 →E\"},{\"wffstr\":\"R\",\"jstr\":\"3, 5 →E\"},{\"wffstr\":\"S\",\"jstr\":\"4, 6 →E\"}]"},
-		Rules: []string{},
-		EverCompleted: "true",
+		EntryType:      "proof",
+		UserSubmitted:  "jduboisTEST@csumb.edu",
+		ProofName:      "Repository - Code Test",
+		ProofType:      "prop",
+		Premise:        []string{"P", "P → Q", "Q → R", "R → S"},
+		Logic:          []string{"[{\"wffstr\":\"P\",\"jstr\":\"Pr\"},{\"wffstr\":\"P → Q\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q → R\",\"jstr\":\"Pr\"},{\"wffstr\":\"R → S\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q\",\"jstr\":\"1, 2 →E\"},{\"wffstr\":\"R\",\"jstr\":\"3, 5 →E\"},{\"wffstr\":\"S\",\"jstr\":\"4, 6 →E\"}]"},
+		Rules:          []string{},
+		EverCompleted:  "true",
 		ProofCompleted: "true",
-		Conclusion: "S",
-		TimeSubmitted: "2022-03-14T03:41:44.452+0000",
-		RepoProblem: "true",
+		Conclusion:     "S",
+		TimeSubmitted:  "2022-03-14T03:41:44.452+0000",
+		RepoProblem:    "true",
 	})
 
 	err = env.ds.Store(datastore.Proof{
-		EntryType: "argument",
-		UserSubmitted: "bkondo@csumb.edu",
-		ProofName: "Repository - Code Test 2",
-		ProofType: "prop",
-		Premise: []string{"P", "P → Q", "Q → R"},
-		Logic: []string{},
-		Rules: []string{},
-		EverCompleted: "false",
+		EntryType:      "argument",
+		UserSubmitted:  "bkondo@csumb.edu",
+		ProofName:      "Repository - Code Test 2",
+		ProofType:      "prop",
+		Premise:        []string{"P", "P → Q", "Q → R"},
+		Logic:          []string{},
+		Rules:          []string{},
+		EverCompleted:  "false",
 		ProofCompleted: "false",
-		Conclusion: "Q",
-		TimeSubmitted: "2022-04-03T00:44:49Z",
-		RepoProblem: "true",
+		Conclusion:     "Q",
+		TimeSubmitted:  "2022-04-03T00:44:49Z",
+		RepoProblem:    "true",
 	})
 
 	err = env.ds.Store(datastore.Proof{
-		EntryType: "proof",
-		UserSubmitted: "jduboisTEST@csumb.edu",
-		ProofName: "Repository - Code Test 2",
-		ProofType: "prop",
-		Premise: []string{"P", "P → Q", "Q → R"},
-		Logic: []string{"[{\"wffstr\":\"P\",\"jstr\":\"Pr\"},{\"wffstr\":\"P → Q\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q → R\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q\",\"jstr\":\"1, 2 →E\"},{\"wffstr\":\"R\",\"jstr\":\"3, 5 →E\"}]"},
-		Rules: []string{},
-		EverCompleted: "false",
+		EntryType:      "proof",
+		UserSubmitted:  "jduboisTEST@csumb.edu",
+		ProofName:      "Repository - Code Test 2",
+		ProofType:      "prop",
+		Premise:        []string{"P", "P → Q", "Q → R"},
+		Logic:          []string{"[{\"wffstr\":\"P\",\"jstr\":\"Pr\"},{\"wffstr\":\"P → Q\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q → R\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q\",\"jstr\":\"1, 2 →E\"},{\"wffstr\":\"R\",\"jstr\":\"3, 5 →E\"}]"},
+		Rules:          []string{},
+		EverCompleted:  "false",
 		ProofCompleted: "false",
-		Conclusion: "Q",
-		TimeSubmitted: "2022-04-03T00:44:49Z",
-		RepoProblem: "true",
+		Conclusion:     "Q",
+		TimeSubmitted:  "2022-04-03T00:44:49Z",
+		RepoProblem:    "true",
 	})
 
 	err = env.ds.Store(datastore.Proof{
-		EntryType: "proof",
-		UserSubmitted: "t1deleteTEST@csumb.edu",
-		ProofName: "Repository - Code Test 2",
-		ProofType: "prop",
-		Premise: []string{"P", "P → Q", "Q → R"},
-		Logic: []string{"[{\"wffstr\":\"P\",\"jstr\":\"Pr\"},{\"wffstr\":\"P → Q\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q → R\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q\",\"jstr\":\"1, 2 →E\"}]"},
-		Rules: []string{},
-		EverCompleted: "true",
+		EntryType:      "proof",
+		UserSubmitted:  "t1deleteTEST@csumb.edu",
+		ProofName:      "Repository - Code Test 2",
+		ProofType:      "prop",
+		Premise:        []string{"P", "P → Q", "Q → R"},
+		Logic:          []string{"[{\"wffstr\":\"P\",\"jstr\":\"Pr\"},{\"wffstr\":\"P → Q\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q → R\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q\",\"jstr\":\"1, 2 →E\"}]"},
+		Rules:          []string{},
+		EverCompleted:  "true",
 		ProofCompleted: "true",
-		Conclusion: "Q",
-		TimeSubmitted: "2022-04-03T00:44:49Z",
-		RepoProblem: "true",
+		Conclusion:     "Q",
+		TimeSubmitted:  "2022-04-03T00:44:49Z",
+		RepoProblem:    "true",
 	})
 }
 
@@ -618,7 +719,7 @@ func main() {
 
 	// Add the admin users to the database for use in queries
 	ds.MaintainAdmins(admin_users)
-	
+
 	Env := &Env{ds} // Put the instance into a struct to share between threads
 	Env.ds.PopulateTestUsersSectionsRosters()
 	Env.populateTestProofRow()
@@ -644,15 +745,15 @@ func main() {
 
 	// method user : POST : JSON -> [proof, proof, ...]
 	http.Handle("/proofs", tokenauth.WithValidToken(http.HandlerFunc(Env.getProofs)))
-	
-	// spr2022 GETs : use JSON req.body for arguments 
+
+	// spr2022 GETs : use JSON req.body for arguments
 	http.Handle("/sections", tokenauth.WithValidToken(http.HandlerFunc(Env.getSections)))
 	http.Handle("/roster", tokenauth.WithValidToken(http.HandlerFunc(Env.getRoster)))
 	http.Handle("/completed-proofs-by-section", tokenauth.WithValidToken(http.HandlerFunc(Env.getCompletedProofsBySection)))
 	http.Handle("/assignments-by-section", tokenauth.WithValidToken(http.HandlerFunc(Env.getAssignmentsBySection)))
 
 
-	// spr2022 POST (delete has also been treated as POST) : use JSON req.body for arguments 
+	// spr2022 POST (delete has also been treated as POST) : use JSON req.body for arguments
 	http.Handle("/add-section", tokenauth.WithValidToken(http.HandlerFunc(Env.addSection)))
 	http.Handle("/add-roster", tokenauth.WithValidToken(http.HandlerFunc(Env.addRoster)))
 	http.Handle("/remove-from-roster", tokenauth.WithValidToken(http.HandlerFunc(Env.removeFromRoster)))
@@ -661,7 +762,7 @@ func main() {
 	// Get admin users -- this is a public endpoint, no token required
 	// Can be changed to require token, but would reduce cacheability
 	http.Handle("/admins", http.HandlerFunc(Env.getAdmins))
-	
+
 	log.Println("Server started")
 	log.Fatal(http.ListenAndServe("127.0.0.1:"+(*portPtr), nil))
 }

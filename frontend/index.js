@@ -109,89 +109,98 @@ class User {
    }
 }
 
-function ViewClasses(){
+async function ViewClasses(){
 
 
-   backendGET('User', {selection: 'Email'}).then(   
+   backendGET('Roster', {selection: 'UserEmail'}).then(   
    (data) => {
-      console.log("loadStudentNames", data);
-      repositoryData.studentNames = data;       
+      // console.log("loadStudentNames", data);
+      // repositoryData.studentNames = data;       
 
-      let elem = document.querySelector('#studentNameSelect');
-      $(elem).empty();
-
-      elem.appendChild(
-         new Option('Select...', null, true, true)
-      );
-
-      (data) && data.forEach( student => {
-         let option = new Option(proof.ProofName, proof.Id);
-         elem.appendChild(data);
-      });
+      
+      prepareSelect('#studentNameSelect', data);
+      
       }, console.log
    );
 
    backendGET('Proof', {selection: 'ProofName'}).then(   
    (data) => {
-      console.log("loadProofs", data);
-      repositoryData.proofAverages = data;      
+      // console.log("loadProofs", data);
+      // repositoryData.proofAverages = data;      
 
-      let elem = document.querySelector('#proofNameSelect');
-      $(elem).empty();
-
-      elem.appendChild(
-         new Option('Select...', null, true, true)
-      );
-
-      (data) && data.forEach( student => {
-         let option = new Option(proof.ProofName, proof.Id);
-         elem.appendChild(data);
-      });
+      prepareSelect('#ProofNameSelect', data);
       }, console.log
    );
 }
 
 
-
+//this inserts the class and students in that class, the students should be seperated by a comma
 async function insertClass(){
    var name=document.getElementById("className").value;
-   var students= $("#involveStudents").value.split(",");
-   console.log(students);
    
+   var students= $("#involveStudents").val().split(",");
+   console.log(students);
+   if(name==""||students==""){
+      alert("One or more input boxes are empty");
+   }else{
+      await backendPOST('add-section',{sectionName:name}).then(
+         (data) =>{
+            console.log('add section',data);
+         }
+      );
+      backendPOST('add-roster', {sectionName: name, studentEmails: students}).then(
+         (data) => {
+            console.log("add roster", data);
+                   
+            
+         }
+      );
+      
+   
+      
+         //this will come up if the submission was successful
+         alert("Your submission was accepted");
+   }
    //will work on the rest after figuring out how to get function call properly
-   backendPOST('add-roster', {sectionName: name, studentEmails: students}).then(
-      (data) => {
-         console.log("loadProofs", data);
-         repositoryData.studentNames = data;       
-         
-      }, console.log
-   );
 
    
-      //InsertSection(name, students);
-      alert("Your submission was accepted");
 }
 
+//this will drop the class of the admin by name, everything, including the students will be dropped
 async function dropClass(){
-   var x=document.getElementById.value("dropSectionName");
+   var x=document.getElementById("dropSectionName").value;
+   console.log(x);
    if(confirm("Are you sure you want to drop the whole class?")==true){
       //waiting for tables to be ready to do rest
       //temporary idea
+      backendPOST('remove-section',{sectionName: x});
       
-      // backendPOST('add-roster', {sectionName:x});
+
+      alert("Class deleted");
    }
 }
 
+//this will drop one student at a time, for one reason or another,
 async function dropStudent(){
-   var deadToClass=document.getElementById.value("sectionToRemoveStudent")
-   var deadStudent= document.getElementById.value("dropStudent");
-   //waiting for tables to be ready to do rest
-   if(confirm("Are you sure you want to drop this student?")==true){
-      //backendPOST('add-roster', {sectionName:deadToClass, studentEmails:deadStudent});
+   var deadToClass=document.getElementById("sectionToRemoveStudent").value;
+   var deadStudent= document.getElementById("dropKid").value;
+   if(deadStudent==""||deadToClass==""){
+      alert("One or more inputs are empty.");
+   }else{
+      console.log(deadToClass);
+      console.log(deadStudent);
+      //waiting for tables to be ready to do rest
+      if(confirm("Are you sure you want to drop this student?")==true){
+         
+         backendPOST("remove-from-roster", {sectionName:deadToClass, userEmail:deadStudent});
+         alert("Student removed");
+      }
    }
+   
    
 }
 
+//the following are just menu popups based on button clicks on the admin buttons
 function showDrop(){
    var dropper= document.getElementById("hiddenDrop");
    if(dropper.style.display=== "block"){
@@ -209,6 +218,11 @@ function showDropClass(){
       dropper.style.display="block";
    }
 }
+
+
+// function showClassAssignment(){
+//    backendGET()
+// }
 
 // Verifies signed in and valid token, then calls authenticatedBackendPOST
 // Returns a promise which resolves to the response body or undefined
@@ -232,9 +246,10 @@ function backendPOST(path_str, data_obj) {
    }
 }
 
+//we added this part in order to get the appropriate GET call for some other functions
 function backendGET(path_str, data_obj) {
    if (!User.isSignedIn()) {
-      console.warn('Cannot send POST request to backend from unknown user.');
+      console.warn('Cannot send GET request to backend from unknown user.');
       if (sessionStorage.getItem('loginPromptShown') == null) {
 	 alert('You are not signed in.\nTo save your work, please sign in and then try again, or refresh the page.');
 	 sessionStorage.setItem('loginPromptShown', "true");
