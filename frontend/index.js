@@ -109,50 +109,32 @@ class User {
    }
 }
 
-function ViewClasses(){
+async function ViewClasses(){
 
 
-   backendGET('User', {selection: 'Email'}).then(   
+   backendGET('Roster', {selection: 'UserEmail'}).then(   
    (data) => {
-      console.log("loadStudentNames", data);
-      repositoryData.studentNames = data;       
+      // console.log("loadStudentNames", data);
+      // repositoryData.studentNames = data;       
 
-      let elem = document.querySelector('#studentNameSelect');
-      $(elem).empty();
-
-      elem.appendChild(
-         new Option('Select...', null, true, true)
-      );
-
-      (data) && data.forEach( student => {
-         let option = new Option(proof.ProofName, proof.Id);
-         elem.appendChild(data);
-      });
+      
+      prepareSelect('#studentNameSelect', data);
+      
       }, console.log
    );
 
    backendGET('Proof', {selection: 'ProofName'}).then(   
    (data) => {
-      console.log("loadProofs", data);
-      repositoryData.proofAverages = data;      
+      // console.log("loadProofs", data);
+      // repositoryData.proofAverages = data;      
 
-      let elem = document.querySelector('#proofNameSelect');
-      $(elem).empty();
-
-      elem.appendChild(
-         new Option('Select...', null, true, true)
-      );
-
-      (data) && data.forEach( student => {
-         let option = new Option(proof.ProofName, proof.Id);
-         elem.appendChild(data);
-      });
+      prepareSelect('#ProofNameSelect', data);
       }, console.log
    );
 }
 
 
-
+//this inserts the class and students in that class, the students should be seperated by a comma
 async function insertClass(){
    var name=document.getElementById("className").value;
    var students= $("#involveStudents").val().split(",");
@@ -175,10 +157,11 @@ async function insertClass(){
    
 
    
-      //InsertSection(name, students);
+      //this will come up if the submission was successful
       alert("Your submission was accepted");
 }
 
+//this will drop the class of the admin by name, everything, including the students will be dropped
 async function dropClass(){
    var x=document.getElementById("dropSectionName").value;
    console.log(x);
@@ -192,6 +175,7 @@ async function dropClass(){
    }
 }
 
+//this will drop one student at a time, for one reason or another,
 async function dropStudent(){
    var deadToClass=document.getElementById("sectionToRemoveStudent").value;
    var deadStudent= document.getElementById("dropKid").value;
@@ -206,6 +190,7 @@ async function dropStudent(){
    
 }
 
+//the following are just menu popups based on button clicks on the admin buttons
 function showDrop(){
    var dropper= document.getElementById("hiddenDrop");
    if(dropper.style.display=== "block"){
@@ -251,6 +236,7 @@ function backendPOST(path_str, data_obj) {
    }
 }
 
+//we added this part in order to get the appropriate GET call for some other functions
 function backendGET(path_str, data_obj) {
    if (!User.isSignedIn()) {
       console.warn('Cannot send GET request to backend from unknown user.');
