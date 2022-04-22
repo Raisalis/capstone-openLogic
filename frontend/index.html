@@ -196,7 +196,7 @@
   </div>
   
       
-            <button onclick="showProofs(),ViewClasses()">View Classes</button> <button onclick="showStudents()">Add Students</button>
+            <button onclick="showProofs(),ViewClasses()">View Classes</button> <button onclick="showStudents()">Add Students</button> <button onclick="showAssignments()">Assignments</button>
             <div  id="proofValues">
                   <center>
                     <br>
@@ -258,6 +258,47 @@
 
                           
                       </center>
+            </div>
+
+            <div id="assignmentPage">
+              <br>
+              <center>
+                <h3>Add New Assignment</h3>
+                <div id="createAssignmentDiv">
+                  <input type="text" id="assignmentName" size="40" placeholder="Assignment Name">
+                  <br>
+                  <br>
+                  <button onclick="insertAssignment()">Create Assignment</button>
+                </div>
+                <br>
+                <h3>Add/Remove Proof to Assignment</h3>
+                <div id="addRemoveProofAssignmentButtonsDiv">
+                  <button onclick="showAddProofAssignment()">Add Proof</button> <button onclick="showRemoveProofAssignment()">Remove Proof</button>
+                </div>
+                <div id="addProofAssignmentDiv">
+
+                </div>
+                <div id="removeProofAssignmentDiv">
+
+                </div>
+                <br>
+                <h3>Add/Remove Class Assignments</h3>
+                <div id="addRemoveAssignmentButtonsDiv">
+                  <button onclick="showAddAssignmentClass()">Add Assignment</button> <button onclick="showRemoveAssignmentClass()">Remove Assignment</button>
+                </div>
+                <div id="addAssignmentClassDiv">
+
+                </div>
+                <div id="removeAssignmentClassDiv">
+
+                </div>
+                <!-- Could move the below section to View Classes Page -->
+                <br>
+                <h3>Publish Assignments</h3>
+                <div id="publicAssignmentsDiv">
+
+                </div>
+              </center>
             </div>
 
 <br>
