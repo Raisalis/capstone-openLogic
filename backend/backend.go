@@ -315,6 +315,11 @@ func (env *Env) getCompletedProofsBySection(w http.ResponseWriter, req *http.Req
 	io.WriteString(w, string(proofsJSON))
 }
 
+// get all assignments associated with a specific section
+func (env *Env) getAssignmentsBySection(w http.ResponseWriter, req *http.Request) {
+	
+}
+
 // add a section based on current admin user and given sectionName
 func (env *Env) addSection(w http.ResponseWriter, req *http.Request) {
 	log.Println("inside backend.go: addSection")
@@ -342,13 +347,13 @@ func (env *Env) addSection(w http.ResponseWriter, req *http.Request) {
 
 	err := env.ds.InsertSection(datastore.Section{InstructorEmail: user.GetEmail(), Name: requestData.SectionName})
 	if err != nil {
-		http.Error(w, "db section insertion error", 500)
+		http.Error(w, "db section insertion error: " + err.Error(), 500)
 		log.Println(err)
 		return
 	}
 	err = env.ds.InsertRoster(datastore.Roster{SectionName: requestData.SectionName, UserEmail: user.GetEmail(), Role: "instructor"})
 	if err != nil {
-		http.Error(w, "db roster insertion error", 500)
+		http.Error(w, "db roster insertion error: " + err.Error(), 500)
 		log.Println(err)
 		return
 	}
@@ -503,7 +508,7 @@ func (env *Env) clearDatabase() {
 func (env *Env) populateTestProofRow() {
 	err := env.ds.Store(datastore.Proof{
 		EntryType: "argument",
-		UserSubmitted: "gbruns@csumb.edu",
+		UserSubmitted: "elarson@csumb.edu",
 		ProofName: "Repository - Code Test",
 		ProofType: "prop",
 		Premise: []string{"P", "P → Q", "Q → R", "R → S"},
@@ -644,6 +649,8 @@ func main() {
 	http.Handle("/sections", tokenauth.WithValidToken(http.HandlerFunc(Env.getSections)))
 	http.Handle("/roster", tokenauth.WithValidToken(http.HandlerFunc(Env.getRoster)))
 	http.Handle("/completed-proofs-by-section", tokenauth.WithValidToken(http.HandlerFunc(Env.getCompletedProofsBySection)))
+	http.Handle("/assignments-by-section", tokenauth.WithValidToken(http.HandlerFunc(Env.getAssignmentsBySection)))
+
 
 	// spr2022 POST (delete has also been treated as POST) : use JSON req.body for arguments 
 	http.Handle("/add-section", tokenauth.WithValidToken(http.HandlerFunc(Env.addSection)))

@@ -123,6 +123,8 @@ func createTables(db *sql.DB) (error) {
 		visibility TEXT,
 		PRIMARY KEY (sectionName, name),
 		FOREIGN KEY (sectionName) REFERENCES section (name)
+			ON UPDATE CASCADE
+			ON DELETE CASCADE
 	);`
 
 	log.Println("Creating assignment table. . .")

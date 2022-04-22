@@ -330,6 +330,18 @@ type Roster struct {
    Role string
 }
 
+type RosterAndProof struct {
+   RowRoster Roster
+   RowProof Proof
+}
+
+type Assignment struct {
+   SectionName string
+   Name string
+   ProofIds string
+   Visibility string
+}
+
 type Display interface {
    Display() string
 }
@@ -438,7 +450,7 @@ func (p *ProofStore) InsertRoster(rosterRow Roster) (error) {
    statement, err := p.db.Prepare(insertRosterSQL)
    if err != nil {
       log.Println("error: InsertRoster: preparation of insertRosterSQL statement")
-      log.Fatalln("-- ", err.Error())
+      log.Println("-- ", err.Error())
       return err
    }
    defer statement.Close()
@@ -451,6 +463,39 @@ func (p *ProofStore) InsertRoster(rosterRow Roster) (error) {
    }
    return nil
 }
+
+func (p *ProofStore) InsertAssignment(assignment Assignment) (error){
+   insertAssignmentSQL := `INSERT INTO assignment(sectionName, name, proofIds, visibility) VALUES (?, ?, ?, ?);`
+   statement, err := p.db.Prepare(insertAssignmentSQL)
+   if err != nil {
+      log.Println("error: InsertAssignment: preparation of insertAssignmentSQL statement")
+      log.Println("-- ", err.Error())
+      return err
+   }
+   defer statement.Close()
+
+   _, err = statement.Exec(assignment.SectionName, assignment.Name, assignment.ProofIds, assignment.Visibility)
+   if err != nil {
+      log.Println("error: InsertAssignment: execution of insertAssignmentSQL statement")
+      log.Println("-- ", err.Error())
+      return err
+   }
+   return nil
+}
+
+// func (p *ProofStore) UpdateAssignment(currentAssignment Assignment, updatedAssignment Assignment) (error) {
+//    updateAssignmentSQL := `UPDATE assignment SET name = ?, proofIds = ?, visibility = ?
+//                            WHERE name = ?, sectionName = ?;`
+//    statement, err := p.db.Prepare(updateAssignmentSQL)
+//    if err != nil {
+//       log.Println("error: UpdateAssignment: preparation of updateAssignmentSQL statement")
+//       log.Println("-- ", err.Error())
+//       return err
+//    }
+//    defer statement.Close()
+
+//    _, err = statement.Exec(updatedAssignment.name, )
+// }
 
 func (p *ProofStore) RemoveSection(sectionName string) (error) {
    // log.Println("Deleting section record. . .")
@@ -585,9 +630,45 @@ func (p *ProofStore) GetRoster(sectionName string) ([]Roster, error) {
    return roster, nil
 }
 
-type RosterAndProof struct {
-   RowRoster Roster
-   RowProof Proof
+func (p *ProofStore) GetAssignmentProofs(assignment Assignment) ([]Proof, error) {
+   // get proofs by ids in assignment.proofIds
+   selectProofIdsSQL := `SELECT proofIds FROM assignment WHERE sectionName = ?, name = ?;`
+   statement, err := p.db.Prepare(selectProofIdsSQL)
+   defer statement.Close()
+
+   rows, err := statement.Query(assignment.SectionName, assignment.Name)
+   if err != nil {
+      log.Printf(`error: GetAssignmentProofs: during execution of selectProofIdsSQL statement
+                  -- %s`, err.Error())
+      return nil, err
+   }
+   defer rows.Close()
+
+   var rowProofIds string
+   var proofs []Proof
+   
+   rows.Scan(&rowProofIds)
+   assignmentProofIds := string(rowProofIds[:])
+   if assignmentProofIds == "" {
+      return proofs, nil
+   }
+   log.Println("proof ids retrieved: ", assignmentProofIds)
+
+   // assignmentProofIds[0] = "("
+   // assignmentProofIds[len(assignmentProofIds) - 1] = ")"
+
+   selectProofsSQL := `SELECT * FROM proof WHERE id IN ? ORDER BY proofName;`
+   statement, err = p.db.Prepare(selectProofsSQL)
+   
+   rows, err = statement.Query(assignmentProofIds)
+   err, proofs = getProofsFromRows(rows)
+   if err != nil {
+      log.Printf(`error: GetAssignmentProofs: during rows conversion
+                  -- %s`, err.Error())
+      return nil, err
+   }
+
+   return proofs, nil
 }
 
 func (p *ProofStore) GetCompletedProofsBySection(sectionName string) ([]RosterAndProof, error) {
@@ -736,7 +817,7 @@ func (p *ProofStore) PopulateTestUsersSectionsRosters() {
       },
       {
          SectionName: "Baker Section",
-         UserEmail: "mpotterTEST@csumb.edu",
+         UserEmail: "elarson@csumb.edu",
          Role: "student",
       },
 	  {
@@ -746,7 +827,7 @@ func (p *ProofStore) PopulateTestUsersSectionsRosters() {
 	 },
 	 {
 		SectionName: "Kondo Section",
-		UserEmail: "jduboisTEST@csumb.edu",
+		UserEmail: "mkammerer@csumb.edu",
 		Role: "student",
 	 },
 	 {
@@ -756,7 +837,7 @@ func (p *ProofStore) PopulateTestUsersSectionsRosters() {
 	 },
 	 {
 		SectionName: "Kondo Section",
-		UserEmail: "t2deleteTEST@csumb.edu",
+		UserEmail: "elarson@csumb.edu",
 		Role: "student",
 	 },
     {
@@ -771,7 +852,7 @@ func (p *ProofStore) PopulateTestUsersSectionsRosters() {
 	 },
     {
 		SectionName: "Kammerer Section",
-		UserEmail: "rmarksTEST@csumb.edu",
+		UserEmail: "bkondo@csumb.edu",
 		Role: "student",
 	 },
     
@@ -792,7 +873,7 @@ func (p *ProofStore) PopulateTestUsersSectionsRosters() {
 	 },
     {
 		SectionName: "Larson Section",
-		UserEmail: "jdoeTEST@csumb.edu",
+		UserEmail: "bkondo@csumb.edu",
 		Role: "student",
 	 },
     {
@@ -805,8 +886,31 @@ func (p *ProofStore) PopulateTestUsersSectionsRosters() {
 	for _,v := range rosterInfo {
 		err := p.InsertRoster(v)
 		if err != nil {
-         log.Printf("error from populateTest: InsertSection: %s for %s", err.Error(), v.UserEmail)
+         log.Printf("error from populateTest: InsertRoster: %s for %s, %s", err.Error(), v.SectionName, v.UserEmail)
       }
    }
+
+   assignmentInfo := []Assignment{
+      {
+         SectionName: "Larson Section",
+         Name: "L Test assignment",
+         ProofIds: "[1, 4]",
+         Visibility: "true",
+      },
+      {
+         SectionName: "Kondo Section",
+         Name: "K Test assignment",
+         ProofIds: "[4]",
+         Visibility: "true",
+      },
+   }
+   fmt.Println("\n========INSERT Assignment RECORDS========")
+	for _,v := range assignmentInfo {
+		err := p.InsertAssignment(v)
+		if err != nil {
+         log.Printf("error from populateTest: InsertAssignment: %s for %s", err.Error(), v.Name)
+      }
+   }
+
    fmt.Println("\n========INSERTIONS COMPLETED========\n")
 } 
