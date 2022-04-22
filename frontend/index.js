@@ -137,28 +137,33 @@ async function ViewClasses(){
 //this inserts the class and students in that class, the students should be seperated by a comma
 async function insertClass(){
    var name=document.getElementById("className").value;
+   
    var students= $("#involveStudents").val().split(",");
    console.log(students);
+   if(name==""||students==""){
+      alert("One or more input boxes are empty");
+   }else{
+      await backendPOST('add-section',{sectionName:name}).then(
+         (data) =>{
+            console.log('add section',data);
+         }
+      );
+      backendPOST('add-roster', {sectionName: name, studentEmails: students}).then(
+         (data) => {
+            console.log("add roster", data);
+                   
+            
+         }
+      );
+      
    
+      
+         //this will come up if the submission was successful
+         alert("Your submission was accepted");
+   }
    //will work on the rest after figuring out how to get function call properly
 
-   await backendPOST('add-section',{sectionName:name}).then(
-      (data) =>{
-         console.log('add section',data);
-      }
-   );
-   backendPOST('add-roster', {sectionName: name, studentEmails: students}).then(
-      (data) => {
-         console.log("add roster", data);
-                
-         
-      }
-   );
    
-
-   
-      //this will come up if the submission was successful
-      alert("Your submission was accepted");
 }
 
 //this will drop the class of the admin by name, everything, including the students will be dropped
@@ -179,14 +184,19 @@ async function dropClass(){
 async function dropStudent(){
    var deadToClass=document.getElementById("sectionToRemoveStudent").value;
    var deadStudent= document.getElementById("dropKid").value;
-   console.log(deadToClass);
-   console.log(deadStudent);
-   //waiting for tables to be ready to do rest
-   if(confirm("Are you sure you want to drop this student?")==true){
-      
-      backendPOST("remove-from-roster", {sectionName:deadToClass, userEmail:deadStudent});
-      alert("Student removed");
+   if(deadStudent==""||deadToClass==""){
+      alert("One or more inputs are empty.");
+   }else{
+      console.log(deadToClass);
+      console.log(deadStudent);
+      //waiting for tables to be ready to do rest
+      if(confirm("Are you sure you want to drop this student?")==true){
+         
+         backendPOST("remove-from-roster", {sectionName:deadToClass, userEmail:deadStudent});
+         alert("Student removed");
+      }
    }
+   
    
 }
 
