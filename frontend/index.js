@@ -220,6 +220,69 @@ function showDropClass(){
 }
 
 
+function showAssignments(){
+   var assignment= document.getElementById("assignmentPage");
+   if(assignment.style.display=="block"){
+      assignment.style.display= "none";
+   }else{
+      assignment.style.display="block";
+   }
+
+}
+
+
+function showAddProofAssignment(){
+   var assignment=document.getElementById("addProofAssignmentDiv");
+   if(assignment.style.display=="block"){
+      assignment.style.display= "none";
+   }else{
+      assignment.style.display="block";
+   }
+}
+
+function showRemoveProofAssignment(){
+   var assignment=document.getElementById("removeProofAssignmentDiv");
+   if(assignment.style.display=="block"){
+      assignment.style.display= "none";
+   }else{
+      assignment.style.display="block";
+   }
+}
+
+function showAddAssignmentClass(){
+   var assignment=document.getElementById("addAssignmentClassDiv");
+   if(assignment.style.display=="block"){
+      assignment.style.display= "none";
+   }else{
+      assignment.style.display="block";
+   }
+}
+
+function showRemoveAssignmentClass(){
+   var assignment=document.getElementById("removeAssignmentClassDiv");
+   if(assignment.style.display=="block"){
+      assignment.style.display= "none";
+   }else{
+      assignment.style.display="block";
+   }
+}
+
+async function addAssignmentToClass(){
+   var add=document.getElementById("addAssignmentToClass").value;
+   var classIn=document.getElementById("addedClass").value;
+   //backendPOST(add-assignment-to-class, {sectionName: classIn, assignmentName: add});
+}
+
+async function insertAssignment(){
+   var assignmentN=document.getElementById("assignmentName").value;
+
+   //backendPOST(add-assignment, {assignmentName:assignmentN})
+}
+
+
+async function fillProof(){
+   var proof=document.getElementById("");
+}
 // function showClassAssignment(){
 //    backendGET()
 // }

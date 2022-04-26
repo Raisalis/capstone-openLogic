@@ -146,3 +146,16 @@ textarea{
 #howToDropClass{
 	display: none;
 }
+
+#addProofAssignmentDiv{
+	display:none;
+}
+
+#removeProofAssignmentDiv{
+	display: none;
+}
+
+#addAssignmentClassDiv{
+	display: none;
+}
+
