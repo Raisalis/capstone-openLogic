@@ -28,6 +28,11 @@ Assignments are a collection of proofs. Making a class assignment visible will a
 1. Enter the Assignment's Name in the entry field.
 2. Click "Add Assignment" button.
 
+### Assignment Deletion
+
+1. Select the Assignment's Name from the dropdown box.
+2. Click "Delete Assignment" button.
+
 ### Adding Proofs to an Assignment
 
 Important Note: Proofs and Assignments must first both exist.
