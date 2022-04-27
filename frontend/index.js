@@ -268,20 +268,42 @@ function showRemoveAssignmentClass(){
 }
 
 async function addAssignmentToClass(){
-   var add=document.getElementById("addAssignmentToClass").value;
-   var classIn=document.getElementById("addedClass").value;
+   var add=document.getElementById("classAssignmentIn").value;
+   var classIn=document.getElementById("classIn").value;
+   if(add==""||classIn==""){
+      alert("At least one input is empty, please insert the class name and assignment name in their respective input boxes");
+   }
    //backendPOST(add-assignment-to-class, {sectionName: classIn, assignmentName: add});
 }
 
 async function insertAssignment(){
    var assignmentN=document.getElementById("assignmentName").value;
+   if(assignmentN==""){
+      alert("The input is empty, please enter assignment name");
+   }else{
 
-   //backendPOST(add-assignment, {assignmentName:assignmentN})
+      //backendPOST(add-assignment, {assignmentName:assignmentN})
+   }
 }
 
+async function removeAssignment(){
+   var assignmentO=document.getElementById("assignmentNameO").value;
+   
+   if(assignmentO==""){
+      alert("The input is empty, please enter assignment name");
+   }else{
+      //backendPOST(remove-assignment,{assignmentName:assignmentO});
+
+   }
+}
 
 async function fillProof(){
-   var proof=document.getElementById("");
+   //will need to wait for the get functions to work
+   // backendGET("proof-values", {proofName, proof}).then(
+   //    (data)=>{
+
+   //    }
+   // );
 }
 // function showClassAssignment(){
 //    backendGET()
