@@ -71,6 +71,7 @@ type IProofStore interface {
 	PopulateTestUsersSectionsRosters()
 	RemoveFromRoster(sectionName string, userEmail string) error
 	RemoveSection(sectionName string) error
+   RemoveAssignment(sectionName string, name string) error
 	Store(Proof) error
 	MaintainAdmins(admin_users map[string]bool)
 }
@@ -536,7 +537,7 @@ func (p *ProofStore) RemoveFromRoster(sectionName string, userEmail string) (err
    statement, err := p.db.Prepare(RemoveFromRosterSQL)
    if err != nil {
       log.Println("error: RemoveFromRoster: preparation of RemoveFromRosterSQL statement")
-      log.Fatalln("-- ", err.Error())
+      log.Println("-- ", err.Error())
       return err
    }
    defer statement.Close()
@@ -544,6 +545,26 @@ func (p *ProofStore) RemoveFromRoster(sectionName string, userEmail string) (err
    _, err = statement.Exec(sectionName, userEmail)
    if err != nil {
       log.Println("error: RemoveFromRoster: execution of RemoveFromRosterSQL statement")
+      log.Println("-- ", err.Error())
+      return err
+   }
+   return nil
+}
+
+func (p *ProofStore) RemoveAssignment(sectionName string, name string) (error) {
+   // log.Println("Deleting assignment record. . .")
+   RemoveAssignmentSQL := `DELETE FROM assignment where sectionName = ? and name = ?;`
+   statement, err := p.db.Prepare(RemoveAssignmentSQL)
+   if err != nil {
+      log.Println("error: RemoveAssignment: preparation of RemoveAssignmentSQL statement")
+      log.Println("-- ", err.Error())
+      return err
+   }
+   defer statement.Close()
+
+   _, err = statement.Exec(sectionName, name)
+   if err != nil {
+      log.Println("error: RemoveAssignment: execution of RemoveAssignmentSQL statement")
       log.Println("-- ", err.Error())
       return err
    }

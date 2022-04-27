@@ -730,6 +730,38 @@ func (env *Env) removeSection(w http.ResponseWriter, req *http.Request) {
 	io.WriteString(w, `{"success": "true"}`)
 }
 
+// remove 1 assignment entry, based on section name and name of assignment
+func (env *Env) removeAssignment(w http.ResponseWriter, req *http.Request) {
+	if req.Method != "POST" || req.Body == nil {
+		http.Error(w, "Request not accepted.", 400)
+		return
+	}
+
+	type reqBody struct {
+		SectionName string `json:"sectionName"`
+		Name   string `json:"name"`
+	}
+
+	var requestData reqBody
+
+	decoder := json.NewDecoder(req.Body)
+
+	if err := decoder.Decode(&requestData); err != nil {
+		http.Error(w, "Unable to decode request body.", 400)
+		return
+	}
+
+	err := env.ds.RemoveAssignment(requestData.SectionName, requestData.Name)
+	if err != nil {
+		http.Error(w, "db assignment deletion error", 500)
+		log.Println(err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	io.WriteString(w, `{"success": "true"}`)
+}
+
 // This will delete all non-admin users, non-argument proofs, sections, and rosters, but not reset the auto_increment id
 func (env *Env) clearDatabase() {
 	if err := env.ds.EmptyUserTable(); err != nil {
@@ -900,7 +932,7 @@ func main() {
 	http.Handle("/update-assignment", tokenauth.WithValidToken(http.HandlerFunc(Env.updateAssignment)))
 	http.Handle("/remove-from-roster", tokenauth.WithValidToken(http.HandlerFunc(Env.removeFromRoster)))
 	http.Handle("/remove-section", tokenauth.WithValidToken(http.HandlerFunc(Env.removeSection)))
-	
+	http.Handle("/remove-assignment", tokenauth.WithValidToken(http.HandlerFunc(Env.removeAssignment)))
 
 	// Get admin users -- this is a public endpoint, no token required
 	// Can be changed to require token, but would reduce cacheability
