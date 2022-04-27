@@ -139,6 +139,10 @@ textarea{
 	display: none;
 }
 
+#assignmentPage{
+	display:none;
+}
+
 #hiddenDrop{
 	display: none;
 }
