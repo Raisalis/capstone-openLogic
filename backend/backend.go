@@ -418,7 +418,72 @@ func (env *Env) getCompletedProofsBySection(w http.ResponseWriter, req *http.Req
 
 // get all assignments associated with a specific section
 func (env *Env) getAssignmentsBySection(w http.ResponseWriter, req *http.Request) {
-	
+	if req.Method != "GET" || req.Body == nil {
+		http.Error(w, "Request not accepted.", 400)
+		return
+	}
+
+	// Accepted JSON fields must be defined here
+	type getAssignmentsRequest struct {
+		SectionName string `json:"sectionName"`
+	}
+
+	var requestData getAssignmentsRequest
+
+	decoder := json.NewDecoder(req.Body)
+
+	if err := decoder.Decode(&requestData); err != nil {
+		http.Error(w, "Unable to decode request body.", 400)
+		return
+	}
+
+	log.Printf("%+v", requestData)
+
+	if requestData.SectionName == "" {
+		http.Error(w, "section name required", 400)
+		return
+	}
+
+	var err error
+
+	var assignmentDetails []datastore.Assignment
+	assignmentDetails, err = env.ds.GetAssignmentsBySection(requestData.SectionName)
+	if err != nil {
+		http.Error(w, "db access error", 500)
+		log.Println(err)
+		return
+	}
+
+	type assignmentWithProofs struct {
+		Name string `json:"name"`
+		ProofList []datastore.Proof `json:"proofList"`
+		Visibility string `json:"visibility"`
+	}
+
+	var assignments []assignmentWithProofs
+	for _,v := range assignmentDetails {
+		var singleAssign assignmentWithProofs
+		singleAssign.Name = v.Name
+		singleAssign.Visibility = v.Visibility
+		singleAssign.ProofList, err = env.ds.GetAssignmentProofs(v)
+		if err != nil {
+			http.Error(w, "db access error", 500)
+			log.Println(err)
+			return
+		}
+		assignments = append(assignments, singleAssign)
+	}
+	log.Printf("assignments array: %+v", assignments)
+
+	assignmentsJSON, err := json.Marshal(assignments)
+	if err != nil {
+		http.Error(w, "json marshal error", 500)
+		log.Println(err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	io.WriteString(w, string(assignmentsJSON))
 }
 
 // add a section based on current admin user and given sectionName

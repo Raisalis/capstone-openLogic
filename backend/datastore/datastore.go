@@ -6,6 +6,7 @@ import (
 	"errors"
    "fmt"
 	"log"
+   "strconv"
 )
 
 var (
@@ -62,6 +63,8 @@ type IProofStore interface {
 	GetUserCompletedProofs(user UserWithEmail) (error, []Proof)
    GetSections(userEmail string) ([]Section, error)
    GetRoster(sectionName string) ([]Roster, error)
+   GetAssignmentsBySection(sectionName string) ([]Assignment, error)
+   GetAssignmentProofs(assignment Assignment) ([]Proof, error)
    GetCompletedProofsBySection(sectionName string) ([]RosterAndProof, error)
 	PopulateTestUsersSectionsRosters()
 	RemoveFromRoster(sectionName string, userEmail string) error
@@ -630,44 +633,72 @@ func (p *ProofStore) GetRoster(sectionName string) ([]Roster, error) {
    return roster, nil
 }
 
-func (p *ProofStore) GetAssignmentProofs(assignment Assignment) ([]Proof, error) {
-   // get proofs by ids in assignment.proofIds
-   log.Println("in datastore: GetAssignmentProofs")
-   selectProofIdsSQL := `SELECT proofIds FROM assignment WHERE sectionName = ?, name = ?;`
-   statement, err := p.db.Prepare(selectProofIdsSQL)
+func (p *ProofStore) GetAssignmentsBySection(sectionName string) ([]Assignment, error) {
+   selectAssignmentsSQL := `SELECT * FROM assignment WHERE sectionName = ?;`
+   statement, err := p.db.Prepare(selectAssignmentsSQL)
    defer statement.Close()
 
-   rows, err := statement.Query(assignment.SectionName, assignment.Name)
+   rows, err := statement.Query(sectionName)
    if err != nil {
-      log.Printf(`error: GetAssignmentProofs: during execution of selectProofIdsSQL statement
+      log.Printf(`error: GetAssignmentsBySection: during execution of selectAssignmentsSQL statement
                   -- %s`, err.Error())
       return nil, err
    }
    defer rows.Close()
 
-   var rowProofIds string
-   var proofs []Proof
-   
-   rows.Scan(&rowProofIds)
-   assignmentProofIds := string(rowProofIds[:])
-   if assignmentProofIds == "" {
-      return proofs, nil
+   var assignments []Assignment
+   for rows.Next() { 
+      var assign Assignment
+      rows.Scan(&assign.SectionName, &assign.Name, &assign.ProofIds, &assign.Visibility)
+      log.Println("assignment Scan check: %+v", assign)
+      assignments = append(assignments, assign)
    }
-   log.Println("proof ids retrieved: ", assignmentProofIds)
+   return assignments, nil
+}
 
-   // assignmentProofIds[0] = "("
-   // assignmentProofIds[len(assignmentProofIds) - 1] = ")"
 
-   selectProofsSQL := `SELECT * FROM proof WHERE id IN ? ORDER BY proofName;`
-   statement, err = p.db.Prepare(selectProofsSQL)
-   
-   rows, err = statement.Query(assignmentProofIds)
-   err, proofs = getProofsFromRows(rows)
+func (p *ProofStore) GetAssignmentProofs(assignment Assignment) ([]Proof, error) {
+   // get proofs by ids in assignment.proofIds
+   log.Println("in datastore: GetAssignmentProofs")
+   log.Printf("assignment: %s > %s > %s", assignment.SectionName, assignment.Name, assignment.ProofIds)
+
+   var proofIdIntegers []int
+   for _,v := range assignment.ProofIds {
+      if string(v) != "[" && string(v) != "]" && string(v) != " " && string(v) != ","{
+         id,_:= strconv.Atoi(string(v))
+         proofIdIntegers = append(proofIdIntegers, id)
+      }
+   }
+   log.Println("proof ids for selectProofsSQL: ", proofIdIntegers)
+
+   selectProofsSQL := `SELECT * FROM proof WHERE id = ?;`
+   statement, err := p.db.Prepare(selectProofsSQL)
    if err != nil {
-      log.Printf(`error: GetAssignmentProofs: during rows conversion
+      log.Printf(`error: GetAssignmentProofs: during selectProofSQL prep
                   -- %s`, err.Error())
       return nil, err
    }
+   defer statement.Close()
+
+   var proofs []Proof
+   for _,v := range proofIdIntegers {
+      rows, err := statement.Query(v)
+      if err != nil {
+         log.Printf(`error: GetAssignmentProofs: during selectProofSQL execution
+                     -- %s`, err.Error())
+         return nil, err
+      }
+      defer rows.Close()
+
+      err, proof := getProofsFromRows(rows)
+      if err != nil {
+         log.Printf(`error: GetAssignmentProofs: during rows conversion
+                     -- %s`, err.Error())
+         return nil, err
+      }
+      proofs = append(proofs, proof[0])
+   }
+   
 
    return proofs, nil
 }
