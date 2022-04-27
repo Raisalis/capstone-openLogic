@@ -56,6 +56,8 @@ type IProofStore interface {
 	InsertUser(user User) error
 	InsertSection(section Section) error
 	InsertRoster(rosterRow Roster) error
+   InsertAssignment(assignment Assignment) error
+   UpdateAssignment(currentName string, updatedAssignment Assignment) error
    GetAdmins() ([]string)
 	GetAllAttemptedRepoProofs() (error, []Proof)
 	GetRepoProofs(user UserWithEmail) (error, []SectionProofs)
@@ -486,19 +488,27 @@ func (p *ProofStore) InsertAssignment(assignment Assignment) (error){
    return nil
 }
 
-// func (p *ProofStore) UpdateAssignment(currentAssignment Assignment, updatedAssignment Assignment) (error) {
-//    updateAssignmentSQL := `UPDATE assignment SET name = ?, proofIds = ?, visibility = ?
-//                            WHERE name = ?, sectionName = ?;`
-//    statement, err := p.db.Prepare(updateAssignmentSQL)
-//    if err != nil {
-//       log.Println("error: UpdateAssignment: preparation of updateAssignmentSQL statement")
-//       log.Println("-- ", err.Error())
-//       return err
-//    }
-//    defer statement.Close()
+func (p *ProofStore) UpdateAssignment(currentName string, updatedAssignment Assignment) (error) {
+   updateAssignmentSQL := `UPDATE assignment SET name = ?, proofIds = ?, visibility = ?
+                           WHERE name = ? and sectionName = ?;`
+   statement, err := p.db.Prepare(updateAssignmentSQL)
+   if err != nil {
+      log.Println("error: UpdateAssignment: preparation of updateAssignmentSQL statement")
+      log.Println("-- ", err.Error())
+      return err
+   }
+   defer statement.Close()
 
-//    _, err = statement.Exec(updatedAssignment.name, )
-// }
+   _, err = statement.Exec(updatedAssignment.Name, updatedAssignment.ProofIds, updatedAssignment.Visibility,
+                           currentName, updatedAssignment.SectionName)
+   if err != nil {
+      log.Println("error: UpdateAssignment: execution of updateAssignmentSQL statement")
+      log.Println("-- ", err.Error())
+      return err
+   }
+
+   return nil
+}
 
 func (p *ProofStore) RemoveSection(sectionName string) (error) {
    // log.Println("Deleting section record. . .")

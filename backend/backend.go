@@ -592,6 +592,81 @@ func (env *Env) addRoster(w http.ResponseWriter, req *http.Request) {
 	io.WriteString(w, `{"success": "true"}`)
 }
 
+func (env *Env) addAssignment(w http.ResponseWriter, req *http.Request){
+	if req.Method != "POST" || req.Body == nil {
+		http.Error(w, "Request not accepted.", 400)
+		return
+	}
+
+	type reqBody struct {
+		SectionName string `json:"sectionName"`
+		Name   string `json:"name"`
+		ProofIds []int `json:"proofIds"`
+		Visibility string `json:"visibility"`
+	}
+
+	var requestData reqBody
+	decoder := json.NewDecoder(req.Body)
+	if err := decoder.Decode(&requestData); err != nil {
+		http.Error(w, "Unable to decode request body.", 400)
+		return
+	}
+
+	var assignment datastore.Assignment
+	assignment.SectionName = requestData.SectionName
+	assignment.Name = requestData.Name
+	assignment.ProofIds = fmt.Sprint(requestData.ProofIds)
+	assignment.Visibility = requestData.Visibility
+
+	err := env.ds.InsertAssignment(assignment)
+	if err != nil {
+		http.Error(w, "db assignment insertion error: " + err.Error(), 500)
+		log.Println(err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	io.WriteString(w, `{"success": "true"}`)
+}
+
+func (env *Env) updateAssignment(w http.ResponseWriter, req *http.Request){
+	if req.Method != "POST" || req.Body == nil {
+		http.Error(w, "Request not accepted.", 400)
+		return
+	}
+
+	type reqBody struct {
+		SectionName string `json:"sectionName"`
+		CurrentName string `json:"currentName"`
+		UpdatedName string `json:"updatedName"`
+		UpdatedProofIds []int `json:"updatedProofIds"`
+		UpdatedVisibility string `json:"updatedVisibility`
+	}
+
+	var requestData reqBody
+	decoder := json.NewDecoder(req.Body)
+	if err := decoder.Decode(&requestData); err != nil {
+		http.Error(w, "Unable to decode request body.", 400)
+		return
+	}
+
+	var UpdatedAssignment datastore.Assignment
+	UpdatedAssignment.SectionName = requestData.SectionName
+	UpdatedAssignment.Name = requestData.UpdatedName
+	UpdatedAssignment.ProofIds = fmt.Sprint(requestData.UpdatedProofIds)
+	UpdatedAssignment.Visibility = requestData.UpdatedVisibility
+
+	err := env.ds.UpdateAssignment(requestData.CurrentName, UpdatedAssignment)
+	if err != nil {
+		http.Error(w, "db assignment update error: " + err.Error(), 500)
+		log.Println(err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	io.WriteString(w, `{"success": "true"}`)
+}
+
 // remove 1 roster entry, based on user email and section name
 func (env *Env) removeFromRoster(w http.ResponseWriter, req *http.Request) {
 	if req.Method != "POST" || req.Body == nil {
@@ -821,8 +896,11 @@ func main() {
 	// spr2022 POST (delete has also been treated as POST) : use JSON req.body for arguments
 	http.Handle("/add-section", tokenauth.WithValidToken(http.HandlerFunc(Env.addSection)))
 	http.Handle("/add-roster", tokenauth.WithValidToken(http.HandlerFunc(Env.addRoster)))
+	http.Handle("/add-assignment", tokenauth.WithValidToken(http.HandlerFunc(Env.addAssignment)))
+	http.Handle("/update-assignment", tokenauth.WithValidToken(http.HandlerFunc(Env.updateAssignment)))
 	http.Handle("/remove-from-roster", tokenauth.WithValidToken(http.HandlerFunc(Env.removeFromRoster)))
 	http.Handle("/remove-section", tokenauth.WithValidToken(http.HandlerFunc(Env.removeSection)))
+	
 
 	// Get admin users -- this is a public endpoint, no token required
 	// Can be changed to require token, but would reduce cacheability
