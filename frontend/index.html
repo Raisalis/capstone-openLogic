@@ -194,125 +194,114 @@
   <div class="header">
     <h1> Administrator Options: </h1>
   </div>
+
+  <button onclick="showProofs(),ViewClasses()">View Classes</button> <button onclick="showStudents()">Add Students</button> <button onclick="showAssignments()">Assignments</button>
+  <div  id="proofValues">
+    <center>
+    <br>
+    <select name="proofs" id="proofNameSelect">
+      <option >Select Proof</option>
+    </select>
+    <select name="students" id="studentNameSelect">
+      <option value="">Select Student</option>
+    </select>
+    <button>Show All Students</button>
+    <div class="content">
+      <button class="downloadCSV">Download Student Problems as CSV</button>
+    </div>
+    <br>
+    <button onclick="showDrop()">Drop Student/Class</button>
+
+    <div id="hiddenDrop">
+      <input type="text" id="sectionToRemoveStudent" placeholder="Class Section">
+      <br>
+      <input type="text" id="dropKid" placeholder="Student to drop (by email)">
+      <br>
+      <button onclick="dropStudent()">Drop Student</button>
+      <button onclick="showDropClass()">Drop A Class</button>
+      <div id="howToDropClass">
+        <br>
+        <input type="text" name="" id="dropSectionName" placeholder="enter section name to drop">
+        <br>
+        <button onclick="dropClass()">Drop Class</button>
+      </div>
+    </div>
+    </center> 
+  </div>
   
-      
-            <button onclick="showProofs(),ViewClasses()">View Classes</button> <button onclick="showStudents()">Add Students</button> <button onclick="showAssignments()">Assignments</button>
-            <div  id="proofValues">
-                  <center>
-                    <br>
-                    <select name="proofs" id="proofNameSelect">
-                      <option >Select Proof</option>
-                    </select>
-                    <select name="students" id="studentNameSelect">
-                      <option value="">Select Student</option>
-                    </select>
-                    <button>Show All Students</button>
-                    <div class="content">
-                      <button class="downloadCSV">Download Student Problems as CSV</button>
-                      
-                    </div>
-                    <br>
-                    <button onclick="showDrop()">Drop Student/Class</button>
-                    <div id="hiddenDrop">
-                      <input type="text" id="sectionToRemoveStudent" placeholder="Class Section">
-                      <br>
-                      <input type="text" id="dropKid" placeholder="Student to drop (by email)">
-                      <br>
-                      <button onclick="dropStudent()">Drop Student</button>
-                      <button onclick="showDropClass()">Drop A Class</button>
-                      <div id="howToDropClass">
-                        <br>
-                        <input type="text" name="" id="dropSectionName" placeholder="enter section name to drop">
-                        <br>
-                        <button onclick="dropClass()">Drop Class</button>
-                      </div>
-                    </div>
-                      <div>
-                        
+  <div id="studentPage">
+    <br>
+    <center>        
+    <h3>Add Student/Class</h3>
+    <div id="studentAddition">
+      <input type="text" id="className" size="40" placeholder="Class name, major, section, semester">
+      <br>
+      <!--<input type="text" placeholder="Amount of students">-->
+      <textarea name="studentAdd"  id="involveStudents" cols="30" rows="10" placeholder="Enter student emails"></textarea>
+      <br>
+      <button onclick="insertClass()">Confirm Students</button>
+    </div>             
+    </center>
+  </div>
 
-                    
-                    
+  <div id="assignmentPage">
+    <br>
+    <center>
+      <h3>Add New Assignment</h3>
+      <div id="createAssignmentDiv">
+        <input type="text" id="assignmentName" size="40" placeholder="Assignment Name">
+        <br>
+        <br>
+        <button onclick="insertAssignment()">Create Assignment</button>
+      </div>
+      <br>
+      <h3>Add/Remove Proof to Assignment</h3>
+      <div id="addRemoveProofAssignmentButtonsDiv">
+        <button onclick="showAddProofAssignment()">Add Proof</button> <button onclick="showRemoveProofAssignment()">Remove Proof</button>
+      </div>
+      <div id="addProofAssignmentDiv">
+        <select name="assign" id="proofAssignmentIn">
 
-                    
-                   
-                </center> 
-            </div>
-            
-            <div id="studentPage">
-              <br>
-                  <center>  
-                        
-                          
-                          <h3>Add Student/Class</h3>
-                          <div id="studentAddition">
-                            <input type="text" id="className" size="40" placeholder="Class name, major, section, semester">
-                            <br>
-                            
-                            
-                            <!--<input type="text" placeholder="Amount of students">-->
-                            <textarea name="studentAdd"  id="involveStudents" cols="30" rows="10" placeholder="Enter student emails"></textarea>
-                            
-                            <br>
-                            <button onclick="insertClass()">Confirm Students</button>
-                          </div> 
+        </select>
 
-                          
-                      </center>
-            </div>
+        <select name="proof" id="proofIn">
 
-            <div id="assignmentPage">
-              <br>
-              <center>
-                <h3>Add New Assignment</h3>
-                <div id="createAssignmentDiv">
-                  <input type="text" id="assignmentName" size="40" placeholder="Assignment Name">
-                  <br>
-                  <br>
-                  <button onclick="insertAssignment()">Create Assignment</button>
-                </div>
-                <br>
-                <h3>Add/Remove Proof to Assignment</h3>
-                <div id="addRemoveProofAssignmentButtonsDiv">
-                  <button onclick="showAddProofAssignment()">Add Proof</button> <button onclick="showRemoveProofAssignment()">Remove Proof</button>
-                </div>
-                <div id="addProofAssignmentDiv">
-                  <select name="class" id="classIn">
+        </select>
+        <button>Add</button>
+      </div>
+      <div id="removeProofAssignmentDiv">
+        <select name="assign" id="proofAssignmentOut">
+          
+        </select>
 
-                  </select>
+        <select name="proof" id="proofOut">
 
-                  <select name="assign" id="assignmentIn">
+        </select>
+        <button>Remove</button>
+      </div>
+      <br>
+      <h3>Add/Remove Class Assignments</h3>
+      <div id="addRemoveAssignmentButtonsDiv">
+        <button onclick="showAddAssignmentClass()">Add Assignment</button> <button onclick="showRemoveAssignmentClass()">Remove Assignment</button>
+      </div>
+      <div id="addAssignmentClassDiv">
+        <select name="class" id="classIn"></select>
+        <select name="assign" id="classAssignmentIn"></select>
+        <button>Add</button>
+      </div>
+      <div id="removeAssignmentClassDiv">
+        <select name="class" id="classOut"></select>
+        <select name="assign" id="classAssignmentOut"></select>
+        <button>Remove</button>
+      </div>
+      <!-- Could move the below section to View Classes Page -->
+      <br>
+      <h3>Publish Assignments</h3>
+      <div id="publicAssignmentsDiv">
 
-                  </select>
-                </div>
-                <div id="removeProofAssignmentDiv">
-                  <select name="classe" id="classOut">
-                    
-                  </select>
-
-                  <select name="assignments" id="assignmentOut">
-
-                  </select>
-
-                </div>
-                <br>
-                <h3>Add/Remove Class Assignments</h3>
-                <div id="addRemoveAssignmentButtonsDiv">
-                  <button onclick="showAddAssignmentClass()">Add Assignment</button> <button onclick="showRemoveAssignmentClass()">Remove Assignment</button>
-                </div>
-                <div id="addAssignmentClassDiv">
-
-                </div>
-                <div id="removeAssignmentClassDiv">
-
-                </div>
-                <!-- Could move the below section to View Classes Page -->
-                <br>
-                <h3>Publish Assignments</h3>
-                <div id="publicAssignmentsDiv">
-
-                </div>
-              </center>
-            </div>
+      </div>
+    </center>
+  </div>
 
 <br>
       
