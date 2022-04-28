@@ -275,7 +275,7 @@ async function addAssignmentToClass(){
    }else{
 
       backendPOST(add-assignment, {sectionName: classIn, assignmentName: add});
-      alert("Assignment has been added to the class")
+      alert("Assignment has been added to the class");
    }
 }
 
@@ -313,6 +313,12 @@ async function removeAssignment(){
    }
 }
 
+async function addProofAssignment(){
+
+}
+async function removeProofAssignment(){
+   
+}
 async function fillProof(){
    //will need to wait for the get functions to work
    // backendGET("proof-values", {proofName, proof}).then(
