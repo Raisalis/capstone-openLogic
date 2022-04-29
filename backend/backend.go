@@ -486,6 +486,54 @@ func (env *Env) getAssignmentsBySection(w http.ResponseWriter, req *http.Request
 	io.WriteString(w, string(assignmentsJSON))
 }
 
+func (env *Env) getCompletedProofsByAssignment(w http.ResponseWriter, req *http.Request) {
+	if req.Method != "GET" || req.Body == nil {
+		http.Error(w, "Request not accepted.", 400)
+		return
+	}
+
+	// Accepted JSON fields must be defined here
+	type getCompletedProofsRequest struct {
+		SectionName string `json:"sectionName"`
+		AssignmentName string `json:"assignmentName"`
+	}
+
+	var requestData getCompletedProofsRequest
+
+	decoder := json.NewDecoder(req.Body)
+
+	if err := decoder.Decode(&requestData); err != nil {
+		http.Error(w, "Unable to decode request body.", 400)
+		return
+	}
+
+	log.Printf("%+v", requestData)
+
+	if requestData.SectionName == "" {
+		http.Error(w, "section name required", 400)
+		return
+	}
+	if requestData.AssignmentName == "" {
+		http.Error(w, "assignment name required", 400)
+		return
+	}
+
+	var err error
+
+	var completedProofs []datastore.Proof
+	completedProofs, err = env.ds.GetCompletedProofsByAssignment(requestData.SectionName, requestData.AssignmentName)
+
+	completedProofsJSON, err := json.Marshal(completedProofs)
+	if err != nil {
+		http.Error(w, "json marshal error", 500)
+		log.Println(err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	io.WriteString(w, string(completedProofsJSON))
+}
+
 // add a section based on current admin user and given sectionName
 func (env *Env) addSection(w http.ResponseWriter, req *http.Request) {
 	log.Println("inside backend.go: addSection")
@@ -922,6 +970,7 @@ func main() {
 	http.Handle("/sections", tokenauth.WithValidToken(http.HandlerFunc(Env.getSections)))
 	http.Handle("/roster", tokenauth.WithValidToken(http.HandlerFunc(Env.getRoster)))
 	http.Handle("/completed-proofs-by-section", tokenauth.WithValidToken(http.HandlerFunc(Env.getCompletedProofsBySection)))
+	http.Handle("/completed-proofs-by-assignment", tokenauth.WithValidToken(http.HandlerFunc(Env.getCompletedProofsByAssignment)))
 	http.Handle("/assignments-by-section", tokenauth.WithValidToken(http.HandlerFunc(Env.getAssignmentsBySection)))
 
 

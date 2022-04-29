@@ -68,6 +68,7 @@ type IProofStore interface {
    GetAssignmentsBySection(sectionName string) ([]Assignment, error)
    GetAssignmentProofs(assignment Assignment) ([]Proof, error)
    GetCompletedProofsBySection(sectionName string) ([]RosterAndProof, error)
+   GetCompletedProofsByAssignment(sectionName string, assignmentName string) ([]Proof, error)
 	PopulateTestUsersSectionsRosters()
 	RemoveFromRoster(sectionName string, userEmail string) error
 	RemoveSection(sectionName string) error
@@ -780,6 +781,81 @@ func (p *ProofStore) GetCompletedProofsBySection(sectionName string) ([]RosterAn
    return completedProofs, nil
 }
 
+func (p *ProofStore) GetCompletedProofsByAssignment(sectionName string, assignmentName string) ([]Proof, error) {
+   getProofIds := `SELECT proofIds FROM assignment WHERE sectionName = ? AND name = ?;`
+   statement, err := p.db.Prepare(getProofIds)
+   if err != nil {
+      log.Printf(`error: GetCompletedProofsByAssignment: during preparation of getProofIds statement
+                  -- %s`, err.Error())
+      return nil, err
+   }
+   defer statement.Close()
+
+   rows, err := statement.Query(sectionName, assignmentName)
+   if err != nil {
+      log.Printf(`error: GetCompletedProofsByAssignment: during execution of getProofIds statement
+                  -- %s`, err.Error())
+      return nil, err
+   }
+   defer rows.Close()
+
+   var proofIdsString string
+   for rows.Next() {
+      rows.Scan(&proofIdsString)
+   }
+   log.Printf("GetCompletedProofsByAssignment: proofIdsString: %s", proofIdsString)
+   // -----
+   var assignmentDetails Assignment
+   assignmentDetails.SectionName = sectionName
+   assignmentDetails.Name = assignmentName
+   assignmentDetails.ProofIds = proofIdsString
+
+   assignmentProofs, err := p.GetAssignmentProofs(assignmentDetails)
+   // -----
+   selectProofsSQL := `SELECT * FROM proof WHERE userSubmitted IN (SELECT userEmail FROM roster WHERE sectionName = ? and role = 'student')
+                        AND entryType = 'proof' AND everCompleted = 'true' AND proofCompleted = 'true' AND repoProblem = 'true'
+                        ORDER BY userSubmitted, proofName;`
+   statement, err = p.db.Prepare(selectProofsSQL)
+   if err != nil {
+      log.Printf(`error: GetCompletedProofsByAssignment: during preparation of selectProofsSQL statement
+                  -- %s`, err.Error())
+      return nil, err
+   }
+
+   rows, err = statement.Query(sectionName)
+   if err != nil {
+      log.Printf(`error: GetCompletedProofsByAssignment: during execution of selectProofsSQL statement
+                  -- %s`, err.Error())
+      return nil, err
+   }
+
+   err, allProofs := getProofsFromRows(rows)
+   if err != nil {
+      log.Printf(`error: GetCompletedProofsByAssignment: during copnversion of rows for allProofs
+                  -- %s`, err.Error())
+      return nil, err
+   }
+
+   log.Println("-----")
+   log.Printf("assignmentProofs: %+v", assignmentProofs)
+   log.Println("-----")
+   log.Printf("allProofs: %+v", allProofs)
+   log.Println("-----")
+   
+   var completedAssignedProofs []Proof
+   for _,v1 := range allProofs {
+      for _,v2 := range assignmentProofs {
+         if (v1.ProofName == v2.ProofName) && (v1.Conclusion == v2.Conclusion) {
+            // append v1 to completedAssignedProofs
+            completedAssignedProofs = append(completedAssignedProofs, v1)
+         }
+      }
+   }
+   log.Printf("completedAssignedProofs: %+v", allProofs)
+   log.Println("-----")
+   return completedAssignedProofs, nil
+}
+
 func (p *ProofStore) getUser(email string) (*User, error) {
    var user User
    row := p.db.QueryRow("Select * from user where email = ?;", email).Scan(
@@ -941,7 +1017,7 @@ func (p *ProofStore) PopulateTestUsersSectionsRosters() {
 	 },
     {
 		SectionName: "Larson Section",
-		UserEmail: "sadamsTEST@csumb.edu",
+		UserEmail: "jduboisTEST@csumb.edu",
 		Role: "student",
 	 },
    }
