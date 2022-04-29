@@ -62,6 +62,7 @@ type IProofStore interface {
 	GetAllAttemptedRepoProofs() (error, []Proof)
 	GetRepoProofs(user UserWithEmail) (error, []SectionProofs)
 	GetUserProofs(user UserWithEmail) (error, []Proof)
+   GetUserArguments(user UserWithEmail) ([]Proof, error)
 	GetUserCompletedProofs(user UserWithEmail) (error, []Proof)
    GetSections(userEmail string) ([]Section, error)
    GetRoster(sectionName string) ([]Roster, error)
@@ -215,6 +216,29 @@ func (p *ProofStore) GetUserProofs(user UserWithEmail) (error, []Proof) {
 	defer rows.Close()
 
 	return getProofsFromRows(rows)
+}
+
+
+func (p *ProofStore) GetUserArguments(user UserWithEmail) ([]Proof, error) {
+   stmt, err := p.db.Prepare(`SELECT id, entryType, userSubmitted, proofName, proofType, Premise, Logic, Rules, everCompleted, proofCompleted, timeSubmitted, Conclusion, repoProblem 
+                              FROM proof WHERE userSubmitted = ? AND entryType = 'argument';`)
+	if err != nil {
+		return  nil, err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(user.GetEmail())
+	if err != nil {
+      return  nil, err
+	}
+	defer rows.Close()
+
+   err, arguments := getProofsFromRows(rows)
+   if err != nil {
+      return  nil, err
+	}
+
+	return arguments, nil
 }
 
 func (p *ProofStore) GetUserCompletedProofs(user UserWithEmail) (error, []Proof) {
@@ -687,7 +711,6 @@ func (p *ProofStore) GetAssignmentsBySection(sectionName string) ([]Assignment, 
    }
    return assignments, nil
 }
-
 
 func (p *ProofStore) GetAssignmentProofs(assignment Assignment) ([]Proof, error) {
    // get proofs by ids in assignment.proofIds

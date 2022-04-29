@@ -197,6 +197,32 @@ func (env *Env) getProofs(w http.ResponseWriter, req *http.Request) {
 	log.Printf("%+v", req.URL.Query())
 }
 
+func (env *Env) getUserArguments(w http.ResponseWriter, req *http.Request) {
+	if req.Method != "GET" || req.Body == nil {
+		http.Error(w, "Request not accepted.", 400)
+		return
+	}
+
+	user := req.Context().Value("tok").(userWithEmail)
+
+	arguments, err := env.ds.GetUserArguments(user)
+	if err != nil {
+		log.Println("error: backend.go: getUserArguments(): " + err.Error())
+		http.Error(w, "Query error", 500)
+		return
+	}
+	log.Printf("%+v", arguments)
+
+	userProofsJSON, err := json.Marshal(arguments)
+	if err != nil {
+		http.Error(w, "json marshal error", 500)
+		log.Print(err)
+		return
+	}
+
+	io.WriteString(w, string(userProofsJSON))
+}
+
 // return section entries given a userEmail
 func (env *Env) getSections(w http.ResponseWriter, req *http.Request) {
 	// log.Println("inside backend.go: getSections")
@@ -972,6 +998,8 @@ func main() {
 	http.Handle("/completed-proofs-by-section", tokenauth.WithValidToken(http.HandlerFunc(Env.getCompletedProofsBySection)))
 	http.Handle("/completed-proofs-by-assignment", tokenauth.WithValidToken(http.HandlerFunc(Env.getCompletedProofsByAssignment)))
 	http.Handle("/assignments-by-section", tokenauth.WithValidToken(http.HandlerFunc(Env.getAssignmentsBySection)))
+	http.Handle("/arguments-by-user", tokenauth.WithValidToken(http.HandlerFunc(Env.getUserArguments)))
+
 
 
 	// spr2022 POST (delete has also been treated as POST) : use JSON req.body for arguments
