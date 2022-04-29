@@ -197,6 +197,7 @@
 
   <button onclick="showProofs(),ViewClasses()">View Classes</button> <button onclick="showStudents()">Add Students</button> <button onclick="showAssignments()">Assignments</button>
   <div  id="proofValues">
+
     <center>
     <br>
     <select name="proofs" id="proofNameSelect">
@@ -205,27 +206,32 @@
     <select name="students" id="studentNameSelect">
       <option value="">Select Student</option>
     </select>
-    <button>Show All Students</button>
+    
     <div class="content">
       <button class="downloadCSV">Download Student Problems as CSV</button>
     </div>
     <br>
+
     <button onclick="showDrop()">Drop Student/Class</button>
 
     <div id="hiddenDrop">
+
       <input type="text" id="sectionToRemoveStudent" placeholder="Class Section">
       <br>
       <input type="text" id="dropKid" placeholder="Student to drop (by email)">
       <br>
       <button onclick="dropStudent()">Drop Student</button>
       <button onclick="showDropClass()">Drop A Class</button>
+
       <div id="howToDropClass">
         <br>
         <input type="text" name="" id="dropSectionName" placeholder="enter section name to drop">
         <br>
         <button onclick="dropClass()">Drop Class</button>
       </div>
+
     </div>
+
     </center> 
   </div>
   
@@ -233,6 +239,7 @@
     <br>
     <center>        
     <h3>Add Student/Class</h3>
+
     <div id="studentAddition">
       <input type="text" id="className" size="40" placeholder="Class name, major, section, semester">
       <br>
@@ -240,14 +247,17 @@
       <textarea name="studentAdd"  id="involveStudents" cols="30" rows="10" placeholder="Enter student emails"></textarea>
       <br>
       <button onclick="insertClass()">Confirm Students</button>
-    </div>             
+    </div>
+
     </center>
   </div>
+
 
   <div id="assignmentPage">
     <br>
     <center>
       <h3>Add New Assignment/Remove Assignment</h3>
+      
       <div id="createAssignmentDiv">
         <input type="text" id="assignmentName" size="40" placeholder="Assignment Name">
         <br>
@@ -263,6 +273,7 @@
         <button onclick="showAddProofAssignment()">Add Proof</button> <button onclick="showRemoveProofAssignment()">Remove Proof</button>
       </div>
       <div id="addProofAssignmentDiv">
+        <input type="text" id="proofClassIn" placeholder="Name of classroom for assignment" onkeyup="fillAddProofAssignment()">
         <select name="assign" id="proofAssignmentIn">
 
         </select>
@@ -270,9 +281,12 @@
         <select name="proof" id="proofIn">
 
         </select>
-        <button>Add</button>
+        <button onclick="addProofAssignment()">Add</button>
       </div>
+
       <div id="removeProofAssignmentDiv">
+
+        <input type="text" id="proofClassOut" placeholder="Name of classroom for assignment" onkeyup="fillDropProofAssignment()">
         <select name="assign" id="proofAssignmentOut">
           
         </select>
@@ -280,29 +294,34 @@
         <select name="proof" id="proofOut">
 
         </select>
-        <button>Remove</button>
+        <button onclick="removeProofAssignment()">Remove</button>
       </div>
       <br>
+
       <h3>Add/Remove Class Assignments</h3>
       <div id="addRemoveAssignmentButtonsDiv">
         <button onclick="showAddAssignmentClass()">Add Assignment</button> <button onclick="showRemoveAssignmentClass()">Remove Assignment</button>
       </div>
+
       <div id="addAssignmentClassDiv">
         <select name="class" id="classIn"></select>
         <select name="assign" id="classAssignmentIn"></select>
         <button>Add</button>
       </div>
+
       <div id="removeAssignmentClassDiv">
         <select name="class" id="classOut"></select>
         <select name="assign" id="classAssignmentOut"></select>
         <button>Remove</button>
       </div>
+
       <!-- Could move the below section to View Classes Page -->
       <br>
       <h3>Publish Assignments</h3>
       <div id="publicAssignmentsDiv">
 
       </div>
+
     </center>
   </div>
 
