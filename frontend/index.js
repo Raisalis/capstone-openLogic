@@ -280,8 +280,8 @@ async function addAssignmentToClass(){
 }
 
 async function removeAssignmentFromClass(){
-   var sub=document.getElementById("classOut").value;
-   var classOut=document.getElementById("classAssignmentOut");
+   var sub=document.getElementById("classAssignmentOut").value;
+   var classOut=document.getElementById("classOut").value;
    if(sub==""||classOut==""){
       alert("At least one input is empty, please insert the class name and assignment name in their respective input boxes");
    }else{
@@ -314,10 +314,64 @@ async function removeAssignment(){
 }
 
 async function addProofAssignment(){
+   
+   var assignment=document.getElementById("proofAssignmentIn").value;
+   var proof=document.getElementById("proofIn").value;
+
+   if(assignment==""||proof==""){
+      alert("One or more inputs are empty, please select the proof and assignments in their respective options");
+   }else{
+      backendPOST("update-assignment",{currentName:assignment,updatedProofIds:proof});
+
+      alert("Proof is added to assignment");
+   }
 
 }
 async function removeProofAssignment(){
+   var assignment=document.getElementById("proofAssignmentOut").value;
+   var proof=document.getElementById("proofOut").value;
+   if(assignment==""||proof==""){
+      alert("One or more inputs are empty, please select the proof and assignments in their respective options");
+   }else{
+      backendPOST("update-assignment",{currentName:assignment,updatedProofIds:proof});
+      alert("Proof removed from assignment");
+   }
+}
+
+
+async function fillAddProofAssignment(){
+   var classRoom=document.getElementById("proofClassIn");
+
+   await backendGET("assignments-by-section",{sectionName:classRoom}).then(
+      (data)=>{
+         prepareSelect("#proofAssignmentIn", data);
+
+      }, console.log
+   );
+   backendGET('Proof', {selection: 'ProofName'}).then(   
+      (data) => {
+              
+         prepareSelect('#ProofIn', data);
+         }, console.log
+      );
+}
+
+async function fillDropProofAssignment(){
+   var classRoom=document.getElementById("proofClassIn");
+
+   await backendGET("assignments-by-section",{sectionName:classRoom}).then(
+      (data)=>{
+         prepareSelect("#proofAssignmentIn", data);
+
+      }, console.log
+   );
+   backendGET('Proof', {selection: 'ProofName'}).then(   
+      (data) => {
+              
    
+         prepareSelect('#ProofIn', data);
+         }, console.log
+      );
 }
 async function fillProof(){
    //will need to wait for the get functions to work
