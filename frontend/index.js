@@ -272,9 +272,24 @@ async function addAssignmentToClass(){
    var classIn=document.getElementById("classIn").value;
    if(add==""||classIn==""){
       alert("At least one input is empty, please insert the class name and assignment name in their respective input boxes");
+   }else{
+
+      backendPOST(add-assignment, {sectionName: classIn, assignmentName: add});
+      alert("Assignment has been added to the class");
    }
-   //backendPOST(add-assignment-to-class, {sectionName: classIn, assignmentName: add});
 }
+
+async function removeAssignmentFromClass(){
+   var sub=document.getElementById("classOut").value;
+   var classOut=document.getElementById("classAssignmentOut");
+   if(sub==""||classOut==""){
+      alert("At least one input is empty, please insert the class name and assignment name in their respective input boxes");
+   }else{
+      backendPOST(remove-assignment,{sectionName:classOut,assignmentName:sub});
+      alert("Assignment removed from class");
+   }
+}
+
 
 async function insertAssignment(){
    var assignmentN=document.getElementById("assignmentName").value;
@@ -282,21 +297,28 @@ async function insertAssignment(){
       alert("The input is empty, please enter assignment name");
    }else{
 
-      //backendPOST(add-assignment, {assignmentName:assignmentN})
+      backendPOST(add-assignment, {name:assignmentN});
+      alert("Assignment Made");
    }
 }
 
 async function removeAssignment(){
-   var assignmentO=document.getElementById("assignmentNameO").value;
+   var assignmentO=document.getElementById("assignmentName").value;
    
    if(assignmentO==""){
       alert("The input is empty, please enter assignment name");
    }else{
-      //backendPOST(remove-assignment,{assignmentName:assignmentO});
-
+      backendPOST(remove-assignment,{name:assignmentO});
+      alert("Assignment Removed");
    }
 }
 
+async function addProofAssignment(){
+
+}
+async function removeProofAssignment(){
+   
+}
 async function fillProof(){
    //will need to wait for the get functions to work
    // backendGET("proof-values", {proofName, proof}).then(
