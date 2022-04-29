@@ -369,7 +369,7 @@ async function fillDropProofAssignment(){
       (data) => {
               
    
-         prepareSelect('#ProofIn', data);
+         prepareSelect('#ProofOut', data);
          }, console.log
       );
 }
