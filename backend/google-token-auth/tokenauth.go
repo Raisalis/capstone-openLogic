@@ -104,7 +104,7 @@ func WithValidToken(next http.Handler) http.Handler {
 			return
 		}
 
-		log.Println(req.Header.Get("X-Auth-Token"))
+		// log.Println(req.Header.Get("X-Auth-Token"))
 		
 		tok, valid := Verify(req.Header.Get("X-Auth-Token"))
 		if !valid {
