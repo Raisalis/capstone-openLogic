@@ -339,9 +339,27 @@ async function removeProofAssignment(){
 }
 
 async function fillClassNames() {
-   await backendGET("sections", {user:User.email}).then(
+   var userEmail = document.getElementById("userEmail").text;
+   await backendGET("sections", {user:userEmail}).then(
       (data)=>{
-         prepareSelect('#assignmentClassNames', data);
+         let elem = document.querySelector("#assignmentClassNames");
+
+         // Remove all child nodes from the select element
+         $(elem).empty();
+
+         // Create placeholder option
+         elem.appendChild(
+            new Option('Select...', null, true, true)
+         );
+
+         // Set placeholder to disabled so it does not show as selectable
+         elem.querySelector('option').setAttribute('disabled', 'disabled');
+
+         // Add option elements for the options
+         (data) && data.forEach( section => {
+            let option = new Option(section.Name, section.Name);
+            elem.appendChild(option);
+         });
       }, console.log
    );
 }
