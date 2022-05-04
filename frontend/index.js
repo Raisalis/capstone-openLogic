@@ -200,72 +200,7 @@ async function dropStudent(){
    
 }
 
-//the following are just menu popups based on button clicks on the admin buttons
-function showDrop(){
-   var dropper= document.getElementById("hiddenDrop");
-   if(dropper.style.display=== "block"){
-      dropper.style.display= "none";
-   }else{
-      dropper.style.display="block";
-   }
-}
 
-function showDropClass(){
-   var dropper= document.getElementById("howToDropClass");
-   if(dropper.style.display=== "block"){
-      dropper.style.display= "none";
-   }else{
-      dropper.style.display="block";
-   }
-}
-
-
-function showAssignments(){
-   var assignment= document.getElementById("assignmentPage");
-   if(assignment.style.display=="block"){
-      assignment.style.display= "none";
-   }else{
-      assignment.style.display="block";
-   }
-
-}
-
-
-function showAddProofAssignment(){
-   var assignment=document.getElementById("addProofAssignmentDiv");
-   if(assignment.style.display=="block"){
-      assignment.style.display= "none";
-   }else{
-      assignment.style.display="block";
-   }
-}
-
-function showRemoveProofAssignment(){
-   var assignment=document.getElementById("removeProofAssignmentDiv");
-   if(assignment.style.display=="block"){
-      assignment.style.display= "none";
-   }else{
-      assignment.style.display="block";
-   }
-}
-
-function showAddAssignmentClass(){
-   var assignment=document.getElementById("addAssignmentClassDiv");
-   if(assignment.style.display=="block"){
-      assignment.style.display= "none";
-   }else{
-      assignment.style.display="block";
-   }
-}
-
-function showRemoveAssignmentClass(){
-   var assignment=document.getElementById("removeAssignmentClassDiv");
-   if(assignment.style.display=="block"){
-      assignment.style.display= "none";
-   }else{
-      assignment.style.display="block";
-   }
-}
 
 async function addAssignmentToClass(){
    var add=document.getElementById("classAssignmentIn").value;
@@ -274,7 +209,7 @@ async function addAssignmentToClass(){
       alert("At least one input is empty, please insert the class name and assignment name in their respective input boxes");
    }else{
 
-      backendPOST(add-assignment, {sectionName: classIn, assignmentName: add});
+      backendPOST('add-assignment', {sectionName: classIn, assignmentName: add});
       alert("Assignment has been added to the class");
    }
 }
@@ -285,7 +220,7 @@ async function removeAssignmentFromClass(){
    if(sub==""||classOut==""){
       alert("At least one input is empty, please insert the class name and assignment name in their respective input boxes");
    }else{
-      backendPOST(remove-assignment,{sectionName:classOut,assignmentName:sub});
+      backendPOST('remove-assignment',{sectionName:classOut,assignmentName:sub});
       alert("Assignment removed from class");
    }
 }
@@ -293,22 +228,22 @@ async function removeAssignmentFromClass(){
 
 async function insertAssignment(){
    var assignmentN=document.getElementById("assignmentName").value;
-   if(assignmentN==""){
-      alert("The input is empty, please enter assignment name");
+   var classN=document.getElementById("assignedClass").value;
+   if(assignmentN==""||classN==""){
+      alert("The input is empty, please enter assignment name and class name.");
    }else{
-
-      backendPOST(add-assignment, {name:assignmentN});
+      backendPOST('add-assignment', {name:assignmentN, sectionName:classN});
       alert("Assignment Made");
    }
 }
 
 async function removeAssignment(){
    var assignmentO=document.getElementById("assignmentName").value;
-   
-   if(assignmentO==""){
-      alert("The input is empty, please enter assignment name");
+   var classN=document.getElementById("assignedClass").value;
+   if(assignmentO==""||classN==""){
+      alert("The input is empty, please enter assignment name and class name.");
    }else{
-      backendPOST(remove-assignment,{name:assignmentO});
+      backendPOST('remove-assignment',{name:assignmentO, sectionName:classN});
       alert("Assignment Removed");
    }
 }
@@ -338,9 +273,35 @@ async function removeProofAssignment(){
    }
 }
 
+async function fillClassNames() {
+   var userEmail = document.getElementById("userEmail").text;
+   await backendGET("sections", {user:userEmail}).then(
+      (data)=>{
+         let elem = document.querySelector("#assignmentClassNames");
+
+         // Remove all child nodes from the select element
+         $(elem).empty();
+
+         // Create placeholder option
+         elem.appendChild(
+            new Option('Select...', null, true, true)
+         );
+
+         // Set placeholder to disabled so it does not show as selectable
+         elem.querySelector('option').setAttribute('disabled', 'disabled');
+
+         // Add option elements for the options
+         (data) && data.forEach( section => {
+            let option = new Option(section.Name, section.Name);
+            elem.appendChild(option);
+         });
+      }, console.log
+   );
+}
+
 
 async function fillAddProofAssignment(){
-   var classRoom=document.getElementById("proofClassIn");
+   var classRoom=document.getElementById("proofClassIn").value;
 
    await backendGET("assignments-by-section",{sectionName:classRoom}).then(
       (data)=>{
@@ -357,11 +318,11 @@ async function fillAddProofAssignment(){
 }
 
 async function fillDropProofAssignment(){
-   var classRoom=document.getElementById("proofClassIn");
+   var classRoom=document.getElementById("proofClassIn").value;
 
    await backendGET("assignments-by-section",{sectionName:classRoom}).then(
       (data)=>{
-         prepareSelect("#proofAssignmentIn", data);
+         prepareSelect("#proofAssignmentOut", data);
 
       }, console.log
    );
@@ -380,6 +341,36 @@ async function fillProof(){
 
    //    }
    // );
+}
+
+async function fillAssignmentCheckboxes() {
+   var sectionName = document.getElementById('publishClass');
+   var checkboxHolder = document.getElementById('checkboxHolder')
+   await backendGET("assignments-by-section", {sectionName:sectionName}).then(
+      (data)=>{
+         var i = 0;
+         for(let assignment of data) {
+            const newDiv = document.createElement("div");
+            const newCheck = document.createElement("INPUT");
+            newCheck.setAttribute("type", "checkbox");
+            newCheck.setAttribute("name", "assignment");
+            newCheck.setAttribute("value", assignment.name);
+            newCheck.setAttribute("id", "option"+i)
+            if(assignment.visibility == "true") {
+               newCheck.setAttribute("checked", true);
+            } else {
+               newCheck.setAttribute("checked", false);
+            }
+            newDiv.append(newCheck);
+            const newLabel = document.createElement("LABEL");
+            newLabel.textContent = assignment.name;
+            newLabel.setAttribute("for", "option"+i);
+            newDiv.append(newLabel);
+            checkboxHolder.appendChild(newDiv);
+            i++;
+         }
+      }
+   );
 }
 // function showClassAssignment(){
 //    backendGET()
@@ -500,6 +491,8 @@ function getCSV() {
       }, console.log);
 }
 
+//the following are just menu popups based on button clicks on the admin buttons
+
 // Hides and displays the admin options
 function showProofs(){
    var proofs=document.getElementById("proofValues");
@@ -531,6 +524,71 @@ function showStudents(){
 }
 
 
+function showDrop(){
+   var dropper= document.getElementById("hiddenDrop");
+   if(dropper.style.display=== "block"){
+      dropper.style.display= "none";
+   }else{
+      dropper.style.display="block";
+   }
+}
+
+function showDropClass(){
+   var dropper= document.getElementById("howToDropClass");
+   if(dropper.style.display=== "block"){
+      dropper.style.display= "none";
+   }else{
+      dropper.style.display="block";
+   }
+}
+
+
+function showAssignments(){
+   var assignment= document.getElementById("assignmentPage");
+   if(assignment.style.display=="block"){
+      assignment.style.display= "none";
+   }else{
+      assignment.style.display="block";
+   }
+
+}
+
+
+function showAddProofAssignment(){
+   var assignment=document.getElementById("addProofAssignmentDiv");
+   if(assignment.style.display=="block"){
+      assignment.style.display= "none";
+   }else{
+      assignment.style.display="block";
+   }
+}
+
+function showRemoveProofAssignment(){
+   var assignment=document.getElementById("removeProofAssignmentDiv");
+   if(assignment.style.display=="block"){
+      assignment.style.display= "none";
+   }else{
+      assignment.style.display="block";
+   }
+}
+
+function showAddAssignmentClass(){
+   var assignment=document.getElementById("addAssignmentClassDiv");
+   if(assignment.style.display=="block"){
+      assignment.style.display= "none";
+   }else{
+      assignment.style.display="block";
+   }
+}
+
+function showRemoveAssignmentClass(){
+   var assignment=document.getElementById("removeAssignmentClassDiv");
+   if(assignment.style.display=="block"){
+      assignment.style.display= "none";
+   }else{
+      assignment.style.display="block";
+   }
+}
 
 
 
@@ -600,7 +658,7 @@ function loadRepoProofs() {
 	 });
 
 	 // Make section headers not selectable
-	 $('#repoProofSelect option[value=null]').attr('disabled', 'disabled');
+	 $('#repoProofSelect option[value=null]').attr('disabled', true);
 
 	 $('#repoProofSelect').data('repositoryDataKey', 'repoProofs');
       }, console.log
@@ -637,7 +695,7 @@ $(document).ready(function() {
           Rules = [];
       
       let entryType = "";
-      if (adminUsers.indexOf(User.email) && proofName.startsWith('Repository - ')) {
+      if (adminUsers.indexOf(User.email) && Logic.length == 0) {
          entryType = "argument";
       } else {
          entryType = "proof";
