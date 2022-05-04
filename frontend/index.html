@@ -261,11 +261,15 @@
       <div id="createAssignmentDiv">
         <input type="text" id="assignmentName" size="40" placeholder="Assignment Name">
         <input type="text" id="assignedClass" size="40" placeholder="Class Name">
+        <select name="sections" id="assignmentClassNames">
+
+        </select>
         <br>
         <br>
         <button onclick="insertAssignment()">Create Assignment</button>
         <br>
         <button onclick="removeAssignment()">Remove Assignment</button>
+        <button onclick="fillClassNames()">Load Class Names (Temp)</button>
       </div>
       <br>
       
@@ -298,23 +302,6 @@
         <button onclick="removeProofAssignment()">Remove</button>
       </div>
       <br>
-
-      <h3>Add/Remove Class Assignments</h3>
-      <div id="addRemoveAssignmentButtonsDiv">
-        <button onclick="showAddAssignmentClass()">Add Assignment</button> <button onclick="showRemoveAssignmentClass()">Remove Assignment</button>
-      </div>
-
-      <div id="addAssignmentClassDiv">
-        <select name="class" id="classIn"></select>
-        <select name="assign" id="classAssignmentIn"></select>
-        <button>Add</button>
-      </div>
-
-      <div id="removeAssignmentClassDiv">
-        <select name="class" id="classOut"></select>
-        <select name="assign" id="classAssignmentOut"></select>
-        <button>Remove</button>
-      </div>
 
       <!-- Could move the below section to View Classes Page -->
       <br>

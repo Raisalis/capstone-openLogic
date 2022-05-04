@@ -338,6 +338,14 @@ async function removeProofAssignment(){
    }
 }
 
+async function fillClassNames() {
+   await backendGET("sections", {user:User.email}).then(
+      (data)=>{
+         prepareSelect('#assignmentClassNames', data);
+      }, console.log
+   );
+}
+
 
 async function fillAddProofAssignment(){
    var classRoom=document.getElementById("proofClassIn").value;
