@@ -449,7 +449,7 @@ function authenticatedBackendGET(path_str, data_obj, id_token) {
    return $.ajax({
       url: '/backend/' + path_str,
       method: 'GET',
-      data: backendGETString(data_obj),
+      data: new URLSearchParams(data_obj).toString(),
       headers: {
          'X-Auth-Token': id_token
       }
