@@ -449,12 +449,7 @@ function authenticatedBackendGET(path_str, data_obj, id_token) {
    return $.ajax({
       url: '/backend/' + path_str,
       method: 'GET',
-      data: JSON.stringify(data_obj),
-      dataType: 'json',
-      contentType: 'application/json; charset=utf-8',
-      headers: {
-	 'X-Auth-Token': id_token
-      }
+      data: backendGETString(data_obj)
    }).then(
       (data, textStatus, jqXHR) => {
 	 return data;
@@ -463,6 +458,16 @@ function authenticatedBackendGET(path_str, data_obj, id_token) {
 	 console.error(textStatus, errorThrown);
       }
    )
+}
+
+function backendGETString(data_obj) {
+   var i = 0;
+   var str = "";
+   for(i = 0; i < data_obj.lenth; i++) {
+      str += Object.keys(data_obj)[i];
+      str += data_obj[Object.keys(data_obj)[i]];
+   }
+   return str;
 }
 
 // For administrators only - backend requires valid admin token
