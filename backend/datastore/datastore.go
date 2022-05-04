@@ -68,7 +68,7 @@ type IProofStore interface {
    GetRoster(sectionName string) ([]Roster, error)
    GetAssignmentsBySection(sectionName string) ([]Assignment, error)
    GetAssignmentProofs(assignment Assignment) ([]Proof, error)
-   GetCompletedProofsBySection(sectionName string) ([]RosterAndProof, error)
+   GetCompletedProofsBySection(sectionName string) ([]Proof, error)
    GetCompletedProofsByAssignment(sectionName string, assignmentName string) ([]Proof, error)
 	PopulateTestUsersSectionsRosters()
 	RemoveFromRoster(sectionName string, userEmail string) error
@@ -758,7 +758,7 @@ func (p *ProofStore) GetAssignmentProofs(assignment Assignment) ([]Proof, error)
    return proofs, nil
 }
 
-func (p *ProofStore) GetCompletedProofsBySection(sectionName string) ([]RosterAndProof, error) {
+func (p *ProofStore) GetCompletedProofsBySection(sectionName string) ([]Proof, error) {
    selectProofsSQL := `SELECT * FROM roster JOIN proof ON userEmail = userSubmitted
                         WHERE sectionName = ? AND role = 'student' AND entryType = 'proof' AND everCompleted = 'true' AND proofCompleted = 'true' AND repoProblem = 'true'
                         ORDER BY userEmail;`
@@ -778,9 +778,9 @@ func (p *ProofStore) GetCompletedProofsBySection(sectionName string) ([]RosterAn
    }
    defer rows.Close()
 
-   var completedProofs []RosterAndProof
+   var completedProofs []Proof
    for rows.Next() {
-      var row RosterAndProof
+      var row RosterAndProof // this is just to grab all values in returned row for ease. . .
       var PremiseJSON string
       var LogicJSON string
       var RulesJSON string
@@ -798,7 +798,7 @@ func (p *ProofStore) GetCompletedProofsBySection(sectionName string) ([]RosterAn
          return nil, err
       }
 
-      completedProofs = append(completedProofs, row)
+      completedProofs = append(completedProofs, row.RowProof) // only keep the proof data
    }
 
    return completedProofs, nil
