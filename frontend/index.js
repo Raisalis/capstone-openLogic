@@ -293,21 +293,22 @@ async function removeAssignmentFromClass(){
 
 async function insertAssignment(){
    var assignmentN=document.getElementById("assignmentName").value;
-   if(assignmentN==""){
-      alert("The input is empty, please enter assignment name");
+   var classN=document.getElementById("assignedClass").value;
+   if(assignmentN==""||classN==""){
+      alert("The input is empty, please enter assignment name and class name.");
    }else{
-      backendPOST('add-assignment', {name:assignmentN});
+      backendPOST('add-assignment', {name:assignmentN, sectionName:classN});
       alert("Assignment Made");
    }
 }
 
 async function removeAssignment(){
    var assignmentO=document.getElementById("assignmentName").value;
-   
-   if(assignmentO==""){
-      alert("The input is empty, please enter assignment name");
+   var classN=document.getElementById("assignedClass").value;
+   if(assignmentO==""||classN==""){
+      alert("The input is empty, please enter assignment name and class name.");
    }else{
-      backendPOST('remove-assignment',{name:assignmentO});
+      backendPOST('remove-assignment',{name:assignmentO, sectionName:classN});
       alert("Assignment Removed");
    }
 }
