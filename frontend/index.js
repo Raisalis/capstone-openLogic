@@ -340,7 +340,7 @@ async function removeProofAssignment(){
 
 
 async function fillAddProofAssignment(){
-   var classRoom=document.getElementById("proofClassIn");
+   var classRoom=document.getElementById("proofClassIn").value;
 
    await backendGET("assignments-by-section",{sectionName:classRoom}).then(
       (data)=>{
@@ -357,7 +357,7 @@ async function fillAddProofAssignment(){
 }
 
 async function fillDropProofAssignment(){
-   var classRoom=document.getElementById("proofClassIn");
+   var classRoom=document.getElementById("proofClassIn").value;
 
    await backendGET("assignments-by-section",{sectionName:classRoom}).then(
       (data)=>{
@@ -630,7 +630,7 @@ function loadRepoProofs() {
 	 });
 
 	 // Make section headers not selectable
-	 $('#repoProofSelect option[value=null]').attr('disabled', 'disabled');
+	 $('#repoProofSelect option[value=null]').attr('disabled', true);
 
 	 $('#repoProofSelect').data('repositoryDataKey', 'repoProofs');
       }, console.log
