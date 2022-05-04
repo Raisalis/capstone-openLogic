@@ -274,7 +274,7 @@ async function addAssignmentToClass(){
       alert("At least one input is empty, please insert the class name and assignment name in their respective input boxes");
    }else{
 
-      backendPOST(add-assignment, {sectionName: classIn, assignmentName: add});
+      backendPOST('add-assignment', {sectionName: classIn, assignmentName: add});
       alert("Assignment has been added to the class");
    }
 }
@@ -285,7 +285,7 @@ async function removeAssignmentFromClass(){
    if(sub==""||classOut==""){
       alert("At least one input is empty, please insert the class name and assignment name in their respective input boxes");
    }else{
-      backendPOST(remove-assignment,{sectionName:classOut,assignmentName:sub});
+      backendPOST('remove-assignment',{sectionName:classOut,assignmentName:sub});
       alert("Assignment removed from class");
    }
 }
@@ -296,8 +296,7 @@ async function insertAssignment(){
    if(assignmentN==""){
       alert("The input is empty, please enter assignment name");
    }else{
-
-      backendPOST(add-assignment, {name:assignmentN});
+      backendPOST('add-assignment', {name:assignmentN});
       alert("Assignment Made");
    }
 }
@@ -308,7 +307,7 @@ async function removeAssignment(){
    if(assignmentO==""){
       alert("The input is empty, please enter assignment name");
    }else{
-      backendPOST(remove-assignment,{name:assignmentO});
+      backendPOST('remove-assignment',{name:assignmentO});
       alert("Assignment Removed");
    }
 }
@@ -361,7 +360,7 @@ async function fillDropProofAssignment(){
 
    await backendGET("assignments-by-section",{sectionName:classRoom}).then(
       (data)=>{
-         prepareSelect("#proofAssignmentIn", data);
+         prepareSelect("#proofAssignmentOut", data);
 
       }, console.log
    );
@@ -380,6 +379,36 @@ async function fillProof(){
 
    //    }
    // );
+}
+
+async function fillAssignmentCheckboxes() {
+   var sectionName = document.getElementById('publishClass');
+   var checkboxHolder = document.getElementById('checkboxHolder')
+   await backendGET("assignments-by-section", {sectionName:sectionName}).then(
+      (data)=>{
+         var i = 0;
+         for(let assignment of data) {
+            const newDiv = document.createElement("div");
+            const newCheck = document.createElement("INPUT");
+            newCheck.setAttribute("type", "checkbox");
+            newCheck.setAttribute("name", "assignment");
+            newCheck.setAttribute("value", assignment.name);
+            newCheck.setAttribute("id", "option"+i)
+            if(assignment.visibility == "true") {
+               newCheck.setAttribute("checked", true);
+            } else {
+               newCheck.setAttribute("checked", false);
+            }
+            newDiv.append(newCheck);
+            const newLabel = document.createElement("LABEL");
+            newLabel.textContent = assignment.name;
+            newLabel.setAttribute("for", "option"+i);
+            newDiv.append(newLabel);
+            checkboxHolder.appendChild(newDiv);
+            i++;
+         }
+      }
+   );
 }
 // function showClassAssignment(){
 //    backendGET()
@@ -637,7 +666,7 @@ $(document).ready(function() {
           Rules = [];
       
       let entryType = "";
-      if (adminUsers.indexOf(User.email) && proofName.startsWith('Repository - ')) {
+      if (adminUsers.indexOf(User.email) && Logic.length == 0) {
          entryType = "argument";
       } else {
          entryType = "proof";
