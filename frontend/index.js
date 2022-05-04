@@ -200,72 +200,7 @@ async function dropStudent(){
    
 }
 
-//the following are just menu popups based on button clicks on the admin buttons
-function showDrop(){
-   var dropper= document.getElementById("hiddenDrop");
-   if(dropper.style.display=== "block"){
-      dropper.style.display= "none";
-   }else{
-      dropper.style.display="block";
-   }
-}
 
-function showDropClass(){
-   var dropper= document.getElementById("howToDropClass");
-   if(dropper.style.display=== "block"){
-      dropper.style.display= "none";
-   }else{
-      dropper.style.display="block";
-   }
-}
-
-
-function showAssignments(){
-   var assignment= document.getElementById("assignmentPage");
-   if(assignment.style.display=="block"){
-      assignment.style.display= "none";
-   }else{
-      assignment.style.display="block";
-   }
-
-}
-
-
-function showAddProofAssignment(){
-   var assignment=document.getElementById("addProofAssignmentDiv");
-   if(assignment.style.display=="block"){
-      assignment.style.display= "none";
-   }else{
-      assignment.style.display="block";
-   }
-}
-
-function showRemoveProofAssignment(){
-   var assignment=document.getElementById("removeProofAssignmentDiv");
-   if(assignment.style.display=="block"){
-      assignment.style.display= "none";
-   }else{
-      assignment.style.display="block";
-   }
-}
-
-function showAddAssignmentClass(){
-   var assignment=document.getElementById("addAssignmentClassDiv");
-   if(assignment.style.display=="block"){
-      assignment.style.display= "none";
-   }else{
-      assignment.style.display="block";
-   }
-}
-
-function showRemoveAssignmentClass(){
-   var assignment=document.getElementById("removeAssignmentClassDiv");
-   if(assignment.style.display=="block"){
-      assignment.style.display= "none";
-   }else{
-      assignment.style.display="block";
-   }
-}
 
 async function addAssignmentToClass(){
    var add=document.getElementById("classAssignmentIn").value;
@@ -556,6 +491,8 @@ function getCSV() {
       }, console.log);
 }
 
+//the following are just menu popups based on button clicks on the admin buttons
+
 // Hides and displays the admin options
 function showProofs(){
    var proofs=document.getElementById("proofValues");
@@ -587,6 +524,71 @@ function showStudents(){
 }
 
 
+function showDrop(){
+   var dropper= document.getElementById("hiddenDrop");
+   if(dropper.style.display=== "block"){
+      dropper.style.display= "none";
+   }else{
+      dropper.style.display="block";
+   }
+}
+
+function showDropClass(){
+   var dropper= document.getElementById("howToDropClass");
+   if(dropper.style.display=== "block"){
+      dropper.style.display= "none";
+   }else{
+      dropper.style.display="block";
+   }
+}
+
+
+function showAssignments(){
+   var assignment= document.getElementById("assignmentPage");
+   if(assignment.style.display=="block"){
+      assignment.style.display= "none";
+   }else{
+      assignment.style.display="block";
+   }
+
+}
+
+
+function showAddProofAssignment(){
+   var assignment=document.getElementById("addProofAssignmentDiv");
+   if(assignment.style.display=="block"){
+      assignment.style.display= "none";
+   }else{
+      assignment.style.display="block";
+   }
+}
+
+function showRemoveProofAssignment(){
+   var assignment=document.getElementById("removeProofAssignmentDiv");
+   if(assignment.style.display=="block"){
+      assignment.style.display= "none";
+   }else{
+      assignment.style.display="block";
+   }
+}
+
+function showAddAssignmentClass(){
+   var assignment=document.getElementById("addAssignmentClassDiv");
+   if(assignment.style.display=="block"){
+      assignment.style.display= "none";
+   }else{
+      assignment.style.display="block";
+   }
+}
+
+function showRemoveAssignmentClass(){
+   var assignment=document.getElementById("removeAssignmentClassDiv");
+   if(assignment.style.display=="block"){
+      assignment.style.display= "none";
+   }else{
+      assignment.style.display="block";
+   }
+}
 
 
 
