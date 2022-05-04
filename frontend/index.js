@@ -111,8 +111,9 @@ class User {
 
 async function ViewClasses(){
 
+   var classSelect=document.getElementById("csvClassSelect").value;
 
-   backendGET('Roster', {selection: 'UserEmail'}).then(   
+   backendGET('roster', {sectionName: classSelect}).then(   
    (data) => {
       // console.log("loadStudentNames", data);
       // repositoryData.studentNames = data;       
@@ -123,7 +124,7 @@ async function ViewClasses(){
       }, console.log
    );
 
-   backendGET('Proof', {selection: 'ProofName'}).then(   
+   backendGET('completed-proofs-by-assignment', {sectionName: classSelect}).then(   
    (data) => {
       // console.log("loadProofs", data);
       // repositoryData.proofAverages = data;      
@@ -170,6 +171,9 @@ async function insertClass(){
 async function dropClass(){
    var x=document.getElementById("dropSectionName").value;
    console.log(x);
+   if(x==""){
+      alert("input is empty, please fill the field with the section to drop");
+   }
    if(confirm("Are you sure you want to drop the whole class?")==true){
       //waiting for tables to be ready to do rest
       //temporary idea
@@ -345,7 +349,7 @@ async function fillProof(){
 
 async function fillAssignmentCheckboxes() {
    var sectionName = document.getElementById('publishClass');
-   var checkboxHolder = document.getElementById('checkboxHolder')
+   var checkboxHolder = document.getElementById('checkboxHolder');
    await backendGET("assignments-by-section", {sectionName:sectionName}).then(
       (data)=>{
          var i = 0;
@@ -463,7 +467,8 @@ function authenticatedBackendGET(path_str, data_obj, id_token) {
 
 // For administrators only - backend requires valid admin token
 function getCSV() {
-   backendPOST('proofs', { selection: 'downloadrepo' }).then(
+   var csvClass=document.getElementById("csvClassSelect").value;
+   backendGET('completed-proofs-by-section', { selection: csvClass }).then(
       (data) => {
 	 console.log("downloadRepo", data);
 
