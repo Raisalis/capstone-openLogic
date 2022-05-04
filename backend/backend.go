@@ -420,7 +420,7 @@ func (env *Env) getCompletedProofsBySection(w http.ResponseWriter, req *http.Req
 
 	var err error
 
-	var proofs []datastore.RosterAndProof
+	var proofs []datastore.Proof
 	proofs, err = env.ds.GetCompletedProofsBySection(requestData.SectionName)
 	if err != nil {
 		http.Error(w, "db access error", 500)
@@ -428,7 +428,7 @@ func (env *Env) getCompletedProofsBySection(w http.ResponseWriter, req *http.Req
 		return
 	}
 
-	log.Printf("Roster: %+v\n\n", proofs)
+	log.Printf("CompletedProofsBySection: %+v", proofs)
 
 	proofsJSON, err := json.Marshal(proofs)
 	if err != nil {

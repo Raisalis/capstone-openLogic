@@ -278,7 +278,7 @@ async function removeProofAssignment(){
 }
 
 async function fillClassNames() {
-   var userEmail = document.getElementById("userEmail").text;
+   var userEmail = document.getElementById("user-email").text;
    await backendGET("sections", {user:userEmail}).then(
       (data)=>{
          let elem = document.querySelector("#assignmentClassNames");
