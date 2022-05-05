@@ -303,19 +303,39 @@ async function fillClassNames() {
    );
 }
 
+async function fillAssignmentSelector(sectionName, divName) {
+   await backendGET('assignments-by-section', {sectionName:className}).then(
+      (data)=>{
+         let elem = document.querySelector(divName);
+
+         // Remove all child nodes from the select element
+         $(elem).empty();
+
+         // Create placeholder option
+         elem.appendChild(
+            new Option('Select...', null, true, true)
+         );
+
+         // Set placeholder to disabled so it does not show as selectable
+         elem.querySelector('option').setAttribute('disabled', 'disabled');
+
+         // Add option elements for the options
+         (data) && data.forEach( assignment => {
+            let option = new Option(assignment.Name, assignment.Name);
+            elem.appendChild(option);
+         });
+      }
+   )
+}
+
 
 async function fillAddProofAssignment(){
    var classRoom=document.getElementById("proofClassIn").value;
 
-   await backendGET("assignments-by-section",{sectionName:classRoom}).then(
-      (data)=>{
-         prepareSelect("#proofAssignmentIn", data);
+   fillAssignmentSelector(classRoom, "#proofAssignmentIn");
 
-      }, console.log
-   );
-   backendGET('Proof', {selection: 'ProofName'}).then(   
+   backendGET('Proof', {selection: 'user'}).then(   
       (data) => {
-              
          prepareSelect('#ProofIn', data);
          }, console.log
       );
@@ -324,16 +344,10 @@ async function fillAddProofAssignment(){
 async function fillDropProofAssignment(){
    var classRoom=document.getElementById("proofClassIn").value;
 
-   await backendGET("assignments-by-section",{sectionName:classRoom}).then(
-      (data)=>{
-         prepareSelect("#proofAssignmentOut", data);
-
-      }, console.log
-   );
-   backendGET('Proof', {selection: 'ProofName'}).then(   
-      (data) => {
-              
+   fillAssignmentSelector(classRoom, '#proofAssignmentOut');
    
+   backendGET('Proof', {selection: 'user'}).then(   
+      (data) => {
          prepareSelect('#ProofOut', data);
          }, console.log
       );
@@ -461,16 +475,6 @@ function authenticatedBackendGET(path_str, data_obj, id_token) {
 	 console.error(textStatus, errorThrown);
       }
    )
-}
-
-function backendGETString(data_obj) {
-   var i = 0;
-   var str = "";
-   for(i = 0; i < data_obj.lenth; i++) {
-      str += Object.keys(data_obj)[i];
-      str += data_obj[Object.keys(data_obj)[i]];
-   }
-   return str;
 }
 
 // For administrators only - backend requires valid admin token
