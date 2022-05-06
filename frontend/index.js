@@ -109,6 +109,10 @@ class User {
    }
 }
 
+// Selector Listeners
+$("#classAddProof").on("change", fillAssignmentSelector(document.getElementById("classAddProof").value, "#proofAssignmentIn"));
+$("#proofAssignmentIn").on("change", prepareSelect("#proofIn", "user"));
+
 async function ViewClasses(){
 
    var classSelect=document.getElementById("csvClassSelect").value;
