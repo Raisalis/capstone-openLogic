@@ -111,7 +111,6 @@ class User {
 
 // Selector Listeners
 $("#classAddProof").on("change", addAssignmentSelector("classAddProof", "#proofAssignmentIn"));
-$("#proofAssignmentIn").on("change", prepareSelect("#proofIn", "user"));
 
 async function ViewClasses(){
 
@@ -257,8 +256,9 @@ async function removeAssignment(){
 }
 
 async function addAssignmentSelector(sectionSelector, assignmentSelector) {
-   var sectionName = document.getElementById(sectionSelector).value;
-   if(sectionName != null) {
+   var check = document.getElementById(sectionSelector);
+   if(check != null) {
+      var sectionName = check.value;
       fillAssignmentSelector(sectionName, assignmentSelector);
    }
 }
@@ -588,6 +588,8 @@ function showAssignments(){
    }else{
       assignment.style.display="block";
       fillClassNames("#assignedClass");
+      prepareSelector("#proofIn", 'user');
+      prepareSelector("#proofOut", 'user');
    }
    if(proofs.style.display === "block") {
       proofs.style.display = "none";
