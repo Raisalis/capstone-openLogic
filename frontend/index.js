@@ -593,7 +593,7 @@ async function showAssignments(){
             var temp = data;
             temp = JSON.stringify(temp);
             temp = JSON.parse(temp);
-            console.log(temp);
+            temp = Array.from(temp);
             let elem = document.querySelector('#proofIn');
             $(elem).empty();
 
