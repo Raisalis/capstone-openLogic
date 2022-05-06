@@ -745,7 +745,7 @@ function loadRepoProofs() {
                new Option(section.SectionName, null, false, false)
             );
          }
-         if(section.ProofList.length != 0) {
+         if(section.ProofList != null) {
             section.ProofList.forEach( proof => {
                console.log(proof);
                elem.appendChild(
