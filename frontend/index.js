@@ -345,7 +345,7 @@ async function fillAddProofAssignment(){
 
    fillAssignmentSelector(classRoom, "#proofAssignmentIn");
 
-   backendGET('Proof', {selection: 'user'}).then(   
+   backendGET('proofs', {selection: 'user'}).then(   
       (data) => {
          prepareSelect('#ProofIn', data);
          }, console.log
@@ -357,7 +357,7 @@ async function fillDropProofAssignment(){
 
    fillAssignmentSelector(classRoom, '#proofAssignmentOut');
    
-   backendGET('Proof', {selection: 'user'}).then(   
+   backendGET('proofs', {selection: 'user'}).then(   
       (data) => {
          prepareSelect('#ProofOut', data);
          }, console.log
@@ -588,12 +588,12 @@ async function showAssignments(){
    }else{
       assignment.style.display="block";
       fillClassNames("#assignedClass");
-      backendGET('Proof', {selection: 'user'}).then(   
+      backendGET('proofs', {selection: 'user'}).then(   
          (data) => {
             prepareSelect('#ProofIn', data);
             }, console.log
       );
-      backendGET('Proof', {selection: 'user'}).then(   
+      backendGET('proofs', {selection: 'user'}).then(   
          (data) => {
             prepareSelect('#ProofOut', data);
             }, console.log
