@@ -111,7 +111,6 @@ class User {
 
 // Selector Listeners
 $("#classAddProof").on("change", addAssignmentSelector("classAddProof", "#proofAssignmentIn"));
-$("#proofAssignmentIn").on("change", prepareSelect("#proofIn", "user"));
 
 async function ViewClasses(){
 
@@ -256,9 +255,10 @@ async function removeAssignment(){
    }
 }
 
-async function addAssignmentSelector(sectionSelector, assignmentSelector) {
-   var sectionName = document.getElementById(sectionSelector).value;
-   if(sectionName != null) {
+function addAssignmentSelector(sectionSelector, assignmentSelector) {
+   var check = document.getElementById(sectionSelector);
+   if(check != null) {
+      var sectionName = check.value;
       fillAssignmentSelector(sectionName, assignmentSelector);
    }
 }
@@ -345,7 +345,7 @@ async function fillAddProofAssignment(){
 
    fillAssignmentSelector(classRoom, "#proofAssignmentIn");
 
-   backendGET('Proof', {selection: 'user'}).then(   
+   backendPOST('proofs', {selection: 'repo'}).then(   
       (data) => {
          prepareSelect('#ProofIn', data);
          }, console.log
@@ -357,7 +357,7 @@ async function fillDropProofAssignment(){
 
    fillAssignmentSelector(classRoom, '#proofAssignmentOut');
    
-   backendGET('Proof', {selection: 'user'}).then(   
+   backendPOST('proofs', {selection: 'repo'}).then(   
       (data) => {
          prepareSelect('#ProofOut', data);
          }, console.log
@@ -588,6 +588,17 @@ function showAssignments(){
    }else{
       assignment.style.display="block";
       fillClassNames("#assignedClass");
+      backendGET('proofs', {selection: 'repo'}).then(   
+         (data) => {
+            console.log(data);
+            prepareSelect('#ProofIn', data);
+            }, console.log
+      );
+      backendGET('proofs', {selection: 'repo'}).then(   
+         (data) => {
+            prepareSelect('#ProofOut', data);
+            }, console.log
+      );
    }
    if(proofs.style.display === "block") {
       proofs.style.display = "none";
@@ -606,6 +617,7 @@ function showAddProofAssignment(){
       assignment.style.display= "none";
    }else{
       assignment.style.display="block";
+      fillClassNames("#classAddProof");
       if(other.style.display === "block") {
          other.style.display = "none";
       }
@@ -619,6 +631,7 @@ function showRemoveProofAssignment(){
       assignment.style.display= "none";
    }else{
       assignment.style.display="block";
+      fillClassNames("#classRemoveProof");
       if(other.style.display === "block") {
          other.style.display = "none";
       }
