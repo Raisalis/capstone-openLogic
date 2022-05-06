@@ -255,7 +255,7 @@ async function removeAssignment(){
    }
 }
 
-async function addAssignmentSelector(sectionSelector, assignmentSelector) {
+function addAssignmentSelector(sectionSelector, assignmentSelector) {
    var check = document.getElementById(sectionSelector);
    if(check != null) {
       var sectionName = check.value;
@@ -588,8 +588,8 @@ function showAssignments(){
    }else{
       assignment.style.display="block";
       fillClassNames("#assignedClass");
-      prepareSelector("#proofIn", 'user');
-      prepareSelector("#proofOut", 'user');
+      prepareSelect("#proofIn", 'user');
+      prepareSelect("#proofOut", 'user');
    }
    if(proofs.style.display === "block") {
       proofs.style.display = "none";
