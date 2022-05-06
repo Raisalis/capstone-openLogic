@@ -606,6 +606,7 @@ function showAddProofAssignment(){
    var other = document.getElementById("removeProofAssignmentDiv");
    if(assignment.style.display=="block"){
       assignment.style.display= "none";
+      fillClassNames("#classAddProof");
    }else{
       assignment.style.display="block";
       if(other.style.display === "block") {
