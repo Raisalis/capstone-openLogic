@@ -345,7 +345,7 @@ async function fillAddProofAssignment(){
 
    fillAssignmentSelector(classRoom, "#proofAssignmentIn");
 
-   backendGET('proofs', {selection: 'user'}).then(   
+   backendGET('proofs', {selection: 'repo'}).then(   
       (data) => {
          prepareSelect('#ProofIn', data);
          }, console.log
@@ -357,7 +357,7 @@ async function fillDropProofAssignment(){
 
    fillAssignmentSelector(classRoom, '#proofAssignmentOut');
    
-   backendGET('proofs', {selection: 'user'}).then(   
+   backendGET('proofs', {selection: 'repo'}).then(   
       (data) => {
          prepareSelect('#ProofOut', data);
          }, console.log
@@ -579,7 +579,7 @@ function showDropClass(){
 }
 
 
-async function showAssignments(){
+function showAssignments(){
    var proofs = document.getElementById("proofValues");
    var student = document.getElementById("studentPage");
    var assignment= document.getElementById("assignmentPage");
@@ -588,12 +588,13 @@ async function showAssignments(){
    }else{
       assignment.style.display="block";
       fillClassNames("#assignedClass");
-      backendGET('proofs', {selection: 'user'}).then(   
+      backendGET('proofs', {selection: 'repo'}).then(   
          (data) => {
+            console.log(data);
             prepareSelect('#ProofIn', data);
             }, console.log
       );
-      backendGET('proofs', {selection: 'user'}).then(   
+      backendGET('proofs', {selection: 'repo'}).then(   
          (data) => {
             prepareSelect('#ProofOut', data);
             }, console.log
