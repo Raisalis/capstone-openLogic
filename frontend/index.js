@@ -277,11 +277,11 @@ async function removeProofAssignment(){
    }
 }
 
-async function fillClassNames() {
+async function fillClassNames(selectorName) {
    var userEmail = document.getElementById("user-email").text;
    await backendGET('sections', {'user': userEmail}).then(
       (data)=>{
-         let elem = document.querySelector("#assignmentClassNames");
+         let elem = document.querySelector(selectorName);
 
          // Remove all child nodes from the select element
          $(elem).empty();
@@ -514,14 +514,18 @@ function getCSV() {
 function showProofs(){
    var proofs=document.getElementById("proofValues");
    var student= document.getElementById("studentPage");
+   var assignments = document.getElementById("assignmentPage");
 
    if(proofs.style.display=== "block"){
-      proofs.style.display= "none";
+      proofs.style.display = "none";
    }else{
-      proofs.style.display="block";
+      proofs.style.display = "block";
    }
-   if(student.style.display=== "block"){
-      proofs.style.display= "none";
+   if(student.style.display === "block") {
+      student.style.display = "none";
+   }
+   if(assignments.style.display === "block") {
+      assignments.style.display = "none";
    }
    
 }
@@ -529,6 +533,7 @@ function showProofs(){
 function showStudents(){
    var proofs=document.getElementById("proofValues");
    var student= document.getElementById("studentPage");
+   var assignments = document.getElementById("assignmentPage");
 
    if(student.style.display=== "block"){
       student.style.display= "none";
@@ -536,7 +541,10 @@ function showStudents(){
       student.style.display="block";
    }
    if(proofs.style.display=== "block"){
-      student.style.display= "none";
+      proofs.style.display= "none";
+   }
+   if(assignments.style.display === "block") {
+      assignments.style.display = "none";
    }
 }
 
@@ -561,11 +569,20 @@ function showDropClass(){
 
 
 function showAssignments(){
+   var proofs = document.getElementById("proofValues");
+   var student = document.getElementById("studentPage");
    var assignment= document.getElementById("assignmentPage");
    if(assignment.style.display=="block"){
       assignment.style.display= "none";
    }else{
       assignment.style.display="block";
+      fillClassNames("#assignedClass");
+   }
+   if(proofs.style.display === "block") {
+      proofs.style.display = "none";
+   }
+   if(student.style.display === "block") {
+      student.style.display = "none";
    }
 
 }
@@ -573,42 +590,31 @@ function showAssignments(){
 
 function showAddProofAssignment(){
    var assignment=document.getElementById("addProofAssignmentDiv");
+   var other = document.getElementById("removeProofAssignmentDiv");
    if(assignment.style.display=="block"){
       assignment.style.display= "none";
    }else{
       assignment.style.display="block";
+      if(other.style.display === "block") {
+         other.style.display = "none";
+      }
    }
 }
 
 function showRemoveProofAssignment(){
    var assignment=document.getElementById("removeProofAssignmentDiv");
+   var other = document.getElementById("removeProofAssignmentDiv");
    if(assignment.style.display=="block"){
       assignment.style.display= "none";
    }else{
       assignment.style.display="block";
+      if(other.style.display === "block") {
+         other.style.display = "none";
+      }
    }
 }
 
-function showAddAssignmentClass(){
-   var assignment=document.getElementById("addAssignmentClassDiv");
-   if(assignment.style.display=="block"){
-      assignment.style.display= "none";
-   }else{
-      assignment.style.display="block";
-   }
-}
-
-function showRemoveAssignmentClass(){
-   var assignment=document.getElementById("removeAssignmentClassDiv");
-   if(assignment.style.display=="block"){
-      assignment.style.display= "none";
-   }else{
-      assignment.style.display="block";
-   }
-}
-
-
-
+// From legacy code, this function only prepares the three proof selectors correctly on main page.
 const prepareSelect = (selector, options) => {
    let elem = document.querySelector(selector);
 
