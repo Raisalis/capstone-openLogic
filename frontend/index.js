@@ -590,6 +590,10 @@ async function showAssignments(){
       fillClassNames("#assignedClass");
       await backendGET('arguments-by-user', {}).then(   
          (data) => {
+            var temp = data;
+            temp = JSON.stringify(temp);
+            temp = JSON.parse(temp);
+            console.log(temp);
             let elem = document.querySelector('#proofIn');
             $(elem).empty();
 
@@ -597,15 +601,13 @@ async function showAssignments(){
                new Option('Select...', null, true, true)
             );
 
-            (data) && data.forEach( proof => {
+            (temp) && temp.forEach( proof => {
                console.log(proof);
                elem.appendChild(
                   new Option(proof.ProofName, proof.Id)
                );
             });
 
-            // Make section headers not selectable
-            $('#repoProofSelect option[value=null]').attr('disabled', true);
          }, console.log
       );
       await backendGET('arguments-by-user', {}).then(   
@@ -624,8 +626,6 @@ async function showAssignments(){
                );
             });
 
-            // Make section headers not selectable
-            $('#repoProofSelect option[value=null]').attr('disabled', true);
             }, console.log
       );
    }
