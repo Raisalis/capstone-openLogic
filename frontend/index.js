@@ -590,10 +590,7 @@ async function showAssignments(){
       fillClassNames("#assignedClass");
       await backendGET('arguments-by-user', {}).then(   
          (data) => {
-            var temp = data;
-            temp = JSON.stringify(temp);
-            temp = JSON.parse(temp);
-            temp = Array.from(temp);
+            console.log(typeof data);
             let elem = document.querySelector('#proofIn');
             $(elem).empty();
 
@@ -601,8 +598,7 @@ async function showAssignments(){
                new Option('Select...', null, true, true)
             );
 
-            (temp) && temp.forEach( proof => {
-               console.log(proof);
+            (data) && data.forEach( proof => {
                elem.appendChild(
                   new Option(proof.ProofName, proof.Id)
                );
@@ -620,7 +616,6 @@ async function showAssignments(){
             );
 
             (data) && data.forEach( proof => {
-               console.log(proof);
                elem.appendChild(
                   new Option(proof.ProofName, proof.Id)
                );
