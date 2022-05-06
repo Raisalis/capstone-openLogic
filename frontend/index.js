@@ -654,10 +654,12 @@ const prepareSelect = (selector, options) => {
    elem.querySelector('option').setAttribute('disabled', 'disabled');
 
    // Add option elements for the options
-   (options) && options.forEach( proof => {
-      let option = new Option(proof.ProofName, proof.Id);
-      elem.appendChild(option);
-   });
+   if(options != null) {
+      (options) && options.forEach( proof => {
+         let option = new Option(proof.ProofName, proof.Id);
+         elem.appendChild(option);
+      });
+   }
 }
 
 // load user's incomplete proofs
