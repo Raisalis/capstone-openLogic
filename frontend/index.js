@@ -588,7 +588,7 @@ function showAssignments(){
    }else{
       assignment.style.display="block";
       fillClassNames("#assignedClass");
-      backendPOST('arguments-by-user', {}).then(   
+      backendGET('arguments-by-user', {}).then(   
          (data) => {
             let elem = document.querySelector('#proofIn');
             $(elem).empty();
@@ -608,7 +608,7 @@ function showAssignments(){
             $('#repoProofSelect option[value=null]').attr('disabled', true);
          }, console.log
       );
-      backendPOST('arguments-by-user', {}).then(   
+      backendGET('arguments-by-user', {}).then(   
          (data) => {
             let elem = document.querySelector('#proofOut');
             $(elem).empty();
