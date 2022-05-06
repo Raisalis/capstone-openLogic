@@ -117,7 +117,7 @@
 
 ### **completed-proofs-by-assignment**:
 - GET a list of proofs submitted by students associated with a given section, the *proofName*s will match  
-- requires: *sectionName* and assignment *name*
+- requires: *sectionName* and *assignmentName*
   ```
   /backend/completed-proofs-by-assignment?sectionName=Larson Section&assignmentName=L Test assignment
   ```

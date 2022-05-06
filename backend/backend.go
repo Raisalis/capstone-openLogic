@@ -197,6 +197,7 @@ func (env *Env) getProofs(w http.ResponseWriter, req *http.Request) {
 	log.Printf("%+v", req.URL.Query())
 }
 
+// get proof entries for current user where entryType is argument
 func (env *Env) getUserArguments(w http.ResponseWriter, req *http.Request) {
 	if req.Method != "GET" || req.Body == nil {
 		http.Error(w, "Request not accepted.", 400)
@@ -223,7 +224,7 @@ func (env *Env) getUserArguments(w http.ResponseWriter, req *http.Request) {
 	io.WriteString(w, string(userProofsJSON))
 }
 
-// return section entries given a userEmail
+// return section entries given a user's email
 func (env *Env) getSections(w http.ResponseWriter, req *http.Request) {
 	log.Println("inside backend.go: getSections")
 	userEmail := req.URL.Query().Get("user")
@@ -309,7 +310,7 @@ func (env *Env) getSections(w http.ResponseWriter, req *http.Request) {
 func (env *Env) getRoster(w http.ResponseWriter, req *http.Request) {
 	log.Println("inside backend.go: getRoster")
 
-	sectionName := req.URL.Query().Get("section")
+	sectionName := req.URL.Query().Get("sectionName")
 
 	if req.Method != "GET" || sectionName == "" {
 		http.Error(w, "Request not accepted.", 400)
@@ -391,7 +392,7 @@ func (env *Env) getRoster(w http.ResponseWriter, req *http.Request) {
 // return proof entries completed by students associated with a given section
 func (env *Env) getCompletedProofsBySection(w http.ResponseWriter, req *http.Request) {
 	log.Println("inside backend.go: getCompletedProofsBySection")
-	sectionName := req.URL.Query().Get("section")
+	sectionName := req.URL.Query().Get("sectionName")
 
 	if req.Method != "GET" || sectionName == "" {
 		http.Error(w, "Request not accepted.", 400)
@@ -509,7 +510,7 @@ func (env *Env) getAssignmentsBySection(w http.ResponseWriter, req *http.Request
 		}
 	*/
 	log.Println("inside backend.go: getAssignmentBySection")
-	sectionName := req.URL.Query().Get("section")
+	sectionName := req.URL.Query().Get("sectionName")
 
 	if req.Method != "GET" || sectionName == "" {
 		http.Error(w, "Request not accepted.", 400)
@@ -594,8 +595,8 @@ func (env *Env) getCompletedProofsByAssignment(w http.ResponseWriter, req *http.
 		completedProofs, err = env.ds.GetCompletedProofsByAssignment(requestData.SectionName, requestData.AssignmentName)
 	*/
 	log.Println("inside backend.go: getCompletedProofByAssignment")
-	sectionName := req.URL.Query().Get("section")
-	assignmentName := req.URL.Query().Get("assignment")
+	sectionName := req.URL.Query().Get("sectionName")
+	assignmentName := req.URL.Query().Get("assignmentName")
 
 	if req.Method != "GET" || sectionName == "" || assignmentName == "" {
 		http.Error(w, "Request not accepted.", 400)
