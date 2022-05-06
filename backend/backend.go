@@ -9,7 +9,7 @@ import (
 	"net/http"
 
 	"datastore"
-	"google-token-auth"
+	tokenauth "google-token-auth"
 )
 
 var (
@@ -225,46 +225,23 @@ func (env *Env) getUserArguments(w http.ResponseWriter, req *http.Request) {
 
 // return section entries given a userEmail
 func (env *Env) getSections(w http.ResponseWriter, req *http.Request) {
-	// log.Println("inside backend.go: getSections")
-	// userEmail := req.URL.Query().Get("user")
+	log.Println("inside backend.go: getSections")
+	userEmail := req.URL.Query().Get("user")
 
-	if req.Method != "GET" || req.Body == nil {
+	if req.Method != "GET" || userEmail == "" {
 		http.Error(w, "Request not accepted.", 400)
 		return
 	}
 
-	// Accepted JSON fields must be defined here
-	type getSectionsRequest struct {
-		User string `json:"user"`
-	}
-	// CURRENT working place!!!
-	var requestData getSectionsRequest
+	log.Printf("for section: %q\n", userEmail)
 
-	decoder := json.NewDecoder(req.Body)
-
-	if err := decoder.Decode(&requestData); err != nil {
-		http.Error(w, "Unable to decode request body.", 400)
-		return
-	}
-
-	log.Printf("%+v", requestData)
-
-	if requestData.User == "" {
-		http.Error(w, "user required", 400)
-		return
-	}
-
-	var err error
-
-	var sections []datastore.Section
-	sections, err = env.ds.GetSections(requestData.User)
+	sections, err := env.ds.GetSections(userEmail)
 	if err != nil {
 		http.Error(w, "db access error", 500)
 		log.Println(err)
 		return
 	}
-
-	log.Printf("All Sections: %+v\n\n", sections)
+	log.Printf("all sections: %+v\n\n", sections)
 
 	sectionsJSON, err := json.Marshal(sections)
 	if err != nil {
@@ -275,33 +252,47 @@ func (env *Env) getSections(w http.ResponseWriter, req *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	io.WriteString(w, string(sectionsJSON))
-	// fmt.Printf("All Sections JSON: %+v\n", sectionsJSON)
-}
-
-// return student and ta roster entries given a sectionName
-func (env *Env) getRoster(w http.ResponseWriter, req *http.Request) {
-	// log.Println("inside backend.go: getRoster")
 
 	/*
-		sectionName := req.URL.Query().Get("section")
-
-
-		if req.Method != "GET" || sectionName == "" {
+		if req.Method != "GET" || req.Body == nil {
 			http.Error(w, "Request not accepted.", 400)
 			return
 		}
 
-		log.Printf("for section: %q\n", sectionName)
+		// Accepted JSON fields must be defined here
+		type getSectionsRequest struct {
+			User string `json:"user"`
+		}
 
-		roster, err := env.ds.GetRoster(sectionName)
+		var requestData getSectionsRequest
+
+		decoder := json.NewDecoder(req.Body)
+
+		if err := decoder.Decode(&requestData); err != nil {
+			http.Error(w, "Unable to decode request body.", 400)
+			return
+		}
+
+		log.Printf("%+v", requestData)
+
+		if requestData.User == "" {
+			http.Error(w, "user required", 400)
+			return
+		}
+
+		var err error
+
+		var sections []datastore.Section
+		sections, err = env.ds.GetSections(requestData.User)
 		if err != nil {
 			http.Error(w, "db access error", 500)
 			log.Println(err)
 			return
 		}
-		log.Printf("full roster: %+v\n\n", roster)
 
-		rosterJSON, err := json.Marshal(roster)
+		log.Printf("All Sections: %+v\n\n", sections)
+
+		sectionsJSON, err := json.Marshal(sections)
 		if err != nil {
 			http.Error(w, "json marshal error", 500)
 			log.Println(err)
@@ -309,47 +300,31 @@ func (env *Env) getRoster(w http.ResponseWriter, req *http.Request) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		io.WriteString(w, string(rosterJSON))
-		// log.Printf("marshalled rosterJSON: %+v\n", rosterJSON)
+		io.WriteString(w, string(sectionsJSON))
+		// fmt.Printf("All Sections JSON: %+v\n", sectionsJSON)\
 	*/
+}
 
-	if req.Method != "GET" || req.Body == nil {
+// return student and ta roster entries given a sectionName
+func (env *Env) getRoster(w http.ResponseWriter, req *http.Request) {
+	log.Println("inside backend.go: getRoster")
+
+	sectionName := req.URL.Query().Get("section")
+
+	if req.Method != "GET" || sectionName == "" {
 		http.Error(w, "Request not accepted.", 400)
 		return
 	}
 
-	// Accepted JSON fields must be defined here
-	type getRosterRequest struct {
-		SectionName string `json:"sectionName"`
-	}
+	log.Printf("for section: %q\n", sectionName)
 
-	var requestData getRosterRequest
-
-	decoder := json.NewDecoder(req.Body)
-
-	if err := decoder.Decode(&requestData); err != nil {
-		http.Error(w, "Unable to decode request body.", 400)
-		return
-	}
-
-	log.Printf("%+v", requestData)
-
-	if requestData.SectionName == "" {
-		http.Error(w, "section required", 400)
-		return
-	}
-
-	var err error
-
-	var roster []datastore.Roster
-	roster, err = env.ds.GetRoster(requestData.SectionName)
+	roster, err := env.ds.GetRoster(sectionName)
 	if err != nil {
 		http.Error(w, "db access error", 500)
 		log.Println(err)
 		return
 	}
-
-	log.Printf("Roster: %+v\n\n", roster)
+	log.Printf("full roster: %+v\n\n", roster)
 
 	rosterJSON, err := json.Marshal(roster)
 	if err != nil {
@@ -360,11 +335,62 @@ func (env *Env) getRoster(w http.ResponseWriter, req *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	io.WriteString(w, string(rosterJSON))
+	// log.Printf("marshalled rosterJSON: %+v\n", rosterJSON)
+	/*
+
+		if req.Method != "GET" || req.Body == nil {
+			http.Error(w, "Request not accepted.", 400)
+			return
+		}
+
+		// Accepted JSON fields must be defined here
+		type getRosterRequest struct {
+			SectionName string `json:"sectionName"`
+		}
+
+		var requestData getRosterRequest
+
+		decoder := json.NewDecoder(req.Body)
+
+		if err := decoder.Decode(&requestData); err != nil {
+			http.Error(w, "Unable to decode request body.", 400)
+			return
+		}
+
+		log.Printf("%+v", requestData)
+
+		if requestData.SectionName == "" {
+			http.Error(w, "section required", 400)
+			return
+		}
+
+		var err error
+
+		var roster []datastore.Roster
+		roster, err = env.ds.GetRoster(requestData.SectionName)
+		if err != nil {
+			http.Error(w, "db access error", 500)
+			log.Println(err)
+			return
+		}
+
+		log.Printf("Roster: %+v\n\n", roster)
+
+		rosterJSON, err := json.Marshal(roster)
+		if err != nil {
+			http.Error(w, "json marshal error", 500)
+			log.Println(err)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		io.WriteString(w, string(rosterJSON))
+	*/
 }
 
 // return proof entries completed by students associated with a given section
 func (env *Env) getCompletedProofsBySection(w http.ResponseWriter, req *http.Request) {
-	/* log.Println("inside backend.go: getCompletedProofsBySection")
+	log.Println("inside backend.go: getCompletedProofsBySection")
 	sectionName := req.URL.Query().Get("section")
 
 	if req.Method != "GET" || sectionName == "" {
@@ -390,90 +416,107 @@ func (env *Env) getCompletedProofsBySection(w http.ResponseWriter, req *http.Req
 
 	w.Header().Set("Content-Type", "application/json")
 	io.WriteString(w, string(proofsJSON))
+
+	/*
+		if req.Method != "GET" || req.Body == nil {
+			http.Error(w, "Request not accepted.", 400)
+			return
+		}
+
+		// Accepted JSON fields must be defined here
+		type getgetCompletedProofsBySectionRequest struct {
+			SectionName string `json:"sectionName"`
+		}
+
+		var requestData getgetCompletedProofsBySectionRequest
+
+		decoder := json.NewDecoder(req.Body)
+
+		if err := decoder.Decode(&requestData); err != nil {
+			http.Error(w, "Unable to decode request body.", 400)
+			return
+		}
+
+		log.Printf("%+v", requestData)
+
+		if requestData.SectionName == "" {
+			http.Error(w, "section required", 400)
+			return
+		}
+
+		var err error
+
+		var proofs []datastore.Proof
+		proofs, err = env.ds.GetCompletedProofsBySection(requestData.SectionName)
+		if err != nil {
+			http.Error(w, "db access error", 500)
+			log.Println(err)
+			return
+		}
+
+		log.Printf("CompletedProofsBySection: %+v", proofs)
+
+		proofsJSON, err := json.Marshal(proofs)
+		if err != nil {
+			http.Error(w, "json marshal error", 500)
+			log.Println(err)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		io.WriteString(w, string(proofsJSON))
 	*/
-
-	if req.Method != "GET" || req.Body == nil {
-		http.Error(w, "Request not accepted.", 400)
-		return
-	}
-
-	// Accepted JSON fields must be defined here
-	type getgetCompletedProofsBySectionRequest struct {
-		SectionName string `json:"sectionName"`
-	}
-
-	var requestData getgetCompletedProofsBySectionRequest
-
-	decoder := json.NewDecoder(req.Body)
-
-	if err := decoder.Decode(&requestData); err != nil {
-		http.Error(w, "Unable to decode request body.", 400)
-		return
-	}
-
-	log.Printf("%+v", requestData)
-
-	if requestData.SectionName == "" {
-		http.Error(w, "section required", 400)
-		return
-	}
-
-	var err error
-
-	var proofs []datastore.Proof
-	proofs, err = env.ds.GetCompletedProofsBySection(requestData.SectionName)
-	if err != nil {
-		http.Error(w, "db access error", 500)
-		log.Println(err)
-		return
-	}
-
-	log.Printf("CompletedProofsBySection: %+v", proofs)
-
-	proofsJSON, err := json.Marshal(proofs)
-	if err != nil {
-		http.Error(w, "json marshal error", 500)
-		log.Println(err)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	io.WriteString(w, string(proofsJSON))
 
 }
 
 // get all assignments associated with a specific section
 func (env *Env) getAssignmentsBySection(w http.ResponseWriter, req *http.Request) {
-	if req.Method != "GET" || req.Body == nil {
+	/*
+		if req.Method != "GET" || req.Body == nil {
+			http.Error(w, "Request not accepted.", 400)
+			return
+		}
+
+		// Accepted JSON fields must be defined here
+		type getAssignmentsRequest struct {
+			SectionName string `json:"sectionName"`
+		}
+
+		var requestData getAssignmentsRequest
+
+		decoder := json.NewDecoder(req.Body)
+
+		if err := decoder.Decode(&requestData); err != nil {
+			http.Error(w, "Unable to decode request body.", 400)
+			return
+		}
+
+		log.Printf("%+v", requestData)
+
+		if requestData.SectionName == "" {
+			http.Error(w, "section name required", 400)
+			return
+		}
+
+		var err error
+
+		var assignmentDetails []datastore.Assignment
+		assignmentDetails, err = env.ds.GetAssignmentsBySection(requestData.SectionName)
+		if err != nil {
+			http.Error(w, "db access error", 500)
+			log.Println(err)
+			return
+		}
+	*/
+	log.Println("inside backend.go: getAssignmentBySection")
+	sectionName := req.URL.Query().Get("section")
+
+	if req.Method != "GET" || sectionName == "" {
 		http.Error(w, "Request not accepted.", 400)
 		return
 	}
 
-	// Accepted JSON fields must be defined here
-	type getAssignmentsRequest struct {
-		SectionName string `json:"sectionName"`
-	}
-
-	var requestData getAssignmentsRequest
-
-	decoder := json.NewDecoder(req.Body)
-
-	if err := decoder.Decode(&requestData); err != nil {
-		http.Error(w, "Unable to decode request body.", 400)
-		return
-	}
-
-	log.Printf("%+v", requestData)
-
-	if requestData.SectionName == "" {
-		http.Error(w, "section name required", 400)
-		return
-	}
-
-	var err error
-
-	var assignmentDetails []datastore.Assignment
-	assignmentDetails, err = env.ds.GetAssignmentsBySection(requestData.SectionName)
+	assignmentDetails, err := env.ds.GetAssignmentsBySection(sectionName)
 	if err != nil {
 		http.Error(w, "db access error", 500)
 		log.Println(err)
@@ -481,13 +524,13 @@ func (env *Env) getAssignmentsBySection(w http.ResponseWriter, req *http.Request
 	}
 
 	type assignmentWithProofs struct {
-		Name string `json:"name"`
-		ProofList []datastore.Proof `json:"proofList"`
-		Visibility string `json:"visibility"`
+		Name       string            `json:"name"`
+		ProofList  []datastore.Proof `json:"proofList"`
+		Visibility string            `json:"visibility"`
 	}
 
 	var assignments []assignmentWithProofs
-	for _,v := range assignmentDetails {
+	for _, v := range assignmentDetails {
 		var singleAssign assignmentWithProofs
 		singleAssign.Name = v.Name
 		singleAssign.Visibility = v.Visibility
@@ -513,41 +556,54 @@ func (env *Env) getAssignmentsBySection(w http.ResponseWriter, req *http.Request
 }
 
 func (env *Env) getCompletedProofsByAssignment(w http.ResponseWriter, req *http.Request) {
-	if req.Method != "GET" || req.Body == nil {
+	/*
+		if req.Method != "GET" || req.Body == nil {
+			http.Error(w, "Request not accepted.", 400)
+			return
+		}
+
+		// Accepted JSON fields must be defined here
+		type getCompletedProofsRequest struct {
+			SectionName string `json:"sectionName"`
+			AssignmentName string `json:"assignmentName"`
+		}
+
+		var requestData getCompletedProofsRequest
+
+		decoder := json.NewDecoder(req.Body)
+
+		if err := decoder.Decode(&requestData); err != nil {
+			http.Error(w, "Unable to decode request body.", 400)
+			return
+		}
+
+		log.Printf("%+v", requestData)
+
+		if requestData.SectionName == "" {
+			http.Error(w, "section name required", 400)
+			return
+		}
+		if requestData.AssignmentName == "" {
+			http.Error(w, "assignment name required", 400)
+			return
+		}
+
+		var err error
+
+		var completedProofs []datastore.Proof
+		completedProofs, err = env.ds.GetCompletedProofsByAssignment(requestData.SectionName, requestData.AssignmentName)
+	*/
+	log.Println("inside backend.go: getCompletedProofByAssignment")
+	sectionName := req.URL.Query().Get("section")
+	assignmentName := req.URL.Query().Get("assignment")
+
+	if req.Method != "GET" || sectionName == "" || assignmentName == "" {
 		http.Error(w, "Request not accepted.", 400)
 		return
 	}
 
-	// Accepted JSON fields must be defined here
-	type getCompletedProofsRequest struct {
-		SectionName string `json:"sectionName"`
-		AssignmentName string `json:"assignmentName"`
-	}
-
-	var requestData getCompletedProofsRequest
-
-	decoder := json.NewDecoder(req.Body)
-
-	if err := decoder.Decode(&requestData); err != nil {
-		http.Error(w, "Unable to decode request body.", 400)
-		return
-	}
-
-	log.Printf("%+v", requestData)
-
-	if requestData.SectionName == "" {
-		http.Error(w, "section name required", 400)
-		return
-	}
-	if requestData.AssignmentName == "" {
-		http.Error(w, "assignment name required", 400)
-		return
-	}
-
-	var err error
-
 	var completedProofs []datastore.Proof
-	completedProofs, err = env.ds.GetCompletedProofsByAssignment(requestData.SectionName, requestData.AssignmentName)
+	completedProofs, err := env.ds.GetCompletedProofsByAssignment(sectionName, assignmentName)
 
 	completedProofsJSON, err := json.Marshal(completedProofs)
 	if err != nil {
@@ -587,13 +643,13 @@ func (env *Env) addSection(w http.ResponseWriter, req *http.Request) {
 
 	err := env.ds.InsertSection(datastore.Section{InstructorEmail: user.GetEmail(), Name: requestData.SectionName})
 	if err != nil {
-		http.Error(w, "db section insertion error: " + err.Error(), 500)
+		http.Error(w, "db section insertion error: "+err.Error(), 500)
 		log.Println(err)
 		return
 	}
 	err = env.ds.InsertRoster(datastore.Roster{SectionName: requestData.SectionName, UserEmail: user.GetEmail(), Role: "instructor"})
 	if err != nil {
-		http.Error(w, "db roster insertion error: " + err.Error(), 500)
+		http.Error(w, "db roster insertion error: "+err.Error(), 500)
 		log.Println(err)
 		return
 	}
@@ -666,7 +722,7 @@ func (env *Env) addRoster(w http.ResponseWriter, req *http.Request) {
 	io.WriteString(w, `{"success": "true"}`)
 }
 
-func (env *Env) addAssignment(w http.ResponseWriter, req *http.Request){
+func (env *Env) addAssignment(w http.ResponseWriter, req *http.Request) {
 	if req.Method != "POST" || req.Body == nil {
 		http.Error(w, "Request not accepted.", 400)
 		return
@@ -674,9 +730,9 @@ func (env *Env) addAssignment(w http.ResponseWriter, req *http.Request){
 
 	type reqBody struct {
 		SectionName string `json:"sectionName"`
-		Name   string `json:"name"`
-		ProofIds []int `json:"proofIds"`
-		Visibility string `json:"visibility"`
+		Name        string `json:"name"`
+		ProofIds    []int  `json:"proofIds"`
+		Visibility  string `json:"visibility"`
 	}
 
 	var requestData reqBody
@@ -694,7 +750,7 @@ func (env *Env) addAssignment(w http.ResponseWriter, req *http.Request){
 
 	err := env.ds.InsertAssignment(assignment)
 	if err != nil {
-		http.Error(w, "db assignment insertion error: " + err.Error(), 500)
+		http.Error(w, "db assignment insertion error: "+err.Error(), 500)
 		log.Println(err)
 		return
 	}
@@ -703,17 +759,17 @@ func (env *Env) addAssignment(w http.ResponseWriter, req *http.Request){
 	io.WriteString(w, `{"success": "true"}`)
 }
 
-func (env *Env) updateAssignment(w http.ResponseWriter, req *http.Request){
+func (env *Env) updateAssignment(w http.ResponseWriter, req *http.Request) {
 	if req.Method != "POST" || req.Body == nil {
 		http.Error(w, "Request not accepted.", 400)
 		return
 	}
 
 	type reqBody struct {
-		SectionName string `json:"sectionName"`
-		CurrentName string `json:"currentName"`
-		UpdatedName string `json:"updatedName"`
-		UpdatedProofIds []int `json:"updatedProofIds"`
+		SectionName       string `json:"sectionName"`
+		CurrentName       string `json:"currentName"`
+		UpdatedName       string `json:"updatedName"`
+		UpdatedProofIds   []int  `json:"updatedProofIds"`
 		UpdatedVisibility string `json:"updatedVisibility`
 	}
 
@@ -732,7 +788,7 @@ func (env *Env) updateAssignment(w http.ResponseWriter, req *http.Request){
 
 	err := env.ds.UpdateAssignment(requestData.CurrentName, UpdatedAssignment)
 	if err != nil {
-		http.Error(w, "db assignment update error: " + err.Error(), 500)
+		http.Error(w, "db assignment update error: "+err.Error(), 500)
 		log.Println(err)
 		return
 	}
@@ -813,7 +869,7 @@ func (env *Env) removeAssignment(w http.ResponseWriter, req *http.Request) {
 
 	type reqBody struct {
 		SectionName string `json:"sectionName"`
-		Name   string `json:"name"`
+		Name        string `json:"name"`
 	}
 
 	var requestData reqBody
@@ -854,14 +910,14 @@ func (env *Env) clearDatabase() {
 
 func (env *Env) populateTestProofRow() {
 	err := env.ds.Store(datastore.Proof{
-		EntryType: "argument",
-		UserSubmitted: "elarson@csumb.edu",
-		ProofName: "Repository - Code Test",
-		ProofType: "prop",
-		Premise: []string{"P", "P → Q", "Q → R", "R → S"},
-		Logic: []string{},
-		Rules: []string{},
-		EverCompleted: "false",
+		EntryType:      "argument",
+		UserSubmitted:  "elarson@csumb.edu",
+		ProofName:      "Repository - Code Test",
+		ProofType:      "prop",
+		Premise:        []string{"P", "P → Q", "Q → R", "R → S"},
+		Logic:          []string{},
+		Rules:          []string{},
+		EverCompleted:  "false",
 		ProofCompleted: "false",
 		Conclusion:     "S",
 		TimeSubmitted:  "2019-04-29T01:45:44.452+0000",
@@ -999,8 +1055,6 @@ func main() {
 	http.Handle("/completed-proofs-by-assignment", tokenauth.WithValidToken(http.HandlerFunc(Env.getCompletedProofsByAssignment)))
 	http.Handle("/assignments-by-section", tokenauth.WithValidToken(http.HandlerFunc(Env.getAssignmentsBySection)))
 	http.Handle("/arguments-by-user", tokenauth.WithValidToken(http.HandlerFunc(Env.getUserArguments)))
-
-
 
 	// spr2022 POST (delete has also been treated as POST) : use JSON req.body for arguments
 	http.Handle("/add-section", tokenauth.WithValidToken(http.HandlerFunc(Env.addSection)))
