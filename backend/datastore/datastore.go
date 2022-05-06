@@ -184,12 +184,12 @@ func (p *ProofStore) GetRepoProofs(user UserWithEmail) (error, []SectionProofs) 
       // _,sectionProofList.ProofList = getProofsFromRows(rows)
       // repoList = append(repoList, sectionProofList)
 
-      sectionAssignments, err = p.db.GetAssignmentsBySection(section.Name)
+      sectionAssignments, err = p.GetAssignmentsBySection(section.Name)
       if err == nil {
          for _,assignment := range sectionAssignments {
             if assignment.Visibility == "true" {
-               assignmentProofs, err = p.db.GetAssignmentProofs(assignment)
-               sectionProofList.ProofList = append(sectionProofList.ProofList, assignmentProofs)
+               assignmentProofs, err = p.GetAssignmentProofs(assignment)
+               sectionProofList.ProofList = append(sectionProofList.ProofList, assignmentProofs...)
             }
          }
          repoList = append(repoList, sectionProofList)
@@ -302,7 +302,7 @@ func (p *ProofStore) Store(proof Proof) error {
 		return errors.New("Rules marshal error")
 	}
 
-   if proof.EverCompleted == nil {
+   if proof.EverCompleted == "" {
       proof.EverCompleted = "false"
    }
 	_, err = stmt.Exec(proof.EntryType, proof.UserSubmitted, proof.ProofName, proof.ProofType,
