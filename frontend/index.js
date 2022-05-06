@@ -109,6 +109,10 @@ class User {
    }
 }
 
+// Selector Listeners
+$("#classAddProof").on("change", addAssignmentSelector("classAddProof", "#proofAssignmentIn"));
+$("#proofAssignmentIn").on("change", prepareSelect("#proofIn", "user"));
+
 async function ViewClasses(){
 
    var classSelect=document.getElementById("csvClassSelect").value;
@@ -249,6 +253,13 @@ async function removeAssignment(){
    }else{
       backendPOST('remove-assignment',{name:assignmentO, sectionName:classN});
       alert("Assignment Removed");
+   }
+}
+
+async function addAssignmentSelector(sectionSelector, assignmentSelector) {
+   var sectionName = document.getElementById(sectionSelector).value;
+   if(sectionName != null) {
+      fillAssignmentSelector(sectionName, assignmentSelector);
    }
 }
 
