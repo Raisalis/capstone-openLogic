@@ -579,7 +579,7 @@ function showDropClass(){
 }
 
 
-function showAssignments(){
+async function showAssignments(){
    var proofs = document.getElementById("proofValues");
    var student = document.getElementById("studentPage");
    var assignment= document.getElementById("assignmentPage");
