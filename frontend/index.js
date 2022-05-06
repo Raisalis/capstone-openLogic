@@ -588,7 +588,7 @@ function showAssignments(){
    }else{
       assignment.style.display="block";
       fillClassNames("#assignedClass");
-      backendPOST('proofs', {selection: 'repo'}).then(   
+      backendPOST('arguments-by-user', {}).then(   
          (data) => {
             let elem = document.querySelector('#proofIn');
             $(elem).empty();
@@ -597,30 +597,18 @@ function showAssignments(){
                new Option('Select...', null, true, true)
             );
 
-            let currentSectionName;
-            (data) && data.forEach( section => {
-               if (currentSectionName !== section.SectionName) {
-                  currentSectionName = section.SectionName;
-                  console.log(section.SectionName);
-                  elem.appendChild(
-                     new Option(section.SectionName, null, false, false)
-                  );
-               }
-               if(section.ProofList != null) {
-                  section.ProofList.forEach( proof => {
-                     console.log(proof);
-                     elem.appendChild(
-                        new Option(proof.ProofName, proof.Id)
-                     );
-                  });
-               }
+            (data) && data.forEach( proof => {
+               console.log(proof);
+               elem.appendChild(
+                  new Option(proof.ProofName, proof.Id)
+               );
             });
 
             // Make section headers not selectable
             $('#repoProofSelect option[value=null]').attr('disabled', true);
          }, console.log
       );
-      backendPOST('proofs', {selection: 'repo'}).then(   
+      backendPOST('arguments-by-user', {}).then(   
          (data) => {
             let elem = document.querySelector('#proofOut');
             $(elem).empty();
@@ -629,23 +617,11 @@ function showAssignments(){
                new Option('Select...', null, true, true)
             );
 
-            let currentSectionName;
-            (data) && data.forEach( section => {
-               if (currentSectionName !== section.SectionName) {
-                  currentSectionName = section.SectionName;
-                  console.log(section.SectionName);
-                  elem.appendChild(
-                     new Option(section.SectionName, null, false, false)
-                  );
-               }
-               if(section.ProofList != null) {
-                  section.ProofList.forEach( proof => {
-                     console.log(proof);
-                     elem.appendChild(
-                        new Option(proof.ProofName, proof.Id)
-                     );
-                  });
-               }
+            (data) && data.forEach( proof => {
+               console.log(proof);
+               elem.appendChild(
+                  new Option(proof.ProofName, proof.Id)
+               );
             });
 
             // Make section headers not selectable
