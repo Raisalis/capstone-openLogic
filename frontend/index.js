@@ -606,9 +606,9 @@ function showAddProofAssignment(){
    var other = document.getElementById("removeProofAssignmentDiv");
    if(assignment.style.display=="block"){
       assignment.style.display= "none";
-      fillClassNames("#classAddProof");
    }else{
       assignment.style.display="block";
+      fillClassNames("#classAddProof");
       if(other.style.display === "block") {
          other.style.display = "none";
       }
@@ -622,6 +622,7 @@ function showRemoveProofAssignment(){
       assignment.style.display= "none";
    }else{
       assignment.style.display="block";
+      fillClassNames("#classRemoveProof");
       if(other.style.display === "block") {
          other.style.display = "none";
       }
