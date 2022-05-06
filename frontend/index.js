@@ -740,16 +740,17 @@ $(document).ready(function() {
       // always an empty array.
       let Logic = [JSON.stringify(proofData)],
           Rules = [];
-      
+
+      let proofName = $('.proofNameSpan').text() || "n/a";
+      let repoProblem = $('#repoProblem').val() || "false";
+
       let entryType = "";
-      if ((adminUsers.indexOf($('#user-email').text()) != -1) && Logic.length == 0) {
+      if ((adminUsers.indexOf($('#user-email').text()) != -1) && (repoProblem == "true")) {
          entryType = "argument";
       } else {
          entryType = "proof";
       }
 
-      let proofName = $('.proofNameSpan').text() || "n/a";
-      let repoProblem = $('#repoProblem').val() || "false";
       let proofType = predicateSettings ? "fol" : "prop";
 
       let everCompleted = event.detail.everCompleted;
@@ -775,6 +776,9 @@ $(document).ready(function() {
    });
 
    // admin users - publish problems to public repo
+   // sp22 note: publicStatus will decide whether or not a 'proof' record will by entryType 'argument' or 'proof' 
+   //            public --> argument; private --> proof
+   //            stop gap measure --> it shouldn't toggle --> just have button make the current proof record an argument
    $('.proofContainer').on('click', '#togglePublicButton', (event) => {
       let proofName = $('.proofNameSpan').text();
       if (!proofName || proofName == "") {
