@@ -579,7 +579,7 @@ function showDropClass(){
 }
 
 
-function showAssignments(){
+async function showAssignments(){
    var proofs = document.getElementById("proofValues");
    var student = document.getElementById("studentPage");
    var assignment= document.getElementById("assignmentPage");
@@ -588,7 +588,7 @@ function showAssignments(){
    }else{
       assignment.style.display="block";
       fillClassNames("#assignedClass");
-      backendGET('arguments-by-user', {}).then(   
+      await backendGET('arguments-by-user', {}).then(   
          (data) => {
             let elem = document.querySelector('#proofIn');
             $(elem).empty();
@@ -608,7 +608,7 @@ function showAssignments(){
             $('#repoProofSelect option[value=null]').attr('disabled', true);
          }, console.log
       );
-      backendGET('arguments-by-user', {}).then(   
+      await backendGET('arguments-by-user', {}).then(   
          (data) => {
             let elem = document.querySelector('#proofOut');
             $(elem).empty();

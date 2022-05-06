@@ -261,6 +261,7 @@
       
       <div id="createAssignmentDiv">
         <input type="text" id="assignmentName" size="40" placeholder="Assignment Name">
+        <label for="assignedClass">For Class:</label>
         <select name="sections" id="assignedClass">
 
         </select>
@@ -277,12 +278,15 @@
         <button onclick="showAddProofAssignment()">Add Proof</button> <button onclick="showRemoveProofAssignment()">Remove Proof</button>
       </div>
       <div id="addProofAssignmentDiv">
+        <label for="classAddProof">Class Name</label>
         <select name="sections" id="classAddProof">
           
         </select>
+        <label for="proofAssignmentIn">Assignment Name</label>
         <select name="assign" id="proofAssignmentIn">
 
         </select>
+        <label for="proofIn">Proof to Add</label>
         <select name="proof" id="proofIn">
 
         </select>
