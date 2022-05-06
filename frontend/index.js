@@ -729,7 +729,7 @@ $(document).ready(function() {
           Rules = [];
       
       let entryType = "";
-      if (adminUsers.indexOf(User.email) && Logic.length == 0) {
+      if ((adminUsers.indexOf($('#user-email').text()) != -1) && Logic.length == 0) {
          entryType = "argument";
       } else {
          entryType = "proof";
