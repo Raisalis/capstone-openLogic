@@ -345,7 +345,7 @@ async function fillAddProofAssignment(){
 
    fillAssignmentSelector(classRoom, "#proofAssignmentIn");
 
-   backendGET('proofs', {selection: 'repo'}).then(   
+   backendPOST('proofs', {selection: 'repo'}).then(   
       (data) => {
          prepareSelect('#ProofIn', data);
          }, console.log
@@ -357,7 +357,7 @@ async function fillDropProofAssignment(){
 
    fillAssignmentSelector(classRoom, '#proofAssignmentOut');
    
-   backendGET('proofs', {selection: 'repo'}).then(   
+   backendPOST('proofs', {selection: 'repo'}).then(   
       (data) => {
          prepareSelect('#ProofOut', data);
          }, console.log
