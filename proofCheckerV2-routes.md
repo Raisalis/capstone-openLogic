@@ -597,6 +597,7 @@
     - return a list of proofs whose *userSubmitted* matches the current user and their *proofCompleted* value is "true"
   - "downloadrepo":
     - return a list of all proofs whose Premise matches the premise of an admin submitted proof, whose conclusion matches an admin submitted proof, and whose *entryType* is "proof"
+      - this will download every proof that satisfies the conditions, not just for a section held by the current user
     - ordered by userSubmitted, proofName, proofCompleted
     - ** please use completed-proofs-by-section or completed-proofs-by-assignment instead of the "downloadrepo" option **
 

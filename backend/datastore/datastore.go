@@ -150,52 +150,50 @@ func (p *ProofStore) GetAllAttemptedRepoProofs() (error, []Proof) {
 	return getProofsFromRows(rows)
 }
 
+// return the visibile assignment proofs and the corresponding section for a given user
+// this is used for the "load repositoryproblems" dropdown
 func (p *ProofStore) GetRepoProofs(user UserWithEmail) (error, []SectionProofs) {
-	// stmt, err := p.db.Prepare(`SELECT id, entryType, userSubmitted, proofName, proofType, Premise, Logic, Rules, everCompleted, proofCompleted, timeSubmitted, Conclusion, repoProblem 
-   //                            FROM proof WHERE repoProblem = 'true' AND userSubmitted IN (SELECT email FROM user WHERE admin = 1) 
-   //                            ORDER BY userSubmitted`)
-	// if err != nil {
-	// 	return err, nil
-	// }
-	// defer stmt.Close()
-
-	// rows, err := stmt.Query(user.GetEmail())
-	// if err != nil {
-	// 	return err, nil
-	// }
-	// defer rows.Close()
-
-	// return getProofsFromRows(rows)
-
-   // ---- WIP Apr 13
    sections, err := p.GetSections(user.GetEmail())
    if err != nil {
 		return err, nil
 	}
 
-   stmt, err := p.db.Prepare(`SELECT id, entryType, userSubmitted, proofName, proofType, Premise, Logic, Rules, everCompleted, proofCompleted, timeSubmitted, Conclusion, repoProblem 
-                              FROM proof JOIN section on userSubmitted = instructorEmail
-                              WHERE repoProblem = 'true' AND userSubmitted IN (SELECT instructorEmail FROM section WHERE name = ?) 
-                              ORDER BY proofName`)
-
-   if err != nil {
-      return err, nil
-   }
-   defer stmt.Close()
+   // stmt, err := p.db.Prepare(`SELECT id, entryType, userSubmitted, proofName, proofType, Premise, Logic, Rules, everCompleted, proofCompleted, timeSubmitted, Conclusion, repoProblem 
+   //                            FROM proof JOIN section on userSubmitted = instructorEmail
+   //                            WHERE repoProblem = 'true' AND userSubmitted IN (SELECT instructorEmail FROM section WHERE name = ?) 
+   //                            ORDER BY proofName`)
+   // if err != nil {
+   //    return err, nil
+   // }
+   // defer stmt.Close()
 
    var repoList []SectionProofs
    var sectionProofList SectionProofs
+   var sectionAssignments []Assignment
+   var assignmentProofs []Proof
    for _,section:= range sections {
+      sectionAssignments = []
       sectionProofList.SectionName = section.Name
 
-      rows, err := stmt.Query(section.Name)
-      if err != nil {
-         return err, nil
-      }
-      defer rows.Close()
+      // rows, err := stmt.Query(section.Name)
+      // if err != nil {
+      //    return err, nil
+      // }
+      // defer rows.Close()
 
-      _,sectionProofList.ProofList = getProofsFromRows(rows)
-      repoList = append(repoList, sectionProofList)
+      // _,sectionProofList.ProofList = getProofsFromRows(rows)
+      // repoList = append(repoList, sectionProofList)
+
+      sectionAssignments, err = p.db.GetAssignmentsBySection(section.Name)
+      if err == nil {
+         for _,assignment := range sectionAssignments {
+            if assignment.Visibility == "true" {
+               assignmentProofs, err = p.db.GetAssignmentProofs(assignment)
+               sectionProofList.ProofList = append(sectionProofList.ProofList, assignmentProofs)
+            }
+         }
+         repoList = append(repoList, sectionProofList)
+      }
    }
 
    return nil, repoList
@@ -303,6 +301,10 @@ func (p *ProofStore) Store(proof Proof) error {
 	if err != nil {
 		return errors.New("Rules marshal error")
 	}
+
+   if proof.EverCompleted == nil {
+      proof.EverCompleted = "false"
+   }
 	_, err = stmt.Exec(proof.EntryType, proof.UserSubmitted, proof.ProofName, proof.ProofType,
       PremiseJSON, LogicJSON, RulesJSON, proof.EverCompleted, proof.ProofCompleted, proof.Conclusion, 
       proof.RepoProblem, proof.EntryType, proof.ProofType, PremiseJSON, LogicJSON, 
