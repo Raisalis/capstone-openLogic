@@ -588,8 +588,16 @@ function showAssignments(){
    }else{
       assignment.style.display="block";
       fillClassNames("#assignedClass");
-      prepareSelect("#proofIn", 'user');
-      prepareSelect("#proofOut", 'user');
+      backendGET('Proof', {selection: 'user'}).then(   
+         (data) => {
+            prepareSelect('#ProofIn', data);
+            }, console.log
+      );
+      backendGET('Proof', {selection: 'user'}).then(   
+         (data) => {
+            prepareSelect('#ProofOut', data);
+            }, console.log
+      );
    }
    if(proofs.style.display === "block") {
       proofs.style.display = "none";
