@@ -588,13 +588,13 @@ function showAssignments(){
    }else{
       assignment.style.display="block";
       fillClassNames("#assignedClass");
-      backendGET('proofs', {selection: 'repo'}).then(   
+      backendPOST('proofs', {selection: 'repo'}).then(   
          (data) => {
             console.log(data);
             prepareSelect('#ProofIn', data);
             }, console.log
       );
-      backendGET('proofs', {selection: 'repo'}).then(   
+      backendPOST('proofs', {selection: 'repo'}).then(   
          (data) => {
             prepareSelect('#ProofOut', data);
             }, console.log
