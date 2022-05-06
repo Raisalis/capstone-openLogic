@@ -606,12 +606,14 @@ function showAssignments(){
                      new Option(section.SectionName, null, false, false)
                   );
                }
-               section.ProofList.forEach( proof => {
-                  console.log(proof);
-                  elem.appendChild(
-                     new Option(proof.ProofName, proof.Id)
-                  );
-               });
+               if(section.ProofList != null) {
+                  section.ProofList.forEach( proof => {
+                     console.log(proof);
+                     elem.appendChild(
+                        new Option(proof.ProofName, proof.Id)
+                     );
+                  });
+               }
             });
 
             // Make section headers not selectable
@@ -636,12 +638,14 @@ function showAssignments(){
                      new Option(section.SectionName, null, false, false)
                   );
                }
-               section.ProofList.forEach( proof => {
-                  console.log(proof);
-                  elem.appendChild(
-                     new Option(proof.ProofName, proof.Id)
-                  );
-               });
+               if(section.ProofList != null) {
+                  section.ProofList.forEach( proof => {
+                     console.log(proof);
+                     elem.appendChild(
+                        new Option(proof.ProofName, proof.Id)
+                     );
+                  });
+               }
             });
 
             // Make section headers not selectable
