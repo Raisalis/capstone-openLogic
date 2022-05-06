@@ -703,12 +703,10 @@ const prepareSelect = (selector, options) => {
    elem.querySelector('option').setAttribute('disabled', 'disabled');
 
    // Add option elements for the options
-   if(options != null) {
-      (options) && options.forEach( proof => {
-         let option = new Option(proof.ProofName, proof.Id);
-         elem.appendChild(option);
-      });
-   }
+   (options) && options.forEach( proof => {
+      let option = new Option(proof.ProofName, proof.Id);
+      elem.appendChild(option);
+   });
 }
 
 // load user's incomplete proofs
@@ -740,19 +738,21 @@ function loadRepoProofs() {
 
 	 let currentSectionName;
 	 (data) && data.forEach( section => {
-            if (currentSectionName !== section.SectionName) {
-               currentSectionName = section.SectionName;
-               console.log(section.SectionName);
-               elem.appendChild(
-		            new Option(section.SectionName, null, false, false)
-               );
-            }
+         if (currentSectionName !== section.SectionName) {
+            currentSectionName = section.SectionName;
+            console.log(section.SectionName);
+            elem.appendChild(
+               new Option(section.SectionName, null, false, false)
+            );
+         }
+         if(section.ProofList.length != 0) {
             section.ProofList.forEach( proof => {
                console.log(proof);
                elem.appendChild(
                   new Option(proof.ProofName, proof.Id)
                );
             });
+         }
 	 });
 
 	 // Make section headers not selectable
