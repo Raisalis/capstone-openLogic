@@ -314,7 +314,7 @@ async function fillClassNames(selectorName) {
    );
 }
 
-async function fillAssignmentSelector(sectionName, divName) {
+async function fillAssignmentSelector(className, divName) {
    await backendGET('assignments-by-section', {sectionName:className}).then(
       (data)=>{
          let elem = document.querySelector(divName);
