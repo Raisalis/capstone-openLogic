@@ -109,9 +109,7 @@ class User {
    }
 }
 
-// Selector Listeners
-$("#classAddProof").on("change", addAssignmentSelector("classAddProof", "#proofAssignmentIn"));
-
+// TODO: wtf is this
 async function ViewClasses(){
 
    var classSelect=document.getElementById("csvClassSelect").value;
@@ -139,38 +137,53 @@ async function ViewClasses(){
 
 
 //this inserts the class and students in that class, the students should be seperated by a comma
-async function insertClass(){
+async function insertClassAndStudents() {
+
    var name=document.getElementById("className").value;
-   
    var students= $("#involveStudents").val().split(",");
-   console.log(students);
-   if(name==""||students==""){
-      alert("One or more input boxes are empty");
-   }else{
+
+   if(name=="") {
+      alert("Must enter a Class Name.");
+   } else {
+      // Section must be added first or will get an error adding students.
       await backendPOST('add-section',{sectionName:name}).then(
          (data) =>{
             console.log('add section',data);
          }
       );
-      backendPOST('add-roster', {sectionName: name, studentEmails: students}).then(
-         (data) => {
-            console.log("add roster", data);
-                   
-            
-         }
-      );
-      
-   
-      
-         //this will come up if the submission was successful
-         alert("Your submission was accepted");
-   }
-   //will work on the rest after figuring out how to get function call properly
 
-   
+      if(students!="") {
+         backendPOST('add-roster', {sectionName: name, studentEmails: students}).then(
+            (data) => {
+               alert("Your submission was accepted");
+               fillAssignmentPageClasses();
+            }
+         );
+      }
+   }
 }
 
-//this will drop the class of the admin by name, everything, including the students will be dropped
+// Function to add students to an existing class
+function insertStudents() {
+   var className = document.getElementById("classSelectStudents").value;
+   var students = $("#additionalStudents").val().split(",");
+
+   if(className == "") {
+      alert("Must select a class to add students to.");
+   } else {
+      if(students!="") {
+         backendPOST('add-roster', {sectionName: className, studentEmails: students}).then(
+            (data) => {
+               alert("Submission accepted.");
+            }
+         )
+      } else {
+         alert("Must enter at least one student email.");
+      }
+   }
+}
+
+// Drops an entire class, removing all student information as well.
 async function dropClass(){
    var x=document.getElementById("dropSectionName").value;
    console.log(x);
@@ -181,13 +194,12 @@ async function dropClass(){
       //waiting for tables to be ready to do rest
       //temporary idea
       backendPOST('remove-section',{sectionName: x});
-      
 
       alert("Class deleted");
    }
 }
 
-//this will drop one student at a time, for one reason or another,
+// Drops one student from a class.
 async function dropStudent(){
    var deadToClass=document.getElementById("sectionToRemoveStudent").value;
    var deadStudent= document.getElementById("dropKid").value;
@@ -207,8 +219,11 @@ async function dropStudent(){
    
 }
 
+/***
+ * 2 of these next 4 functions need to go??????
+ */
 
-
+// ?????????????
 async function addAssignmentToClass(){
    var add=document.getElementById("classAssignmentIn").value;
    var classIn=document.getElementById("classIn").value;
@@ -220,7 +235,7 @@ async function addAssignmentToClass(){
       alert("Assignment has been added to the class");
    }
 }
-
+// ????
 async function removeAssignmentFromClass(){
    var sub=document.getElementById("classAssignmentOut").value;
    var classOut=document.getElementById("classOut").value;
@@ -232,7 +247,7 @@ async function removeAssignmentFromClass(){
    }
 }
 
-
+// Adds an assignment from a class. ?????????/
 async function insertAssignment(){
    var assignmentN=document.getElementById("assignmentName").value;
    var classN=document.getElementById("assignedClass").value;
@@ -244,6 +259,7 @@ async function insertAssignment(){
    }
 }
 
+// Removes an assignment from a class. ?????
 async function removeAssignment(){
    var assignmentO=document.getElementById("assignmentName").value;
    var classN=document.getElementById("assignedClass").value;
@@ -255,6 +271,8 @@ async function removeAssignment(){
    }
 }
 
+// Function to check that a class was actually selected before filling an Assignment Selector.
+// Required to prevent null error.
 function addAssignmentSelector(sectionSelector, assignmentSelector) {
    var check = document.getElementById(sectionSelector);
    if(check != null) {
@@ -263,6 +281,7 @@ function addAssignmentSelector(sectionSelector, assignmentSelector) {
    }
 }
 
+// For adding a proof to an assignment, Add Proof Div of Assignment Page.
 async function addProofAssignment(){
    
    var assignment=document.getElementById("proofAssignmentIn").value;
@@ -277,6 +296,8 @@ async function addProofAssignment(){
    }
 
 }
+
+// For removing a proof from an assignment, Remove Proof Div of Assignment Page.
 async function removeProofAssignment(){
    var assignment=document.getElementById("proofAssignmentOut").value;
    var proof=document.getElementById("proofOut").value;
@@ -288,6 +309,7 @@ async function removeProofAssignment(){
    }
 }
 
+// Class Selector filler function.
 async function fillClassNames(selectorName) {
    var userEmail = document.getElementById("user-email").text;
    await backendGET('sections', {'user': userEmail}).then(
@@ -314,6 +336,7 @@ async function fillClassNames(selectorName) {
    );
 }
 
+// Assignment Selector filler function.
 async function fillAssignmentSelector(className, divName) {
    await backendGET('assignments-by-section', {sectionName:className}).then(
       (data)=>{
@@ -339,39 +362,7 @@ async function fillAssignmentSelector(className, divName) {
    )
 }
 
-
-async function fillAddProofAssignment(){
-   var classRoom=document.getElementById("proofClassIn").value;
-
-   fillAssignmentSelector(classRoom, "#proofAssignmentIn");
-
-   backendPOST('proofs', {selection: 'repo'}).then(   
-      (data) => {
-         prepareSelect('#ProofIn', data);
-         }, console.log
-      );
-}
-
-async function fillDropProofAssignment(){
-   var classRoom=document.getElementById("proofClassIn").value;
-
-   fillAssignmentSelector(classRoom, '#proofAssignmentOut');
-   
-   backendPOST('proofs', {selection: 'repo'}).then(   
-      (data) => {
-         prepareSelect('#ProofOut', data);
-         }, console.log
-      );
-}
-async function fillProof(){
-   //will need to wait for the get functions to work
-   // backendGET("proof-values", {proofName, proof}).then(
-   //    (data)=>{
-
-   //    }
-   // );
-}
-
+// Fills the Publish Assignments checkboxes in the Assignments Page based on the class selected.
 async function fillAssignmentCheckboxes() {
    var sectionName = document.getElementById('publishClass');
    var checkboxHolder = document.getElementById('checkboxHolder');
@@ -401,9 +392,6 @@ async function fillAssignmentCheckboxes() {
       }
    );
 }
-// function showClassAssignment(){
-//    backendGET()
-// }
 
 // Verifies signed in and valid token, then calls authenticatedBackendPOST
 // Returns a promise which resolves to the response body or undefined
@@ -541,6 +529,7 @@ function showProofs(){
    
 }
 
+// Loader for the Add Class/Students Page.
 function showStudents(){
    var proofs=document.getElementById("proofValues");
    var student= document.getElementById("studentPage");
@@ -578,7 +567,16 @@ function showDropClass(){
    }
 }
 
+// Refills all Class Selectors in the Assignments Page.
+function fillAssignmentPageClasses() {
+   fillClassNames("#assignedClass");
+   fillClassNames("#classSelectStudents");
+   fillClassNames("#classAddProof");
+   fillClassNames("#classRemoveProof");
+   fillClassNames("#classForPublish");
+}
 
+// Loader for the Assignments Page.
 async function showAssignments(){
    var proofs = document.getElementById("proofValues");
    var student = document.getElementById("studentPage");
@@ -587,7 +585,7 @@ async function showAssignments(){
       assignment.style.display= "none";
    }else{
       assignment.style.display="block";
-      fillClassNames("#assignedClass");
+      fillAssignmentPageClasses();
       await backendGET('arguments-by-user', {}).then(   
          (data) => {
             var temp = JSON.parse(data);
@@ -642,7 +640,6 @@ function showAddProofAssignment(){
       assignment.style.display= "none";
    }else{
       assignment.style.display="block";
-      fillClassNames("#classAddProof");
       if(other.style.display === "block") {
          other.style.display = "none";
       }
@@ -651,12 +648,11 @@ function showAddProofAssignment(){
 
 function showRemoveProofAssignment(){
    var assignment=document.getElementById("removeProofAssignmentDiv");
-   var other = document.getElementById("removeProofAssignmentDiv");
+   var other = document.getElementById("addProofAssignmentDiv");
    if(assignment.style.display=="block"){
       assignment.style.display= "none";
    }else{
       assignment.style.display="block";
-      fillClassNames("#classRemoveProof");
       if(other.style.display === "block") {
          other.style.display = "none";
       }

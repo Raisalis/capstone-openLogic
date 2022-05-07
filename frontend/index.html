@@ -195,7 +195,7 @@
     <h1> Administrator Options: </h1>
   </div>
 
-  <button onclick="showProofs(),ViewClasses()">View Classes</button> <button onclick="showStudents()">Add Students</button> <button onclick="showAssignments()">Assignments</button>
+  <button onclick="showProofs(),ViewClasses()">View Classes</button> <button onclick="showStudents()">Add Class/Students</button> <button onclick="showAssignments()">Assignments</button>
   <div  id="proofValues">
 
     <center>
@@ -239,15 +239,26 @@
   <div id="studentPage">
     <br>
     <center>        
-    <h3>Add Student/Class</h3>
+    <h3>Add New Class and Students</h3>
 
-    <div id="studentAddition">
-      <input type="text" id="className" size="40" placeholder="Class name, major, section, semester">
+    <div id="studentClassAddition">
+      <label for="className">Class/Section Name</label>
+      <input type="text" id="className" size="40" placeholder="Input Class/Section Name Here">
       <br>
       <!--<input type="text" placeholder="Amount of students">-->
-      <textarea name="studentAdd"  id="involveStudents" cols="30" rows="10" placeholder="Enter student emails"></textarea>
+      <label for="involveStudents">Student Email(s)    Note: Separate with commas (,)</label>
+      <textarea name="studentAdd"  id="involveStudents" cols="20" rows="5" placeholder="Enter Student Email(s) Here"></textarea>
       <br>
-      <button onclick="insertClass()">Confirm Students</button>
+      <button onclick="insertClassAndStudents()">Add Class and Students</button>
+    </div>
+
+    <h3>Add Student to Existing Class</h3>
+    <div id="addToExistingClass">
+      <label for="classSelectStudents"></label>
+      <select name="sections" id="classSelectStudents"></select>
+      <label for="additionalStudents">Student Email(s)    Note: Separate with commas (,)</label>
+      <textarea name="studentAdd" id="additionalStudents" cols="20" rows="5" placeholder="Enter Student Email(s) Here"></textarea>
+      <button onclick="insertStudents()">Add Students</button>
     </div>
 
     </center>
@@ -282,6 +293,7 @@
         <select name="sections" id="classAddProof">
           
         </select>
+        <button onclick="addAssignmentSelector('classAddProof','#proofAssignmentIn')">Load Class Assignments</button>
         <label for="proofAssignmentIn">Assignment Name</label>
         <select name="assign" id="proofAssignmentIn">
 
@@ -294,15 +306,15 @@
       </div>
 
       <div id="removeProofAssignmentDiv">
-
-        <input type="text" id="proofClassOut" placeholder="Name of classroom for assignment" onkeyup="fillDropProofAssignment()">
+        <label for="classRemoveProof">Class Name</label>
         <select name="sections" id="classRemoveProof">
 
         </select>
+        <label for="proofAssignmentOut">Assignment Name</label>
         <select name="assign" id="proofAssignmentOut">
           
         </select>
-
+        <label for="proofOut">Proof to Remove</label>
         <select name="proof" id="proofOut">
 
         </select>
@@ -314,7 +326,11 @@
       <br>
       <h3>Publish Assignments</h3>
       <div id="publicAssignmentsDiv">
-        <input type="text" id="publishClass" placeholder="Enter Class Name" onkeyup="fillAssignmentCheckboxes()">
+        <label for="classForPublish">Class Name</label>
+        <select name="sections" id="classForPublish">
+
+        </select>
+        <button onclick="fillAssignmentCheckboxes()">Load Class Assignments</button>
         <h4>Choose Assignments to Publish</h4>
         <div id="checkboxHolder">
         
