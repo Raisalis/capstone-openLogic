@@ -294,9 +294,10 @@
           
         </select>
         <button onclick="addAssignmentSelector('classAddProof','#proofAssignmentIn')">Load Class Assignments</button>
+        <br>
         <label for="proofAssignmentIn">Assignment Name</label>
         <select name="assign" id="proofAssignmentIn">
-
+          <option>Waiting for Class Selection...</option>
         </select>
         <label for="proofIn">Proof to Add</label>
         <select name="proof" id="proofIn">
@@ -310,9 +311,11 @@
         <select name="sections" id="classRemoveProof">
 
         </select>
+        <button onclick="addAssignmentSelector('classRemoveProof','#proofAssignmentOut')">Load Class Assignments</button>
+        <br>
         <label for="proofAssignmentOut">Assignment Name</label>
         <select name="assign" id="proofAssignmentOut">
-          
+          <option>Waiting for Class Selection...</option>
         </select>
         <label for="proofOut">Proof to Remove</label>
         <select name="proof" id="proofOut">

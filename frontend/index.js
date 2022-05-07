@@ -157,6 +157,7 @@ async function insertClassAndStudents() {
             (data) => {
                alert("Your submission was accepted");
                fillAssignmentPageClasses();
+               fillClassNames("#classSelectStudents");
             }
          );
       }
@@ -340,6 +341,8 @@ async function fillClassNames(selectorName) {
 async function fillAssignmentSelector(className, divName) {
    await backendGET('assignments-by-section', {sectionName:className}).then(
       (data)=>{
+         var temp = JSON.parse(data);
+         console.log("assignment selector data: ", temp);
          let elem = document.querySelector(divName);
 
          // Remove all child nodes from the select element
@@ -354,7 +357,7 @@ async function fillAssignmentSelector(className, divName) {
          elem.querySelector('option').setAttribute('disabled', 'disabled');
 
          // Add option elements for the options
-         (data) && data.forEach( assignment => {
+         (temp) && temp.forEach( assignment => {
             let option = new Option(assignment.Name, assignment.Name);
             elem.appendChild(option);
          });
@@ -368,8 +371,9 @@ async function fillAssignmentCheckboxes() {
    var checkboxHolder = document.getElementById('checkboxHolder');
    await backendGET("assignments-by-section", {sectionName:sectionName}).then(
       (data)=>{
+         var temp = JSON.parse(data);
          var i = 0;
-         for(let assignment of data) {
+         for(let assignment of temp) {
             const newDiv = document.createElement("div");
             const newCheck = document.createElement("INPUT");
             newCheck.setAttribute("type", "checkbox");
@@ -539,6 +543,7 @@ function showStudents(){
       student.style.display= "none";
    }else{
       student.style.display="block";
+      fillClassNames("#classSelectStudents");
    }
    if(proofs.style.display=== "block"){
       proofs.style.display= "none";
@@ -570,7 +575,6 @@ function showDropClass(){
 // Refills all Class Selectors in the Assignments Page.
 function fillAssignmentPageClasses() {
    fillClassNames("#assignedClass");
-   fillClassNames("#classSelectStudents");
    fillClassNames("#classAddProof");
    fillClassNames("#classRemoveProof");
    fillClassNames("#classForPublish");
