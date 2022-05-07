@@ -341,8 +341,7 @@ async function fillClassNames(selectorName) {
 async function fillAssignmentSelector(className, divName) {
    await backendGET('assignments-by-section', {sectionName:className}).then(
       (data)=>{
-         var temp = JSON.parse(data);
-         console.log("assignment selector data: ", temp);
+         console.log("fillAssignmentSelector: ", data);
          let elem = document.querySelector(divName);
 
          // Remove all child nodes from the select element
@@ -357,7 +356,7 @@ async function fillAssignmentSelector(className, divName) {
          elem.querySelector('option').setAttribute('disabled', 'disabled');
 
          // Add option elements for the options
-         (temp) && temp.forEach( assignment => {
+         (data) && data.forEach( assignment => {
             let option = new Option(assignment.Name, assignment.Name);
             elem.appendChild(option);
          });
@@ -373,7 +372,7 @@ async function fillAssignmentCheckboxes() {
       (data)=>{
          var temp = JSON.parse(data);
          var i = 0;
-         for(let assignment of temp) {
+         (temp) && temp.forEach( assignment => {
             const newDiv = document.createElement("div");
             const newCheck = document.createElement("INPUT");
             newCheck.setAttribute("type", "checkbox");
@@ -392,7 +391,7 @@ async function fillAssignmentCheckboxes() {
             newDiv.append(newLabel);
             checkboxHolder.appendChild(newDiv);
             i++;
-         }
+         });
       }
    );
 }
