@@ -301,6 +301,7 @@ async function addProofAssignment(){
 
 // Returns specific Assignment Details from a section.
 async function getAssignmentDetails(className, assignmentName) {
+   /*
    await backendGET('assignments-by-section', {sectionName: className}).then(
       (data)=>{
          (data) && data.forEach( assignment => {
@@ -310,6 +311,15 @@ async function getAssignmentDetails(className, assignmentName) {
          });
       }
    )
+   */
+
+   let data = await backendGET('assignments-by-section', {sectionName: className});
+	for(var i = 0; i < data.length; i++) {
+		if(data[i].name === assignmentName) {
+         console.log(data[i]);
+			return data[i];
+		}
+	}
 }
 
 // For removing a proof from an assignment, Remove Proof Div of Assignment Page.
@@ -455,7 +465,6 @@ async function publishAssignments() {
       var assignments = document.querySelectorAll('input[name=checkOption]');
       for(var i = 0; i < assignments.length; i++) {
          let assignmentDetails = await getAssignmentDetails(className, assignments[i].value);
-         console.log(assignmentDetails);
          /*
          if(assignments[i].checked) {
             backendPOST("update-assignment", {sectionName:className, currentName:assignments[i].value, updatedName:assignments[i].value, updatedProofIds:assignmentDetails.proofList, updatedVisibility:true});
