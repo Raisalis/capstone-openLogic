@@ -383,9 +383,8 @@ async function fillAssignmentCheckboxes() {
 
             label.appendChild(checkbox);
             label.appendChild(description);
-            label.appendChild(document.createElement("br"));
 
-            document.getElementById('checkboxHolder').appendChild(label);
+            document.getElementById('checkboxHolder').appendChild(label).appendChild(document.createElement("br"));
             i++;
 
             /*
