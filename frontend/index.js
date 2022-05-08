@@ -305,6 +305,7 @@ async function getAssignmentDetails(className, assignmentName) {
       (data)=>{
          (data) && data.forEach( assignment => {
             if(assignment.name == assignmentName) {
+               console.log("getAssignmentDetails: ", assignment);
                return assignment;
             }
          });
