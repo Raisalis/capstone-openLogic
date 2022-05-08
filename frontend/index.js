@@ -371,6 +371,8 @@ async function fillAssignmentCheckboxes() {
    await backendGET("assignments-by-section", {sectionName:sectionName}).then(
       (data)=>{
          var temp = JSON.parse(data);
+         console.log(data);
+         console.log(temp);
          var i = 0;
          (temp) && temp.forEach( assignment => {
             console.log(assignment);
