@@ -305,7 +305,7 @@ async function getAssignmentDetails(className, assignmentName) {
       (data)=>{
          (data) && data.forEach( assignment => {
             if(assignment.name == assignmentName) {
-               return assignment;
+               return Promise.resolve(assignment);
             }
          });
       }
@@ -448,20 +448,19 @@ async function fillAssignmentCheckboxes() {
 }
 
 // Publishes Assignments to class based on checked boxes.
-async function publishAssignments() {
+function publishAssignments() {
    var checkboxes = document.getElementById('checkboxHolder');
    var className = document.getElementById('classForPublish').value;
    if(checkboxes.innerHTML != "") {
       var assignments = document.querySelectorAll('input[name=checkOption]');
-      console.log(assignments);
       for(var i = 0; i < assignments.length; i++) {
-         await getAssignmentDetails(className, assignments[i].value).then(
-            (assignment) => {
-               console.log(assignment.proofList);
+         getAssignmentDetails(className, assignments[i].value).then(
+            (assignmentDetails) => {
+               console.log(assignmentDetails.proofList);
                if(assignments[i].checked) {
-                  backendPOST("update-assignment", {sectionName:className, currentName:assignments[i].value, updatedName:assignments[i].value, updatedProofIds:assignment.proofList, updatedVisibility:true});
+                  backendPOST("update-assignment", {sectionName:className, currentName:assignments[i].value, updatedName:assignments[i].value, updatedProofIds:assignmentDetails.proofList, updatedVisibility:true});
                } else {
-                  backendPOST("update-assignment", {sectionName:className, currentName:assignments[i].value, updatedName:assignments[i].value, updatedProofIds:assignment.proofList, updatedVisibility:false});
+                  backendPOST("update-assignment", {sectionName:className, currentName:assignments[i].value, updatedName:assignments[i].value, updatedProofIds:assignmentDetails.proofList, updatedVisibility:false});
                }
             }
          );
