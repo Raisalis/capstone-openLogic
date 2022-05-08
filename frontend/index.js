@@ -109,30 +109,42 @@ class User {
    }
 }
 
-// TODO: wtf is this
-async function ViewClasses(){
+function addStudentSelector(classSelector, studentSelector) {
+   var check = document.getElementById(classSelector);
+   if(check != null) {
+      var sectionName = check.value;
+      fillStudentSelector(sectionName, studentSelector);
+   }
+}
 
-   var classSelect=document.getElementById("csvClassSelect").value;
+// Fills in a roster selector based on class.
+function fillStudentSelector(className, selectorName) {
+   backendGET('roster', {sectionName: className}).then(
+      (data) => {
+         if(data.length != null) {
+            let elem = document.querySelector(selectorName);
 
-   backendGET('roster', {sectionName: classSelect}).then(   
-   (data) => {
-      // console.log("loadStudentNames", data);
-      // repositoryData.studentNames = data;       
+            // Remove all child nodes from the select element
+            $(elem).empty();
 
-      
-      prepareSelect('#studentNameSelect', data);
-      
-      }, console.log
-   );
+            // Create placeholder option
+            elem.appendChild(
+               new Option('Select...', null, true, true)
+            );
 
-   backendGET('completed-proofs-by-assignment', {sectionName: classSelect}).then(   
-   (data) => {
-      // console.log("loadProofs", data);
-      // repositoryData.proofAverages = data;      
+            // Set placeholder to disabled so it does not show as selectable
+            elem.querySelector('option').setAttribute('disabled', 'disabled');
 
-      prepareSelect('#ProofNameSelect', data);
-      }, console.log
-   );
+            // Add option elements for the options
+            (data) && data.forEach( student => {
+               if(student.Role == "student") {
+                  let option = new Option(student.UserEmail, student.UserEmail);
+                  elem.appendChild(option);
+               }
+            });
+         }
+      }
+   )
 }
 
 
@@ -186,35 +198,30 @@ function insertStudents() {
 
 // Drops an entire class, removing all student information as well.
 async function dropClass(){
-   var x=document.getElementById("dropSectionName").value;
-   console.log(x);
-   if(x==""){
+   var check = document.getElementById("classDrop");
+   if(check != null){
+      if(confirm("Are you sure you want to delete the whole class?")==true){
+         var className = check.value;
+         backendPOST('remove-section',{sectionName: className});
+         alert("Class deleted");
+      }
+   } else {
       alert("input is empty, please fill the field with the section to drop");
-   }
-   if(confirm("Are you sure you want to drop the whole class?")==true){
-      //waiting for tables to be ready to do rest
-      //temporary idea
-      backendPOST('remove-section',{sectionName: x});
-
-      alert("Class deleted");
    }
 }
 
 // Drops one student from a class.
 async function dropStudent(){
-   var deadToClass=document.getElementById("sectionToRemoveStudent").value;
-   var deadStudent= document.getElementById("dropKid").value;
-   if(deadStudent==""||deadToClass==""){
-      alert("One or more inputs are empty.");
-   }else{
-      console.log(deadToClass);
-      console.log(deadStudent);
-      //waiting for tables to be ready to do rest
+   var studentCheck = document.getElementById("studentDrop");
+   if(studentCheck != null){
+      var className = document.getElementById("classDrop").value;
+      var student = studentCheck.value;
       if(confirm("Are you sure you want to drop this student?")==true){
-         
-         backendPOST("remove-from-roster", {sectionName:deadToClass, userEmail:deadStudent});
+         backendPOST("remove-from-roster", {sectionName: className, userEmail: student});
          alert("Student removed");
       }
+   }else{
+      alert("Please choose a student to drop.");
    }
    
    
@@ -606,6 +613,8 @@ function showProofs(){
       proofs.style.display = "none";
    }else{
       proofs.style.display = "block";
+      fillClassNames("#csvClass");
+      fillClassNames("#classDrop");
    }
    if(student.style.display === "block") {
       student.style.display = "none";

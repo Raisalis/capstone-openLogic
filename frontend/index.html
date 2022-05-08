@@ -195,18 +195,21 @@
     <h1> Administrator Options: </h1>
   </div>
 
-  <button onclick="showProofs(),ViewClasses()">View Classes</button> <button onclick="showStudents()">Add Class/Students</button> <button onclick="showAssignments()">Assignments</button>
+  <button onclick="showProofs()">View Classes</button> <button onclick="showStudents()">Add Class/Students</button> <button onclick="showAssignments()">Assignments</button>
   <div  id="proofValues">
 
     <center>
     <br>
-    <input type="text" id="csvClassSelect" placeholder="enter class/section" onkeyup="ViewClass()">
-    <select name="proofs" id="proofNameSelect">
-      <option >Select Proof</option>
-    </select>
-    <select name="students" id="studentNameSelect">
-      <option>Select Student</option>
-    </select>
+    <h3>CSV Class Download</h3>
+    <label for="csvClass">Class Name</label>
+    <select name="sections" id="csvClass"></select>
+    <!--
+      NOTE: Ideally, this section would include the ability to only download certain assignments for a smaller, more exact .csv file.
+      <label for="csvProof">Proof Name</label>
+      <select name="proofs" id="csvProof"></select>
+      <label for="csvStudent">Student Email</label>
+      <select name="students" id="csvStudent"></select>
+    -->
     
     <div class="content">
       <button class="downloadCSV">Download Student Problems as CSV</button>
@@ -216,13 +219,16 @@
     <button onclick="showDrop()">Drop Student/Class</button>
 
     <div id="hiddenDrop">
-
-      <input type="text" id="sectionToRemoveStudent" placeholder="Class Section">
+      <h4>To Drop an Entire Class, you only need to select a class name. Otherwise, select a student also.</h4>
+      <label for="classDrop">Class Name</label>
+      <select name="sections" id="classDrop"></select>
+      <button onclick="addStudentSelector('classDrop', '#studentDrop')">Load Students</button>
       <br>
-      <input type="text" id="dropKid" placeholder="Student to drop (by email)">
+      <label for="studentDrop">Student Email</label>
+      <select name="students" id="studentDrop"></select>
       <br>
-      <button onclick="dropStudent()">Drop Student</button>
       <button onclick="showDropClass()">Drop A Class</button>
+      <button onclick="dropStudent()">Drop Student</button>
 
       <div id="howToDropClass">
         <br>
