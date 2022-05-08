@@ -465,13 +465,11 @@ async function publishAssignments() {
       for(var i = 0; i < assignments.length; i++) {
          let assignmentDetails = await getAssignmentDetails(className, assignments[i].value);
          console.log(assignmentDetails);
-         /*
          if(assignments[i].checked) {
             backendPOST("update-assignment", {sectionName:className, currentName:assignments[i].value, updatedName:assignments[i].value, updatedProofIds:assignmentDetails.proofList, updatedVisibility:true});
          } else {
             backendPOST("update-assignment", {sectionName:className, currentName:assignments[i].value, updatedName:assignments[i].value, updatedProofIds:assignmentDetails.proofList, updatedVisibility:false});
          }
-         */
       }
       alert("Assignment Edits Published.");
    } else {
