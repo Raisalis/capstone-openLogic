@@ -448,7 +448,7 @@ async function fillAssignmentCheckboxes() {
 function getProofIdList(proofList) {
    var proofIdList = []
    for(var i = 0; i < proofList.length; i++) {
-      proofIdList.push(proofList.Id);
+      proofIdList.push(proofList[i].Id);
    }
    return proofIdList;
 }
@@ -462,6 +462,7 @@ async function publishAssignments() {
       for(var i = 0; i < assignments.length; i++) {
          let assignmentDetails = await getAssignmentDetails(className, assignments[i].value);
          let proofIds = getProofIdList(assignmentDetails.proofList);
+         console.log(proofIds);
          if(assignments[i].checked) {
             backendPOST("update-assignment", {sectionName:className, currentName:assignments[i].value, updatedName:assignments[i].value, updatedProofIds:proofIds, updatedVisibility:"true"});
          } else {
