@@ -327,7 +327,7 @@ async function removeProofAssignment(){
    if(assignment==""||proof==""){
       alert("One or more inputs are empty, please select the proof and assignments in their respective options");
    }else{
-      var assignment = getAssignmentDetails(className, assignmentName);
+      var assignment = await getAssignmentDetails(className, assignmentName);
       var proofList = getProofIdList(assignment.proofList);
       var check = false;
       for(var i = 0; i < proofList.length; i++) {
@@ -429,28 +429,6 @@ async function fillAssignmentCheckboxes() {
             document.getElementById('checkboxHolder').appendChild(document.createElement("br"));
             document.getElementById('checkboxHolder').appendChild(document.createElement("br"));
             i++;
-
-            /*
-            console.log(assignment);
-            const newDiv = document.createElement("div");
-            const newCheck = document.createElement("INPUT");
-            newCheck.setAttribute("type", "checkbox");
-            newCheck.setAttribute("name", "assignment");
-            newCheck.setAttribute("value", assignment.name);
-            newCheck.setAttribute("id", "option"+i)
-            if(assignment.visibility == "true") {
-               newCheck.setAttribute("checked", true);
-            } else {
-               newCheck.setAttribute("checked", false);
-            }
-            newDiv.append(newCheck);
-            const newLabel = document.createElement("LABEL");
-            newLabel.textContent = assignment.name;
-            newLabel.setAttribute("for", "option"+i);
-            newDiv.append(newLabel);
-            checkboxHolder.appendChild(newDiv);
-            i++;
-            */
          });
       }
    );
