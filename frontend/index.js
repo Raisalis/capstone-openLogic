@@ -316,7 +316,6 @@ async function getAssignmentDetails(className, assignmentName) {
    let data = await backendGET('assignments-by-section', {sectionName: className});
 	for(var i = 0; i < data.length; i++) {
 		if(data[i].name === assignmentName) {
-         console.log(data[i]);
 			return data[i];
 		}
 	}
@@ -465,6 +464,7 @@ async function publishAssignments() {
       var assignments = document.querySelectorAll('input[name=checkOption]');
       for(var i = 0; i < assignments.length; i++) {
          let assignmentDetails = await getAssignmentDetails(className, assignments[i].value);
+         console.log(assignmentDetails);
          /*
          if(assignments[i].checked) {
             backendPOST("update-assignment", {sectionName:className, currentName:assignments[i].value, updatedName:assignments[i].value, updatedProofIds:assignmentDetails.proofList, updatedVisibility:true});
