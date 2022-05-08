@@ -409,6 +409,9 @@ async function fillAssignmentCheckboxes() {
             checkbox.type = "checkbox";
             checkbox.name = "checkOption";
             checkbox.value = assignment.name;
+            if(assignment.visibility == "true") {
+               checkbox.checked = true;
+            }
 
             label.appendChild(checkbox);
             label.appendChild(description);
@@ -447,8 +450,10 @@ async function fillAssignmentCheckboxes() {
 // Get list of proof ids from assignment.proofList since it's required for updating the assignment at any time.
 function getProofIdList(proofList) {
    var proofIdList = []
-   for(var i = 0; i < proofList.length; i++) {
-      proofIdList.push(proofList[i].Id);
+   if(proofList.length != null) {
+      for(var i = 0; i < proofList.length; i++) {
+         proofIdList.push(proofList[i].Id);
+      }
    }
    return proofIdList;
 }
