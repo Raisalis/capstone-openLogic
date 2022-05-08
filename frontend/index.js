@@ -457,7 +457,7 @@ function publishAssignments() {
       console.log(assignments);
       for(var i = 0; i < assignments.length; i++) {
          var assignmentDetails = getAssignmentDetails(className, assignments[i].value);
-         console.log(assignmentDetails.proofList);
+         console.log("publishAssignments Details: ", assignmentDetails);
          if(assignments[i].checked) {
             backendPOST("update-assignment", {sectionName:className, currentName:assignments[i].value, updatedName:assignments[i].value, updatedProofIds:assignmentDetails.proofList, updatedVisibility:true});
          } else {
