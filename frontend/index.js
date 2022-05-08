@@ -292,7 +292,7 @@ async function addProofAssignment(){
       alert("One or more inputs are empty, please select the proof and assignments in their respective options");
    }else{
       var assignment = getAssignmentDetails(className, assignmentName);
-      var proofList = assignment.proofList;
+      var proofList = getProofIdList(assignment.proofList);
       proofList.push(proof);
       backendPOST("update-assignment",{sectionName:className, currentName:assignmentName, updatedName:assignmentName, updatedProofIds:proofList, updatedVisibility:assignment.visibility});
       alert("Proof is added to assignment");
@@ -301,18 +301,6 @@ async function addProofAssignment(){
 
 // Returns specific Assignment Details from a section.
 async function getAssignmentDetails(className, assignmentName) {
-   /*
-   await backendGET('assignments-by-section', {sectionName: className}).then(
-      (data)=>{
-         (data) && data.forEach( assignment => {
-            if(assignment.name == assignmentName) {
-               return {assignment};
-            }
-         });
-      }
-   )
-   */
-
    let data = await backendGET('assignments-by-section', {sectionName: className});
 	for(var i = 0; i < data.length; i++) {
 		if(data[i].name === assignmentName) {
@@ -331,10 +319,10 @@ async function removeProofAssignment(){
       alert("One or more inputs are empty, please select the proof and assignments in their respective options");
    }else{
       var assignment = getAssignmentDetails(className, assignmentName);
-      var proofList = assignment.proofList;
+      var proofList = getProofIdList(assignment.proofList);
       var check = false;
       for(var i = 0; i < proofList.length; i++) {
-         if(proofList[i].Id == proof) {
+         if(proofList[i] == proof) {
             check = true;
             break;
          }
@@ -456,6 +444,15 @@ async function fillAssignmentCheckboxes() {
    );
 }
 
+// Get list of proof ids from assignment.proofList since it's required for updating the assignment at any time.
+function getProofIdList(proofList) {
+   var proofIdList = []
+   for(var i = 0; i < proofList.length; i++) {
+      proofIdList.push(proofList.Id);
+   }
+   return proofIdList;
+}
+
 // Publishes Assignments to class based on checked boxes.
 async function publishAssignments() {
    var checkboxes = document.getElementById('checkboxHolder');
@@ -464,11 +461,11 @@ async function publishAssignments() {
       var assignments = document.querySelectorAll('input[name=checkOption]');
       for(var i = 0; i < assignments.length; i++) {
          let assignmentDetails = await getAssignmentDetails(className, assignments[i].value);
-         console.log(assignmentDetails);
+         let proofIds = getProofIdList(proofList);
          if(assignments[i].checked) {
-            backendPOST("update-assignment", {sectionName:className, currentName:assignments[i].value, updatedName:assignments[i].value, updatedProofIds:assignmentDetails.proofList, updatedVisibility:"true"});
+            backendPOST("update-assignment", {sectionName:className, currentName:assignments[i].value, updatedName:assignments[i].value, updatedProofIds:proofIds, updatedVisibility:"true"});
          } else {
-            backendPOST("update-assignment", {sectionName:className, currentName:assignments[i].value, updatedName:assignments[i].value, updatedProofIds:assignmentDetails.proofList, updatedVisibility:"false"});
+            backendPOST("update-assignment", {sectionName:className, currentName:assignments[i].value, updatedName:assignments[i].value, updatedProofIds:proofIds, updatedVisibility:"false"});
          }
       }
       alert("Assignment Edits Published.");
