@@ -373,6 +373,7 @@ async function fillAssignmentCheckboxes() {
          var temp = JSON.parse(data);
          var i = 0;
          (temp) && temp.forEach( assignment => {
+            console.log(assignment);
             const newDiv = document.createElement("div");
             const newCheck = document.createElement("INPUT");
             newCheck.setAttribute("type", "checkbox");
