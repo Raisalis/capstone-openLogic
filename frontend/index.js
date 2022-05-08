@@ -301,11 +301,10 @@ async function addProofAssignment(){
 
 // Returns specific Assignment Details from a section.
 async function getAssignmentDetails(className, assignmentName) {
-   backendGET('assignments-by-section', {sectionName: className}).then(
+   await backendGET('assignments-by-section', {sectionName: className}).then(
       (data)=>{
          (data) && data.forEach( assignment => {
             if(assignment.name == assignmentName) {
-               console.log("getAssignmentDetails: ", assignment);
                return assignment;
             }
          });
@@ -457,7 +456,6 @@ function publishAssignments() {
       console.log(assignments);
       for(var i = 0; i < assignments.length; i++) {
          var assignmentDetails = getAssignmentDetails(className, assignments[i].value);
-         console.log("publishAssignments Details: ", assignmentDetails);
          if(assignments[i].checked) {
             backendPOST("update-assignment", {sectionName:className, currentName:assignments[i].value, updatedName:assignments[i].value, updatedProofIds:assignmentDetails.proofList, updatedVisibility:true});
          } else {
