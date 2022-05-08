@@ -300,7 +300,7 @@ async function addProofAssignment(){
    if(assignmentName==""||proof==""){
       alert("One or more inputs are empty, please select the proof and assignments in their respective options");
    }else{
-      var assignment = getAssignmentDetails(className, assignmentName);
+      var assignment = await getAssignmentDetails(className, assignmentName);
       var proofList = getProofIdList(assignment.proofList);
       proofList.push(parseInt(proof));
       backendPOST("update-assignment",{sectionName:className, currentName:assignmentName, updatedName:assignmentName, updatedProofIds:proofList, updatedVisibility:assignment.visibility});
@@ -935,17 +935,28 @@ $(document).ready(function() {
 
       // get the proof from the repository (== means '3' is equal to 3)
       let selectedDataSet = repositoryData[selectedDataSetName];
-      let sectionIndex = 0;
-      let k = 0;
-      let selectedProof = selectedDataSet.filter( section => {k++; if(section.ProofList != null){ sectionIndex = k; return section.ProofList.filter(proof => proof.Id  == selectedDataId );}});
+      let selectedProof = selectedDataSet.filter( section => {if(section.ProofList != null){return section.ProofList.filter(proof => proof.Id  == selectedDataId );}});
       if (!selectedProof || selectedProof.length < 1) {
 	 console.error("Selected proof ID not found.");
 	 return;
       }
+
+      let sectionIndex = 0;
+      for(var i = 0; i < selectedDataSet.length; i++) {
+         if(selectedDataSet[i].ProofList != null) {
+            for(var j = 0; j < selectedDataSet[i].length; j++) {
+               if(selectedDataSet[i].ProofList.filter(proof => proof.Id == selectedDataId)) {
+                  sectionIndex = i;
+                  break;
+               }
+            }
+         }
+      }
       selectedProof = selectedProof[sectionIndex].ProofList;
+      
       let index = 0;
       for(var i = 0; i < selectedProof.length; i++) {
-         if(selectedProof[0].Id == selectedDataId) {
+         if(selectedProof[i].Id == selectedDataId) {
             index = i;
             break;
          }
