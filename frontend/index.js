@@ -448,14 +448,14 @@ async function fillAssignmentCheckboxes() {
 }
 
 // Publishes Assignments to class based on checked boxes.
-function publishAssignments() {
+async function publishAssignments() {
    var checkboxes = document.getElementById('checkboxHolder');
    var className = document.getElementById('classForPublish').value;
    if(checkboxes.innerHTML != "") {
       var assignments = document.querySelectorAll('input[name=checkOption]');
       console.log(assignments);
       for(var i = 0; i < assignments.length; i++) {
-         getAssignmentDetails(className, assignments[i].value).then(
+         await getAssignmentDetails(className, assignments[i].value).then(
             (assignmentDetails) => {
                console.log(assignmentDetails.proofList);
                if(assignments[i].checked) {
