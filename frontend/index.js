@@ -461,7 +461,7 @@ async function publishAssignments() {
       var assignments = document.querySelectorAll('input[name=checkOption]');
       for(var i = 0; i < assignments.length; i++) {
          let assignmentDetails = await getAssignmentDetails(className, assignments[i].value);
-         let proofIds = getProofIdList(proofList);
+         let proofIds = getProofIdList(assignmentDetails.proofList);
          if(assignments[i].checked) {
             backendPOST("update-assignment", {sectionName:className, currentName:assignments[i].value, updatedName:assignments[i].value, updatedProofIds:proofIds, updatedVisibility:"true"});
          } else {
