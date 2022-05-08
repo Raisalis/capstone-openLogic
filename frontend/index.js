@@ -203,6 +203,7 @@ async function dropClass(){
       if(confirm("Are you sure you want to delete the whole class?")==true){
          var className = check.value;
          backendPOST('remove-section',{sectionName: className});
+         fillClassNames("#classDrop");
          alert("Class deleted");
       }
    } else {
@@ -218,6 +219,7 @@ async function dropStudent(){
       var student = studentCheck.value;
       if(confirm("Are you sure you want to drop this student?")==true){
          backendPOST("remove-from-roster", {sectionName: className, userEmail: student});
+         fillStudentSelector(className, "#studentDrop");
          alert("Student removed");
       }
    }else{
