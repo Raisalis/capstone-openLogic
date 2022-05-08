@@ -935,7 +935,7 @@ $(document).ready(function() {
 
       // get the proof from the repository (== means '3' is equal to 3)
       let selectedDataSet = repositoryData[selectedDataSetName];
-      let selectedProof = selectedDataSet.filter( proof => proof.Id == selectedDataId );
+      let selectedProof = selectedDataSet.filter( section => section.ProofList.some(proof => proof.Id  == selectedDataId ));
       console.log("dataID: ", selectedDataId, "\nselectedDataSet: ", selectedDataSet, "\nselectedProof: ", selectedProof);
       if (!selectedProof || selectedProof.length < 1) {
 	 console.error("Selected proof ID not found.");
