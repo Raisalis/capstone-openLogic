@@ -300,7 +300,7 @@ async function addProofAssignment(){
    }else{
       var assignment = getAssignmentDetails(className, assignmentName);
       var proofList = getProofIdList(assignment.proofList);
-      proofList.push(proof);
+      proofList.push(parseInt(proof));
       backendPOST("update-assignment",{sectionName:className, currentName:assignmentName, updatedName:assignmentName, updatedProofIds:proofList, updatedVisibility:assignment.visibility});
       alert("Proof is added to assignment");
    }
@@ -459,7 +459,7 @@ function getProofIdList(proofList) {
    var proofIdList = []
    if(proofList.length != null) {
       for(var i = 0; i < proofList.length; i++) {
-         proofIdList.push(proofList[i].Id);
+         proofIdList.push(parseInt(proofList[i].Id));
       }
    }
    return proofIdList;
