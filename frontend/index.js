@@ -321,7 +321,7 @@ async function getAssignmentDetails(className, assignmentName) {
 // For removing a proof from an assignment, Remove Proof Div of Assignment Page.
 async function removeProofAssignment(){
    var className = document.getElementById("classRemoveProof").value;
-   var assignment=document.getElementById("proofAssignmentOut").value;
+   var assignmentName = document.getElementById("proofAssignmentOut").value;
    var proof=document.getElementById("proofOut").value;
 
    if(assignment==""||proof==""){
