@@ -367,10 +367,10 @@ async function fillAssignmentSelector(className, divName) {
 // Fills the Publish Assignments checkboxes in the Assignments Page based on the class selected.
 async function fillAssignmentCheckboxes() {
    var className = document.getElementById('classForPublish');
-   var checkboxHolder = document.getElementById('checkboxHolder');
    await backendGET("assignments-by-section", {sectionName:className}).then(
       (data)=>{
          var i = 0;
+         let checkboxHolder = document.querySelector('#checkboxHolder');
          (data) && data.forEach( assignment => {
             console.log(assignment);
             const newDiv = document.createElement("div");
