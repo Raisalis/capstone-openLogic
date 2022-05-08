@@ -935,12 +935,14 @@ $(document).ready(function() {
 
       // get the proof from the repository (== means '3' is equal to 3)
       let selectedDataSet = repositoryData[selectedDataSetName];
-      let selectedProof = selectedDataSet.filter( section => {if(section.ProofList != null){return section.ProofList.filter(proof => proof.Id  == selectedDataId );}});
+      let sectionIndex = 0;
+      let k = 0;
+      let selectedProof = selectedDataSet.filter( section => {k++; if(section.ProofList != null){ sectionIndex = k; return section.ProofList.filter(proof => proof.Id  == selectedDataId );}});
       if (!selectedProof || selectedProof.length < 1) {
 	 console.error("Selected proof ID not found.");
 	 return;
       }
-      selectedProof = selectedProof[0].ProofList;
+      selectedProof = selectedProof[sectionIndex].ProofList;
       let index = 0;
       for(var i = 0; i < selectedProof.length; i++) {
          if(selectedProof[0].Id == selectedDataId) {
