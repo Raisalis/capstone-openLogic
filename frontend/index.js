@@ -574,7 +574,7 @@ function authenticatedBackendGET(path_str, data_obj, id_token) {
 
 // For administrators only - backend requires valid admin token
 function getCSV() {
-   var csvClass=document.getElementById("csvClassSelect").value;
+   var csvClass = document.getElementById("csvClass").value;
    backendGET('completed-proofs-by-section', { selection: csvClass }).then(
       (data) => {
 	 console.log("downloadRepo", data);
