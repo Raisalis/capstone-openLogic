@@ -357,7 +357,7 @@ async function fillAssignmentSelector(className, divName) {
 
          // Add option elements for the options
          (data) && data.forEach( assignment => {
-            let option = new Option(assignment.Name, assignment.Name);
+            let option = new Option(assignment.name, assignment.name);
             elem.appendChild(option);
          });
       }
