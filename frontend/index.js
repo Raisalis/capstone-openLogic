@@ -284,29 +284,61 @@ function addAssignmentSelector(sectionSelector, assignmentSelector) {
 
 // For adding a proof to an assignment, Add Proof Div of Assignment Page.
 async function addProofAssignment(){
-   
-   var assignment=document.getElementById("proofAssignmentIn").value;
+   var className = document.getElementById("classAddProof").value;
+   var assignmentName=document.getElementById("proofAssignmentIn").value;
    var proof=document.getElementById("proofIn").value;
 
-   if(assignment==""||proof==""){
+   if(assignmentName==""||proof==""){
       alert("One or more inputs are empty, please select the proof and assignments in their respective options");
    }else{
-      backendPOST("update-assignment",{currentName:assignment,updatedProofIds:proof});
-
+      var assignment = getAssignmentDetails(className, assignmentName);
+      var proofList = assignment.proofList;
+      proofList.push(proof);
+      backendPOST("update-assignment",{sectionName:className, currentName:assignmentName, updatedName:assignmentName, updatedProofIds:proofList, updatedVisibility:assignment.visibility});
       alert("Proof is added to assignment");
    }
+}
 
+// Returns specific Assignment Details from a section.
+async function getAssignmentDetails(className, assignmentName) {
+   backendGET('assignments-by-section', {sectionName: className}).then(
+      (data)=>{
+         (data) && data.forEach( assignment => {
+            if(assignment.name == assignmentName) {
+               return assignment;
+            }
+         });
+      }
+   )
 }
 
 // For removing a proof from an assignment, Remove Proof Div of Assignment Page.
 async function removeProofAssignment(){
+   var className = document.getElementById("classRemoveProof").value;
    var assignment=document.getElementById("proofAssignmentOut").value;
    var proof=document.getElementById("proofOut").value;
+
    if(assignment==""||proof==""){
       alert("One or more inputs are empty, please select the proof and assignments in their respective options");
    }else{
-      backendPOST("update-assignment",{currentName:assignment,updatedProofIds:proof});
-      alert("Proof removed from assignment");
+      var assignment = getAssignmentDetails(className, assignmentName);
+      var proofList = assignment.proofList;
+      var check = false;
+      for(var i = 0; i < proofList.length; i++) {
+         if(proofList[i].Id == proof) {
+            check = true;
+            break;
+         }
+      }
+      if(check) {
+         var index = proofList.indexOf(proof);
+         proofList.splice(index, 1);
+         backendPOST("update-assignment",{sectionName:className, currentName:assignmentName, updatedName:assignmentName, updatedProofIds:proofList, updatedVisibility:assignment.visibility});
+         alert("Proof removed from assignment");
+      } else {
+         alert("Assignment does not contain that proof.");
+      }
+      
    }
 }
 
@@ -378,13 +410,14 @@ async function fillAssignmentCheckboxes() {
             var checkbox = document.createElement("input");
 
             checkbox.type = "checkbox";
-            checkbox.name = "option" + i;
+            checkbox.name = "checkOption";
             checkbox.value = assignment.name;
 
             label.appendChild(checkbox);
             label.appendChild(description);
 
             document.getElementById('checkboxHolder').appendChild(label);
+            document.getElementById('checkboxHolder').appendChild(document.createElement("br"));
             document.getElementById('checkboxHolder').appendChild(document.createElement("br"));
             i++;
 
@@ -412,6 +445,27 @@ async function fillAssignmentCheckboxes() {
          });
       }
    );
+}
+
+// Publishes Assignments to class based on checked boxes.
+function publishAssignments() {
+   var checkboxes = document.getElementById('checkboxHolder');
+   var className = document.getElementById('classForPublish').value;
+   if(checkboxes.innerHTML != "") {
+      var assignments = document.getElementsByTagName('checkOption');
+      console.log(assignments);
+      for(var i = 0; i < assignments.length; i++) {
+         var assignmentDetails = getAssignmentDetails(className, assignments[i].value);
+         if(assignments[i].checked) {
+            backendPOST("update-assignment", {sectionName:className, currentName:assignments[i].value, updatedName:assignments[i].value, updatedProofIds:assignmentDetails.proofList, updatedVisibility:true});
+         } else {
+            backendPOST("update-assignment", {sectionName:className, currentName:assignments[i].value, updatedName:assignments[i].value, updatedProofIds:assignmentDetails.proofList, updatedVisibility:false});
+         }
+      }
+      alert("Assignment Edits Published.");
+   } else {
+      alert("Error: Please choose a class with assignments first.");
+   }
 }
 
 // Verifies signed in and valid token, then calls authenticatedBackendPOST
