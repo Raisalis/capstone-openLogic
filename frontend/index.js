@@ -305,7 +305,7 @@ async function getAssignmentDetails(className, assignmentName) {
       (data)=>{
          (data) && data.forEach( assignment => {
             if(assignment.name == assignmentName) {
-               return Promise.resolve(assignment);
+               return assignment;
             }
          });
       }
@@ -448,22 +448,19 @@ async function fillAssignmentCheckboxes() {
 }
 
 // Publishes Assignments to class based on checked boxes.
-function publishAssignments() {
+async function publishAssignments() {
    var checkboxes = document.getElementById('checkboxHolder');
    var className = document.getElementById('classForPublish').value;
    if(checkboxes.innerHTML != "") {
       var assignments = document.querySelectorAll('input[name=checkOption]');
       for(var i = 0; i < assignments.length; i++) {
-         getAssignmentDetails(className, assignments[i].value).then(
-            (assignmentDetails) => {
-               console.log(assignmentDetails.proofList);
-               if(assignments[i].checked) {
-                  backendPOST("update-assignment", {sectionName:className, currentName:assignments[i].value, updatedName:assignments[i].value, updatedProofIds:assignmentDetails.proofList, updatedVisibility:true});
-               } else {
-                  backendPOST("update-assignment", {sectionName:className, currentName:assignments[i].value, updatedName:assignments[i].value, updatedProofIds:assignmentDetails.proofList, updatedVisibility:false});
-               }
-            }
-         );
+         let assignmentDetails = await getAssignmentDetails(className, assignments[i].value);
+         console.log(assignmentDetails);
+         if(assignments[i].checked) {
+            backendPOST("update-assignment", {sectionName:className, currentName:assignments[i].value, updatedName:assignments[i].value, updatedProofIds:assignmentDetails.proofList, updatedVisibility:true});
+         } else {
+            backendPOST("update-assignment", {sectionName:className, currentName:assignments[i].value, updatedName:assignments[i].value, updatedProofIds:assignmentDetails.proofList, updatedVisibility:false});
+         }
       }
       alert("Assignment Edits Published.");
    } else {
