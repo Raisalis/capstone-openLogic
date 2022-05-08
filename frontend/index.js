@@ -455,13 +455,16 @@ function publishAssignments() {
       var assignments = document.querySelectorAll('input[name=checkOption]');
       console.log(assignments);
       for(var i = 0; i < assignments.length; i++) {
-         var assignmentDetails = getAssignmentDetails(className, assignments[i].value);
-         console.log(assignmentDetails.proofList);
-         if(assignments[i].checked) {
-            backendPOST("update-assignment", {sectionName:className, currentName:assignments[i].value, updatedName:assignments[i].value, updatedProofIds:assignmentDetails.proofList, updatedVisibility:true});
-         } else {
-            backendPOST("update-assignment", {sectionName:className, currentName:assignments[i].value, updatedName:assignments[i].value, updatedProofIds:assignmentDetails.proofList, updatedVisibility:false});
-         }
+         getAssignmentDetails(className, assignments[i].value).then(
+            (assignmentDetails) => {
+               console.log(assignmentDetails.proofList);
+               if(assignments[i].checked) {
+                  backendPOST("update-assignment", {sectionName:className, currentName:assignments[i].value, updatedName:assignments[i].value, updatedProofIds:assignmentDetails.proofList, updatedVisibility:true});
+               } else {
+                  backendPOST("update-assignment", {sectionName:className, currentName:assignments[i].value, updatedName:assignments[i].value, updatedProofIds:assignmentDetails.proofList, updatedVisibility:false});
+               }
+            }
+         );
       }
       alert("Assignment Edits Published.");
    } else {
