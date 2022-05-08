@@ -944,16 +944,14 @@ $(document).ready(function() {
       let sectionIndex = 0;
       for(var i = 0; i < selectedDataSet.length; i++) {
          if(selectedDataSet[i].ProofList != null) {
-            for(var j = 0; j < selectedDataSet[i].length; j++) {
-               if(selectedDataSet[i].ProofList.filter(proof => proof.Id == selectedDataId)) {
-                  sectionIndex = i;
-                  break;
-               }
+            if(selectedDataSet[i].ProofList.filter(proof => proof.Id == selectedDataId)) {
+               sectionIndex = i;
+               break;
             }
          }
       }
       selectedProof = selectedProof[sectionIndex].ProofList;
-      
+
       let index = 0;
       for(var i = 0; i < selectedProof.length; i++) {
          if(selectedProof[i].Id == selectedDataId) {
