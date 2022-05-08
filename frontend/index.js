@@ -338,7 +338,7 @@ async function removeProofAssignment(){
       }
       if(check) {
          var index = proofList.indexOf(proof);
-         proofList.splice(index, 1);
+         proofList = proofList.splice(index, 1);
          backendPOST("update-assignment",{sectionName:className, currentName:assignmentName, updatedName:assignmentName, updatedProofIds:proofList, updatedVisibility:assignment.visibility});
          alert("Proof removed from assignment");
       } else {
