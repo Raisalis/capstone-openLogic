@@ -456,12 +456,12 @@ async function publishAssignments() {
       console.log(assignments);
       for(var i = 0; i < assignments.length; i++) {
          await getAssignmentDetails(className, assignments[i].value).then(
-            (assignmentDetails) => {
-               console.log(assignmentDetails.proofList);
+            (assignment) => {
+               console.log(assignment.proofList);
                if(assignments[i].checked) {
-                  backendPOST("update-assignment", {sectionName:className, currentName:assignments[i].value, updatedName:assignments[i].value, updatedProofIds:assignmentDetails.proofList, updatedVisibility:true});
+                  backendPOST("update-assignment", {sectionName:className, currentName:assignments[i].value, updatedName:assignments[i].value, updatedProofIds:assignment.proofList, updatedVisibility:true});
                } else {
-                  backendPOST("update-assignment", {sectionName:className, currentName:assignments[i].value, updatedName:assignments[i].value, updatedProofIds:assignmentDetails.proofList, updatedVisibility:false});
+                  backendPOST("update-assignment", {sectionName:className, currentName:assignments[i].value, updatedName:assignments[i].value, updatedProofIds:assignment.proofList, updatedVisibility:false});
                }
             }
          );
