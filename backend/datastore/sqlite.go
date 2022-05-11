@@ -8,12 +8,7 @@ import (
 )
 
 func InitDB(dataSourceName string) (*ProofStore, error) {
-	log.Println("Initializing db.sqlite3...")
-	file, err := os.Create("db.sqlite3") // Create the SQLite file
-	if err != nil {                            // if an error occurred during database creation, log an error
-		return nil, err
-	}
-	defer file.Close()
+	log.Println("opening db.sqlite3...")
 
 	sqliteDatabase, err := sql.Open("sqlite3", dataSourceName) // Open the created SQLite File
 	if err != nil {

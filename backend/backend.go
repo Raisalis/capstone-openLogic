@@ -24,14 +24,17 @@ var (
 		"91166551948-u7j6ip1827e1cgf9fvafu1m2mgb529b9.apps.googleusercontent.com",
 	}
 
+	// admins must be marked as false to remove their status from user table
+	// - backend must run once to update new admin variables, then they may be removed from admin_users map
+	// - (should change this in the future, so that removing admins is less confusing)
 	admin_users = map[string]bool{
 		"abiblarz@csumb.edu":  true,
 		"sislam@csumb.edu":    true,
 		"gbruns@csumb.edu":    true,
 		"cohunter@csumb.edu":  true,
-		"bkondo@csumb.edu":    true,
+		"bkondo@csumb.edu":    false,
 		"elarson@csumb.edu":   true,
-		"jasbaker@csumb.edu":  true,
+		"jasbaker@csumb.edu":  false,
 		"mkammerer@csumb.edu": true,
 	}
 
@@ -893,18 +896,18 @@ func (env *Env) removeAssignment(w http.ResponseWriter, req *http.Request) {
 	io.WriteString(w, `{"success": "true"}`)
 }
 
-// This will delete all non-admin users, non-argument proofs, sections, and rosters, but not reset the auto_increment id
+// This will delete all roster, assignment, section, and non-argument proof rows, but does not reset the auto_increment id
 func (env *Env) clearDatabase() {
-	if err := env.ds.EmptyUserTable(); err != nil {
+	if err := env.ds.EmptyRosterTable(); err != nil {
 		log.Fatal(err)
 	}
-	if err := env.ds.EmptyProofTable(); err != nil {
+	if err := env.ds.EmptyAssignmentTable(); err != nil {
 		log.Fatal(err)
 	}
 	if err := env.ds.EmptySectionTable(); err != nil {
 		log.Fatal(err)
 	}
-	if err := env.ds.EmptyRosterTable(); err != nil {
+	if err := env.ds.EmptyProofTable(); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -1024,8 +1027,8 @@ func main() {
 	ds.MaintainAdmins(admin_users)
 
 	Env := &Env{ds} // Put the instance into a struct to share between threads
-	Env.ds.PopulateTestUsersSectionsRosters()
-	Env.populateTestProofRow()
+	// Env.ds.PopulateTestUsersSectionsRosters()
+	// Env.populateTestProofRow()
 
 	doClearDatabase := flag.Bool("cleardb", false, "Remove all proofs from the database")
 	doPopulateDatabase := flag.Bool("populate", false, "Add sample data to the public repository.")
