@@ -915,8 +915,57 @@ $(document).ready(function() {
       $('#checkButton').click();
    });
 
-   // populate form when any repository proof selected
+   // populate form when selected from proof dropdown
    $('.proofSelect').change( (event) => {
+      // get the name of the selected item and the selected repository
+      let selectedDataId = event.target.value;
+      let selectedDataSetName = $(event.target).data('repositoryDataKey');
+
+      // get the proof from the repository (== means '3' is equal to 3)
+      let selectedDataSet = repositoryData[selectedDataSetName];
+      let selectedProof = selectedDataSet.filter( proof => proof.Id == selectedDataId );
+      if (!selectedProof || selectedProof.length < 1) {
+	      console.error("Selected proof ID not found.");
+	      return;
+      }
+
+      selectedProof = selectedProof[0];
+      console.log('selected proof', selectedProof);
+
+      // set repoProblem if proof originally loaded from the repository select
+      if (selectedDataSetName == 'repoProofs' || selectedProof.repoProblem == "true") {
+	 $('#repoProblem').val('true');
+      } else {
+	 $('#repoProblem').val('false');
+      }
+
+      // attach the proof body to the proofContainer
+      if (Array.isArray(selectedProof.Logic) && Array.isArray(selectedProof.Rules)) {
+	 $('.proofContainer').data({
+            'Logic': selectedProof.Logic,
+            'Rules': selectedProof.Rules
+	 });
+      }
+
+      // set proofName, probpremises, and probconc; then click on #createProb
+      // (add a small delay to show the user what's being done)
+      let delayTime = 200;
+      $.when(
+	 $('#folradio').prop('checked', true),
+	 // Checking this radio button will uncheck the other radio button
+	 $('#tflradio').prop('checked', (selectedProof.ProofType == 'prop')),
+	 $('#proofName').delay(delayTime).val(selectedProof.ProofName),
+	 $('#probpremises').delay(delayTime).val(selectedProof.Premise.join(',')),
+	 $('#probconc').delay(delayTime).val(selectedProof.Conclusion)
+      ).then(
+	 function () {
+            $('#createProb').click();
+	 }
+      );
+   });
+
+   // populate form when any repository proof selected
+   $('#repoProofSelect').change( (event) => {
       // get the name of the selected item and the selected repository
       let selectedDataId = event.target.value;
       let selectedDataSetName = $(event.target).data('repositoryDataKey');
