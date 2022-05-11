@@ -173,7 +173,8 @@ func (p *ProofStore) GetRepoProofs(user UserWithEmail) (error, []SectionProofs) 
    var assignmentProofs []Proof
    for _,section:= range sections {
       sectionAssignments = nil
-      sectionProofList = nil
+      // assignmentProofs = nil
+      // sectionProofList = nil
       sectionProofList.SectionName = section.Name
 
       // rows, err := stmt.Query(section.Name)
