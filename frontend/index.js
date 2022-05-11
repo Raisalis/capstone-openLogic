@@ -200,7 +200,7 @@ function insertStudents() {
 async function dropClass(){
    var check = document.getElementById("classDrop");
    if(check != null){
-      if(confirm("Are you sure you want to delete the whole class?")==true){
+      if(confirm("Are you sure you want to delete the whole class? You will also drop all of the assignments if you do!")==true){
          var className = check.value;
          backendPOST('remove-section',{sectionName: className});
          fillClassNames("#classDrop");
@@ -217,7 +217,7 @@ async function dropStudent(){
    if(studentCheck != null){
       var className = document.getElementById("classDrop").value;
       var student = studentCheck.value;
-      if(confirm("Are you sure you want to drop this student?")==true){
+      if(confirm("Are you sure you want to drop this student? The student won't be able to view the assignments anymore!")==true){
          backendPOST("remove-from-roster", {sectionName: className, userEmail: student});
          fillStudentSelector(className, "#studentDrop");
          alert("Student removed");
