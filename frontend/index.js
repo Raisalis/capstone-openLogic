@@ -301,7 +301,10 @@ async function addProofAssignment(){
       alert("One or more inputs are empty, please select the proof and assignments in their respective options");
    }else{
       var assignment = await getAssignmentDetails(className, assignmentName);
-      var proofList = getProofIdList(assignment.proofList);
+      var proofList = [];
+      if(assignment != null) {
+         proofList = getProofIdList(assignment.proofList);
+      }
       proofList.push(parseInt(proof));
       backendPOST("update-assignment",{sectionName:className, currentName:assignmentName, updatedName:assignmentName, updatedProofIds:proofList, updatedVisibility:assignment.visibility});
       alert("Proof is added to assignment");
@@ -311,11 +314,15 @@ async function addProofAssignment(){
 // Returns specific Assignment Details from a section.
 async function getAssignmentDetails(className, assignmentName) {
    let data = await backendGET('assignments-by-section', {sectionName: className});
-	for(var i = 0; i < data.length; i++) {
-		if(data[i].name === assignmentName) {
-			return data[i];
-		}
-	}
+   if(data != null) {
+      for(var i = 0; i < data.length; i++) {
+         if(data[i].name === assignmentName) {
+            return data[i];
+         }
+      }
+   } else {
+      return null;
+   }
 }
 
 // For removing a proof from an assignment, Remove Proof Div of Assignment Page.
@@ -436,8 +443,8 @@ async function fillAssignmentCheckboxes() {
 
 // Get list of proof ids from assignment.proofList since it's required for updating the assignment at any time.
 function getProofIdList(proofList) {
-   var proofIdList = []
-   if(proofList.length != null) {
+   var proofIdList = [];
+   if(proofList != null) {
       for(var i = 0; i < proofList.length; i++) {
          proofIdList.push(parseInt(proofList[i].Id));
       }
@@ -453,7 +460,10 @@ async function publishAssignments() {
       var assignments = document.querySelectorAll('input[name=checkOption]');
       for(var i = 0; i < assignments.length; i++) {
          let assignmentDetails = await getAssignmentDetails(className, assignments[i].value);
-         let proofIds = getProofIdList(assignmentDetails.proofList);
+         var proofIds = [];
+         if(assignmentDetails != null) {
+            proofIds = getProofIdList(assignmentDetails.proofList);
+         }
          console.log(proofIds);
          if(assignments[i].checked) {
             backendPOST("update-assignment", {sectionName:className, currentName:assignments[i].value, updatedName:assignments[i].value, updatedProofIds:proofIds, updatedVisibility:"true"});
