@@ -114,7 +114,7 @@ function loadStudentList() {
    var check = document.getElementById('classStudentsSelector');
    if(check != null) {
       var sectionName = check.value;
-      backendGET('roster', {sectionName: className}).then(
+      backendGET('roster', {sectionName: sectionName}).then(
          (data) => {
             if(data.length != null) {
                let elem = document.querySelector('#studentList');
