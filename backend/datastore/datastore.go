@@ -74,6 +74,8 @@ type IProofStore interface {
 	RemoveFromRoster(sectionName string, userEmail string) error
 	RemoveSection(sectionName string) error
    RemoveAssignment(sectionName string, name string) error
+   removeOneStudentsProofs(userEmail string) (error)
+   removeAllStudentsProofs(sectionName string) (error)
 	Store(Proof) error
 	MaintainAdmins(admin_users map[string]bool)
 }
