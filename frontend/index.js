@@ -129,6 +129,12 @@ function loadStudentList() {
                      elem.appendChild(temp);
                   }
                });
+            } else {
+               let elem = document.querySelector('#studentList');
+
+               $(elem).empty();
+               let node = document.createTextNode("No students in class.");
+               elem.appendChild(node);
             }
          }
       )
