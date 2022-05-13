@@ -616,7 +616,7 @@ func (p *ProofStore) removeOneStudentsProofs(userEmail string) (error) {
    statement, err := p.db.Prepare(removeProofsSQL)
    defer statement.Close()
 
-   _, err := statement.Exec(userEmail)
+   _, err = statement.Exec(userEmail)
    if err != nil {
       log.Println("error: removeOneStudentsProofs: ", err.Error())
       return err
@@ -630,7 +630,7 @@ func (p *ProofStore) removeAllStudentsProofs(sectionName string) (error) {
    statement, err := p.db.Prepare(removeProofsSQL)
    defer statement.Close()
 
-   _, err := statement.Exec(sectionName)
+   _, err = statement.Exec(sectionName)
    if err != nil {
       log.Println("error: removeAllStudentsProofs: ", err.Error())
       return err
