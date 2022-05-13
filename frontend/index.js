@@ -109,6 +109,29 @@ class User {
    }
 }
 
+//Loads student list in CSV section
+function loadStudentList() {
+   var check = document.getElementById('classStudentsSelector');
+   if(check != null) {
+      var sectionName = check.value;
+      backendGET('roster', {sectionName: className}).then(
+         (data) => {
+            if(data.length != null) {
+               let elem = document.querySelector('#studentList');
+   
+               (data) && data.forEach( student => {
+                  if(student.Role == "student") {
+                     let node = document.createTextNode(student.UserEmail + "\n");
+                     elem.appendChild(node);
+                  }
+               });
+            }
+         }
+      )
+   }
+}
+
+//Loads a student selector given the ids of a class selector and the student selector
 function addStudentSelector(classSelector, studentSelector) {
    var check = document.getElementById(classSelector);
    if(check != null) {
@@ -605,6 +628,7 @@ function showProofs(){
    }else{
       proofs.style.display = "block";
       fillClassNames("#csvClass");
+      fillClassNames("#classStudentsSelector");
    }
    if(student.style.display === "block") {
       student.style.display = "none";

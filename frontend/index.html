@@ -214,6 +214,18 @@
     <div class="content">
       <button class="downloadCSV">Download Student Problems as CSV</button>
     </div>
+
+    <div id="viewClassStudents">
+      <h3>View Students in Class</h3>
+      <label for="classStudentsSelector">Class Name</label>
+      <select name="sections" id="classStudentsSelector"></select>
+      <button onclick="loadStudentList()">Show Students In Class</button>
+
+      <h4>Student Emails</h4>
+      <div id="studentList" style="height:5em;width:100%;overflow:auto;">
+
+      </div>
+    </div>
     <br>
 
     </center> 
