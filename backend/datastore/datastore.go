@@ -614,12 +614,13 @@ func (p *ProofStore) RemoveAssignment(sectionName string, name string) (error) {
 func (p *ProofStore) removeOneStudentsProofs(userEmail string) (error) {
    removeProofsSQL := `DELETE FROM proof WHERE userSubmitted = ? AND entryType = 'proof' AND repoProof = 'true';`
    statement, err := p.db.Prepare(removeProofsSQL)
-   result, err := statement.Exec(userEmail)
+   defer statement.Close()
+
+   _, err := statement.Exec(userEmail)
    if err != nil {
       log.Println("error: removeOneStudentsProofs: ", err.Error())
       return err
    }
-   defer result.Close()
    return nil
 }
 
@@ -627,12 +628,13 @@ func (p *ProofStore) removeOneStudentsProofs(userEmail string) (error) {
 func (p *ProofStore) removeAllStudentsProofs(sectionName string) (error) {
    removeProofsSQL := `DELETE FROM proof WHERE userSubmitted IN (SELECT userEmail FROM roster WHERE sectionName = ? AND role != "instructor") AND repoProof = 'true';`
    statement, err := p.db.Prepare(removeProofsSQL)
-   result, err := statement.Exec(sectionName)
+   defer statement.Close()
+
+   _, err := statement.Exec(sectionName)
    if err != nil {
       log.Println("error: removeAllStudentsProofs: ", err.Error())
       return err
    }
-   defer result.Close()
    return nil
 }
 
