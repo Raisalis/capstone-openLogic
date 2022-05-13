@@ -619,7 +619,7 @@ func (p *ProofStore) removeOneStudentsProofs(userEmail string) (error) {
       log.Println("error: removeOneStudentsProofs: ", err.Error())
       return err
    }
-   defer rows.Close()
+   defer result.Close()
    return nil
 }
 
@@ -632,7 +632,7 @@ func (p *ProofStore) removeAllStudentsProofs(sectionName string) (error) {
       log.Println("error: removeAllStudentsProofs: ", err.Error())
       return err
    }
-   defer rows.Close()
+   defer result.Close()
    return nil
 }
 
