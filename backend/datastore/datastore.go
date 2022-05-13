@@ -203,7 +203,7 @@ func (p *ProofStore) GetRepoProofs(user UserWithEmail) (error, []SectionProofs) 
 
 func (p *ProofStore) GetUserProofs(user UserWithEmail) (error, []Proof) {
 	stmt, err := p.db.Prepare(`SELECT id, entryType, userSubmitted, proofName, proofType, Premise, Logic, Rules, everCompleted, proofCompleted, timeSubmitted, Conclusion, repoProblem 
-                              FROM proof WHERE userSubmitted = ? AND everCompleted = 'false' AND proofCompleted != 'true' AND proofName != 'n/a'`)
+                              FROM proof WHERE userSubmitted = ? AND everCompleted = 'false' AND proofCompleted != 'true' AND proofName != 'n/a' AND proofName NOT LIKE '%Test%' AND proofName NOT LIKE '%Quiz%' AND proofName NOT LIKE '%Final%'`)
 	if err != nil {
 		return err, nil
 	}
@@ -243,7 +243,7 @@ func (p *ProofStore) GetUserArguments(user UserWithEmail) ([]Proof, error) {
 
 func (p *ProofStore) GetUserCompletedProofs(user UserWithEmail) (error, []Proof) {
 	stmt, err := p.db.Prepare(`SELECT id, entryType, userSubmitted, proofName, proofType, Premise, Logic, Rules, everCompleted, proofCompleted, timeSubmitted, Conclusion, repoProblem 
-                              FROM proof WHERE userSubmitted = ? AND proofCompleted = 'true' AND proofName NOT LIKE '%Test%' AND proofName NOT LIKE '%Quiz%' AND proofName NOT LIKE '%Final%'`)
+                              FROM proof WHERE userSubmitted = ? AND proofCompleted = 'true' AND proofName NOT LIKE '%Test%' AND proofName NOT LIKE '%Quiz%' AND proofName NOT LIKE '%Final%';`)
 	if err != nil {
 		return err, nil
 	}
@@ -541,6 +541,10 @@ func (p *ProofStore) UpdateAssignment(currentName string, updatedAssignment Assi
 }
 
 func (p *ProofStore) RemoveSection(sectionName string) (error) {
+   err := p.db.removeAllStudentsProofs(sectionName)
+   if err != nil {
+      return err
+   }
    // log.Println("Deleting section record. . .")
    RemoveSectionSQL := `DELETE From section where name = ?;`
    statement, err := p.db.Prepare(RemoveSectionSQL)
@@ -561,6 +565,10 @@ func (p *ProofStore) RemoveSection(sectionName string) (error) {
 }
 
 func (p *ProofStore) RemoveFromRoster(sectionName string, userEmail string) (error) {
+   err := p.db.removeOneStudentsProofs(userEmail)
+   if err != nil {
+      return err
+   }
    // log.Println("Deleting roster record. . .")
    RemoveFromRosterSQL := `DELETE From roster where sectionName = ? and userEmail = ?;`
    statement, err := p.db.Prepare(RemoveFromRosterSQL)
@@ -597,6 +605,32 @@ func (p *ProofStore) RemoveAssignment(sectionName string, name string) (error) {
       log.Println("-- ", err.Error())
       return err
    }
+   return nil
+}
+
+// remove all assignment proofs associated with a given userEmail
+func (p *ProofStore) removeOneStudentsProofs(userEmail string) (error) {
+   removeProofsSQL := `DELETE FROM proof WHERE userSubmitted = ? AND entryType = 'proof' AND repoProof = 'true';`
+   statement, err := p.db.Prepare(removeProofsSQL)
+   result, err := statement.Exec(userEmail)
+   if err != nil {
+      log.Println("error: removeOneStudentsProofs: ", err.Error())
+      return err
+   }
+   defer rows.Close()
+   return nil
+}
+
+// remove all assignment proofs associated with userEmails that are connected to a sectionName via roster
+func (p *ProofStore) removeAllStudentsProofs(sectionName string) (error) {
+   removeProofsSQL := `DELETE FROM proof WHERE userSubmitted IN (SELECT userEmail FROM roster WHERE sectionName = ? AND role != "instructor") AND repoProof = 'true';`
+   statement, err := p.db.Prepare(removeProofsSQL)
+   result, err := statement.Exec(sectionName)
+   if err != nil {
+      log.Println("error: removeAllStudentsProofs: ", err.Error())
+      return err
+   }
+   defer rows.Close()
    return nil
 }
 
