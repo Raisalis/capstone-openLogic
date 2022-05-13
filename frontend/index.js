@@ -638,7 +638,6 @@ function showProofs(){
    }else{
       proofs.style.display = "block";
       fillClassNames("#csvClass");
-      fillClassNames("#classStudentsSelector");
    }
    if(student.style.display === "block") {
       student.style.display = "none";
@@ -661,6 +660,7 @@ function showStudents(){
       student.style.display="block";
       fillClassNames("#classSelectStudents");
       fillClassNames("#classDrop");
+      fillClassNames("#classStudentsSelector");
    }
    if(proofs.style.display=== "block"){
       proofs.style.display= "none";
