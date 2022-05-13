@@ -116,7 +116,13 @@ function loadStudentList() {
       var sectionName = check.value;
       backendGET('roster', {sectionName: sectionName}).then(
          (data) => {
-            if(data.length != null) {
+            if(data == null) {
+               let elem = document.querySelector('#studentList');
+
+               $(elem).empty();
+               let node = document.createTextNode("No students in class.");
+               elem.appendChild(node);
+            } else if(data.length != null) {
                let elem = document.querySelector('#studentList');
 
                $(elem).empty();
@@ -129,12 +135,6 @@ function loadStudentList() {
                      elem.appendChild(temp);
                   }
                });
-            } else {
-               let elem = document.querySelector('#studentList');
-
-               $(elem).empty();
-               let node = document.createTextNode("No students in class.");
-               elem.appendChild(node);
             }
          }
       )

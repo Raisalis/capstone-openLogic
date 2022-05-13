@@ -214,7 +214,37 @@
     <div class="content">
       <button class="downloadCSV">Download Student Problems as CSV</button>
     </div>
-    
+
+    <br>
+
+    </center> 
+  </div>
+  
+  <div id="studentPage" style="overflow:auto;">
+    <br>
+    <center>        
+    <h3>Add New Class and Students</h3>
+
+    <div id="studentClassAddition">
+      <label for="className">Class/Section Name</label>
+      <input type="text" id="className" size="40" placeholder="Input Class/Section Name Here">
+      <br>
+      <!--<input type="text" placeholder="Amount of students">-->
+      <label for="involveStudents">Student Email(s)    Note: Separate with commas (,)</label>
+      <textarea name="studentAdd"  id="involveStudents" style="overflow:auto;" placeholder="Enter Student Email(s) Here"></textarea>
+      <br>
+      <button onclick="insertClassAndStudents()">Add Class and Students</button>
+    </div>
+
+    <h3>Add Student to Existing Class</h3>
+    <div id="addToExistingClass">
+      <label for="classSelectStudents">Class/Section Name</label>
+      <select name="sections" id="classSelectStudents"></select> <br>
+      <label for="additionalStudents">Student Email(s)    Note: Separate with commas (,)</label>
+      <textarea name="studentAdd" id="additionalStudents" style="overflow:auto;" placeholder="Enter Student Email(s) Here"></textarea>
+      <button onclick="insertStudents()">Add Students</button>
+    </div>
+
     <br>
 
     <div id="viewClassStudents">
@@ -228,35 +258,8 @@
 
       </div>
     </div>
+
     <br>
-
-    </center> 
-  </div>
-  
-  <div id="studentPage">
-    <br>
-    <center>        
-    <h3>Add New Class and Students</h3>
-
-    <div id="studentClassAddition">
-      <label for="className">Class/Section Name</label>
-      <input type="text" id="className" size="40" placeholder="Input Class/Section Name Here">
-      <br>
-      <!--<input type="text" placeholder="Amount of students">-->
-      <label for="involveStudents">Student Email(s)    Note: Separate with commas (,)</label>
-      <textarea name="studentAdd"  id="involveStudents" placeholder="Enter Student Email(s) Here"></textarea>
-      <br>
-      <button onclick="insertClassAndStudents()">Add Class and Students</button>
-    </div>
-
-    <h3>Add Student to Existing Class</h3>
-    <div id="addToExistingClass">
-      <label for="classSelectStudents">Class/Section Name</label>
-      <select name="sections" id="classSelectStudents"></select> <br>
-      <label for="additionalStudents">Student Email(s)    Note: Separate with commas (,)</label>
-      <textarea name="studentAdd" id="additionalStudents" placeholder="Enter Student Email(s) Here"></textarea>
-      <button onclick="insertStudents()">Add Students</button>
-    </div>
 
     <button onclick="showDrop()">Drop Student/Class</button>
 
@@ -279,7 +282,7 @@
   </div>
 
 
-  <div id="assignmentPage">
+  <div id="assignmentPage" style="overflow:auto;">
     <br>
     <center>
       <h3>Add New Assignment/Remove Assignment</h3>
@@ -349,7 +352,7 @@
         </select>
         <button onclick="fillAssignmentCheckboxes()">Load Class Assignments</button>
         <h4>Choose Assignments to Publish</h4>
-        <div id="checkboxHolder">
+        <div id="checkboxHolder" style="overflow:auto;">
         
         </div>
         <button onclick="publishAssignments()">Publish</button>
