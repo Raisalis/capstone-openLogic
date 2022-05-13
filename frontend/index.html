@@ -216,23 +216,6 @@
     </div>
     <br>
 
-    <button onclick="showDrop()">Drop Student/Class</button>
-
-    <div id="hiddenDrop">
-      <h4>To Drop an Entire Class, you only need to select a class name. Otherwise, select a student also.</h4>
-      <label for="classDrop">Class Name</label>
-      <select name="sections" id="classDrop"></select>
-      <button onclick="addStudentSelector('classDrop', '#studentDrop')">Load Students</button>
-      <br>
-      <label for="studentDrop">Student Email</label>
-      <select name="students" id="studentDrop"></select>
-      <br>
-      <button onclick="dropClass()">Drop Class</button> <br>
-      <button onclick="dropStudent()">Drop Student</button>
-      
-
-    </div>
-
     </center> 
   </div>
   
@@ -259,6 +242,23 @@
       <label for="additionalStudents">Student Email(s)    Note: Separate with commas (,)</label>
       <textarea name="studentAdd" id="additionalStudents" placeholder="Enter Student Email(s) Here"></textarea>
       <button onclick="insertStudents()">Add Students</button>
+    </div>
+
+    <button onclick="showDrop()">Drop Student/Class</button>
+
+    <div id="hiddenDrop">
+      <h4>To Drop an Entire Class, you only need to select a class name. Otherwise, select a student also.</h4>
+      <label for="classDrop">Class Name</label>
+      <select name="sections" id="classDrop"></select>
+      <button onclick="addStudentSelector('classDrop', '#studentDrop')">Load Students</button>
+      <br>
+      <label for="studentDrop">Student Email</label>
+      <select name="students" id="studentDrop"></select>
+      <br>
+      <button onclick="dropClass()">Drop Class</button> <br>
+      <button onclick="dropStudent()">Drop Student</button>
+      
+
     </div>
 
     </center>

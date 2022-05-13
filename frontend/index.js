@@ -170,6 +170,7 @@ async function insertClassAndStudents() {
                alert("Your submission was accepted");
                fillAssignmentPageClasses();
                fillClassNames("#classSelectStudents");
+               fillClassNames("#classDrop");
             }
          );
       }
@@ -604,7 +605,6 @@ function showProofs(){
    }else{
       proofs.style.display = "block";
       fillClassNames("#csvClass");
-      fillClassNames("#classDrop");
    }
    if(student.style.display === "block") {
       student.style.display = "none";
@@ -626,6 +626,7 @@ function showStudents(){
    }else{
       student.style.display="block";
       fillClassNames("#classSelectStudents");
+      fillClassNames("#classDrop");
    }
    if(proofs.style.display=== "block"){
       proofs.style.display= "none";
