@@ -118,13 +118,15 @@ function loadStudentList() {
          (data) => {
             if(data.length != null) {
                let elem = document.querySelector('#studentList');
+
+               $(elem).empty();
    
                (data) && data.forEach( student => {
                   if(student.Role == "student") {
                      let node = document.createTextNode(student.UserEmail);
                      elem.appendChild(node);
                      let temp = document.createElement('br');
-                     elem.appendChild(node);
+                     elem.appendChild(temp);
                   }
                });
             }
