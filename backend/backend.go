@@ -919,7 +919,7 @@ func (env *Env) populateTestProofRow() {
 		ProofName:      "Repository - Code Test",
 		ProofType:      "prop",
 		Premise:        []string{"P", "P → Q", "Q → R", "R → S"},
-		Logic:          []string{},
+		Logic:          []string{"[{\"wffstr\":\"P\",\"jstr\":\"Pr\"},{\"wffstr\":\"P → Q\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q → R\",\"jstr\":\"Pr\"},{\"wffstr\":\"R → S\",\"jstr\":\"Pr\"}"},
 		Rules:          []string{},
 		EverCompleted:  "false",
 		ProofCompleted: "false",
@@ -929,7 +929,7 @@ func (env *Env) populateTestProofRow() {
 	})
 
 	if err != nil {
-		log.Println("error from Store(gbruns argument)")
+		log.Println("error from Store(elarson argument)")
 		log.Fatal(err)
 	}
 
@@ -974,7 +974,7 @@ func (env *Env) populateTestProofRow() {
 		ProofName:      "Repository - Code Test 2",
 		ProofType:      "prop",
 		Premise:        []string{"P", "P → Q", "Q → R"},
-		Logic:          []string{},
+		Logic:          []string{"[{\"wffstr\":\"P\",\"jstr\":\"Pr\"},{\"wffstr\":\"P → Q\",\"jstr\":\"Pr\"},{\"wffstr\":\"Q → R\",\"jstr\":\"Pr\"}"},
 		Rules:          []string{},
 		EverCompleted:  "false",
 		ProofCompleted: "false",
@@ -1000,7 +1000,7 @@ func (env *Env) populateTestProofRow() {
 
 	err = env.ds.Store(datastore.Proof{
 		EntryType:      "proof",
-		UserSubmitted:  "t1deleteTEST@csumb.edu",
+		UserSubmitted:  "jasbaker@csumb.edu",
 		ProofName:      "Repository - Code Test 2",
 		ProofType:      "prop",
 		Premise:        []string{"P", "P → Q", "Q → R"},

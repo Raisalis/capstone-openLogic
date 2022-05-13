@@ -243,7 +243,7 @@ func (p *ProofStore) GetUserArguments(user UserWithEmail) ([]Proof, error) {
 
 func (p *ProofStore) GetUserCompletedProofs(user UserWithEmail) (error, []Proof) {
 	stmt, err := p.db.Prepare(`SELECT id, entryType, userSubmitted, proofName, proofType, Premise, Logic, Rules, everCompleted, proofCompleted, timeSubmitted, Conclusion, repoProblem 
-                              FROM proof WHERE userSubmitted = ? AND proofCompleted = 'true'`)
+                              FROM proof WHERE userSubmitted = ? AND proofCompleted = 'true' AND proofName NOT LIKE '%Test%' AND proofName NOT LIKE '%Quiz%' AND proofName NOT LIKE '%Final%'`)
 	if err != nil {
 		return err, nil
 	}
