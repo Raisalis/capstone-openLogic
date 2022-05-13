@@ -543,7 +543,7 @@ func (p *ProofStore) UpdateAssignment(currentName string, updatedAssignment Assi
 }
 
 func (p *ProofStore) RemoveSection(sectionName string) (error) {
-   err := p.db.removeAllStudentsProofs(sectionName)
+   err := p.removeAllStudentsProofs(sectionName)
    if err != nil {
       return err
    }
@@ -567,7 +567,7 @@ func (p *ProofStore) RemoveSection(sectionName string) (error) {
 }
 
 func (p *ProofStore) RemoveFromRoster(sectionName string, userEmail string) (error) {
-   err := p.db.removeOneStudentsProofs(userEmail)
+   err := p.removeOneStudentsProofs(userEmail)
    if err != nil {
       return err
    }
