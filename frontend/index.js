@@ -121,7 +121,7 @@ function loadStudentList() {
    
                (data) && data.forEach( student => {
                   if(student.Role == "student") {
-                     let node = document.createTextNode(student.UserEmail + "\n");
+                     let node = document.createTextNode(student.UserEmail + "<br>");
                      elem.appendChild(node);
                   }
                });
