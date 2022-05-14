@@ -1,6 +1,8 @@
 # How to Use Admin Features
 
-## Class Creation
+## Class Management
+
+### Class Creation
 
 1. Click "Add Student/Class" Menu Button.
 2. Enter Class Name in top entry field.
@@ -14,25 +16,29 @@
 3. Enter the student name(s) in the text entry box below the dropdown box, separated by commas.
 4. Click "Add Student" Button at the bottom.
 
-## Class Management (Dropping Classes/Students)
+### View Students in a Class
 
-To view your class, click on the "View Class" Menu Button. Then, below the CSV section, click the "Drop Class/Student" button.
-From here, you have the ability to:
-- Remove a student.
-- Delete a class.
+1. Click "Add Student/Class" Menu Button
+2. In the "View Students" Section, select a class from the dropdown, then click the "Load Students" Button.
+3. The student emails will appear in a text box below the class selector.
+
+### Delete a Class / Drop a Student
+
+1. Click the "Add Student/Class" Menu Button.
+2. Click the "Drop Class/Student" Button.
 
 *Note*: Removing a student from a class will remove all repository problems from that class from their proof list. Deleting a class will remove all repository problems for that class from all students registered in it.
 
-### Dropping a Class
+#### Deleting a Class
 
-1. Select a Class from the dropdown box.
-2. Click the "Drop Class" button below the selectors.
+3. Select a Class from the dropdown box.
+4. Click the "Drop Class" button below the selectors.
 
-### Dropping a Student from a Class
+#### Dropping a Student from a Class
 
-1. Select a Class from the dropdown box, then click the "Load Students" button.
-2. Select a Student Email from the student dropdown box.
-3. Click the "Drop Student" button below the selectors.
+3. Select a Class from the dropdown box, then click the "Load Students" button.
+4. Select a Student Email from the student dropdown box.
+5. Click the "Drop Student" button below the selectors.
 
 ## Assignments
 
@@ -77,3 +83,9 @@ After adding an Assignment to a Class, it will be "invisible" by default. To mak
 1. Select a Class from the Class dropdown list, then click the "Load Assignments" button.
 2. A list of Assignments for that Class will appear. Checked Assignments are visible to the class, and Unchecked Assignments are invisible to the class. Check and uncheck the boxes accordingly.
 3. Click "Publish" button.
+
+## Download Class CSV
+
+1. Click the "Download CSV" Menu Button.
+2. Choose a class from the selector.
+3. Click the "Download CSV" Button below the selector.
