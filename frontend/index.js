@@ -941,10 +941,10 @@ $(document).ready(function() {
       let publicStatus = $('#repoProblem').val() || 'false';
       if (publicStatus === 'false') {
 	 $('#repoProblem').val('true');
-	 $('#togglePublicButton').fadeOut().text('Make Private').fadeIn();
+	 $('#togglePublicButton').fadeOut().text('Remove from Database').fadeIn();
       } else {
 	 $('#repoProblem').val('false');
-	 $('#togglePublicButton').fadeOut().text('Make Public').fadeIn();
+	 $('#togglePublicButton').fadeOut().text('Add to Database').fadeIn();
       }
 
       $('#checkButton').click();
