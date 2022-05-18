@@ -29,14 +29,10 @@ var (
 	// - backend must run once to update new admin variables, then they may be removed from admin_users map
 	// - (should change this in the future, so that removing admins is less confusing)
 	admin_users = map[string]bool{
-		"abiblarz@csumb.edu":  true,
-		"sislam@csumb.edu":    true,
-		"gbruns@csumb.edu":    true,
-		"cohunter@csumb.edu":  true,
-		"bkondo@csumb.edu":    false,
-		"elarson@csumb.edu":   true,
-		"jasbaker@csumb.edu":  false,
-		"mkammerer@csumb.edu": true,
+        "abiblarz@csumb.edu": true,
+        "sislam@csumb.edu":   true,
+		"gbruns@csumb.edu":   true,
+		"cohunter@csumb.edu": true,
 	}
 
 	// When started via systemd, WorkingDirectory is set to one level above the public_html directory
