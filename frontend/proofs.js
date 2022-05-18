@@ -9,13 +9,14 @@
 
 // Class to contain proof data for submission to backend 
 class Proof {
-   constructor(entryType, proofName, proofType, Premise, Logic, Rules, proofCompleted, conclusion, repoProblem){
+   constructor(entryType, proofName, proofType, Premise, Logic, Rules, everCompleted, proofCompleted, conclusion, repoProblem){
       this.entryType = entryType;
       this.proofName = proofName;
       this.proofType = proofType;
       this.Premise = Premise;
       this.Logic = Logic;
       this.Rules = Rules;
+      this.everCompleted = everCompleted;
       this.proofCompleted = proofCompleted;
       this.conclusion = conclusion;
       this.repoProblem = repoProblem;
@@ -49,6 +50,7 @@ function processProofCheckResponse(text, context) {
    if (res.issues.length == 0) {
       if (res.concReached == true) {
          context.proofCompleted = "true";
+         context.everCompleted = "true";
          restext += '<span style="font-size: 150%; color: green;">☺</span> Congratulations! This proof is correct.';
       } else {
          context.proofCompleted = "false";

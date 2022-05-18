@@ -3,7 +3,7 @@
   <head>
     <!-- standard metadata -->
     <meta charset="utf-8" />
-	  <!-- TEST COMMENT 5-->
+	  <!-- TEST COMMENT 12-->
 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -74,7 +74,7 @@
       <!--  -->
       <div style="float: left; padding-left: .9rem;"> 
         <label for="repoProofSelect">load repository problems: </label>
-        <select id="repoProofSelect" class="proofSelect" data-content="Checking a repository problem will overwrite any past attempts of the selected problem.">
+        <select id="repoProofSelect" data-content="Checking a repository problem will overwrite any past attempts of the selected problem.">
           <option> waiting for server...</option>
         </select>
       </div>
@@ -190,17 +190,186 @@
 <!-- Administration Interface -->
 <div class="ui modal">
   <i class="close icon"></i>
+  <center>
   <div class="header">
-    Administrator Options
+    <h1> Administrator Options: </h1>
   </div>
-  <div class="content">
-    <button class="downloadCSV">Download Student Problems as CSV</button>
+
+  <button onclick="showProofs()">Download CSV</button> <button onclick="showStudents()">Manage Classes</button> <button onclick="showAssignments()">Manage Assignments</button>
+  <div  id="proofValues">
+
+    <center>
+    <br>
+    <h3>CSV Class Download</h3>
+    <label for="csvClass">Class Name</label>
+    <select name="sections" id="csvClass"></select>
+    <!--
+      NOTE: Ideally, this section would include the ability to only download certain assignments for a smaller, more exact .csv file.
+      <label for="csvProof">Proof Name</label>
+      <select name="proofs" id="csvProof"></select>
+      <label for="csvStudent">Student Email</label>
+      <select name="students" id="csvStudent"></select>
+    -->
+    
+    <div class="content">
+      <button class="downloadCSV">Download Student Problems as CSV</button>
+    </div>
+
+    <br>
+
+    </center> 
   </div>
+  
+  <div id="studentPage" style="overflow:auto;">
+    <br>
+    <center>        
+    <h3>Add New Class and Students</h3>
+
+    <div id="studentClassAddition">
+      <label for="className">Class/Section Name</label>
+      <input type="text" id="className" size="40" placeholder="Input Class/Section Name Here">
+      <br>
+      <!--<input type="text" placeholder="Amount of students">-->
+      <label for="involveStudents">Student Email(s)    Note: Separate with commas (,)</label>
+      <textarea name="studentAdd"  id="involveStudents" style="overflow:auto;" placeholder="Enter Student Email(s) Here"></textarea>
+      <br>
+      <button onclick="insertClassAndStudents()">Add Class and Students</button>
+    </div>
+
+    <h3>Add Student to Existing Class</h3>
+    <div id="addToExistingClass">
+      <label for="classSelectStudents">Class/Section Name</label>
+      <select name="sections" id="classSelectStudents"></select> <br>
+      <label for="additionalStudents">Student Email(s)    Note: Separate with commas (,)</label>
+      <textarea name="studentAdd" id="additionalStudents" style="overflow:auto;" placeholder="Enter Student Email(s) Here"></textarea>
+      <button onclick="insertStudents()">Add Students</button>
+    </div>
+
+    <br>
+
+    <div id="viewClassStudents">
+      <h3>View Students in Class</h3>
+      <label for="classStudentsSelector">Class Name</label>
+      <select name="sections" id="classStudentsSelector"></select>
+      <button onclick="loadStudentList()">Show Students In Class</button>
+
+      <h4>Student Emails</h4>
+      <div id="studentList" style="height:5em;width:100%;overflow:auto;">
+
+      </div>
+    </div>
+
+    <br>
+
+    <button onclick="showDrop()">Drop Student/Class</button>
+
+    <div id="hiddenDrop">
+      <h4>To Drop an Entire Class, you only need to select a class name. Otherwise, select a student also.</h4>
+      <label for="classDrop">Class Name</label>
+      <select name="sections" id="classDrop"></select>
+      <button onclick="addStudentSelector('classDrop', '#studentDrop')">Load Students</button>
+      <br>
+      <label for="studentDrop">Student Email</label>
+      <select name="students" id="studentDrop"></select>
+      <br>
+      <button onclick="dropClass()">Drop Class</button> <br>
+      <button onclick="dropStudent()">Drop Student</button>
+      
+
+    </div>
+
+    </center>
+  </div>
+
+
+  <div id="assignmentPage" style="overflow:auto;">
+    <br>
+    <center>
+      <h3>Add New Assignment/Remove Assignment</h3>
+      
+      <div id="createAssignmentDiv">
+        <input type="text" id="assignmentName" size="40" placeholder="Assignment Name">
+        <label for="assignedClass">For Class:</label>
+        <select name="sections" id="assignedClass">
+
+        </select>
+        <br>
+        <br>
+        <button onclick="insertAssignment()">Create Assignment</button>
+        <br>
+        <button onclick="removeAssignment()">Remove Assignment</button>
+      </div>
+      <br>
+      
+      <h3>Add/Remove Proof to Assignment</h3>
+      <div id="addRemoveProofAssignmentButtonsDiv">
+        <button onclick="showAddProofAssignment()">Add Proof</button> <button onclick="showRemoveProofAssignment()">Remove Proof</button>
+      </div>
+      <div id="addProofAssignmentDiv">
+        <label for="classAddProof">Class Name</label>
+        <select name="sections" id="classAddProof">
+          
+        </select>
+        <button onclick="addAssignmentSelector('classAddProof','#proofAssignmentIn')">Load Class Assignments</button>
+        <br>
+        <label for="proofAssignmentIn">Assignment Name</label>
+        <select name="assign" id="proofAssignmentIn">
+          <option>Waiting for Class Selection...</option>
+        </select>
+        <label for="proofIn">Proof to Add</label>
+        <select name="proof" id="proofIn">
+
+        </select>
+        <button onclick="addProofAssignment()">Add</button>
+      </div>
+
+      <div id="removeProofAssignmentDiv">
+        <label for="classRemoveProof">Class Name</label>
+        <select name="sections" id="classRemoveProof">
+
+        </select>
+        <button onclick="addAssignmentSelector('classRemoveProof','#proofAssignmentOut')">Load Class Assignments</button>
+        <br>
+        <label for="proofAssignmentOut">Assignment Name</label>
+        <select name="assign" id="proofAssignmentOut">
+          <option>Waiting for Class Selection...</option>
+        </select>
+        <label for="proofOut">Proof to Remove</label>
+        <select name="proof" id="proofOut">
+
+        </select>
+        <button onclick="removeProofAssignment()">Remove</button>
+      </div>
+      <br>
+
+      <!-- Could move the below section to View Classes Page -->
+      <br>
+      <h3>Publish Assignments</h3>
+      <div id="publicAssignmentsDiv">
+        <label for="classForPublish">Class Name</label>
+        <select name="sections" id="classForPublish">
+
+        </select>
+        <button onclick="fillAssignmentCheckboxes()">Load Class Assignments</button>
+        <h4>Choose Assignments to Publish</h4>
+        <div id="checkboxHolder" style="overflow:auto;">
+        
+        </div>
+        <button onclick="publishAssignments()">Publish</button>
+      </div>
+
+    </center>
+  </div>
+
+<br>
+      
+  
   <div class="actions">
     <div class="ui black deny button">
       Close
     </div>
   </div>
+  <br>
 </div>
 </body>
 </html>

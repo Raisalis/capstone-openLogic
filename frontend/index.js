@@ -3,7 +3,9 @@
 const repositoryData = {
    'userProofs': [],
    'repoProofs': [],
-   'completedUserProofs': []
+   'completedUserProofs': [],
+   'studentNames':[],
+   'proofAverages':[]
 }
 
 let adminUsers = [];
@@ -18,6 +20,7 @@ function onSignIn(googleUser) {
    // This response will be cached after the first page load
    $.getJSON('/backend/admins', (admins) => {
       try {
+	 console.log(admins);
 	 adminUsers = admins['Admins'];
       } catch(e) {
 	 console.error('Unable to load admin users', e);
@@ -106,6 +109,408 @@ class User {
    }
 }
 
+//Loads student list in CSV section
+function loadStudentList() {
+   var check = document.getElementById('classStudentsSelector');
+   if(check != null) {
+      var sectionName = check.value;
+      backendGET('roster', {sectionName: sectionName}).then(
+         (data) => {
+            if(data == null) {
+               let elem = document.querySelector('#studentList');
+
+               $(elem).empty();
+               let node = document.createTextNode("No students in class.");
+               elem.appendChild(node);
+            } else if(data.length != null) {
+               let elem = document.querySelector('#studentList');
+
+               $(elem).empty();
+   
+               (data) && data.forEach( student => {
+                  if(student.Role == "student") {
+                     let node = document.createTextNode(student.UserEmail);
+                     elem.appendChild(node);
+                     let temp = document.createElement('br');
+                     elem.appendChild(temp);
+                  }
+               });
+            }
+         }
+      )
+   }
+}
+
+//Loads a student selector given the ids of a class selector and the student selector
+function addStudentSelector(classSelector, studentSelector) {
+   var check = document.getElementById(classSelector);
+   if(check != null) {
+      var sectionName = check.value;
+      fillStudentSelector(sectionName, studentSelector);
+   }
+}
+
+// Fills in a roster selector based on class.
+function fillStudentSelector(className, selectorName) {
+   backendGET('roster', {sectionName: className}).then(
+      (data) => {
+         if(data.length != null) {
+            let elem = document.querySelector(selectorName);
+
+            // Remove all child nodes from the select element
+            $(elem).empty();
+
+            // Create placeholder option
+            elem.appendChild(
+               new Option('Select...', null, true, true)
+            );
+
+            // Set placeholder to disabled so it does not show as selectable
+            elem.querySelector('option').setAttribute('disabled', 'disabled');
+
+            // Add option elements for the options
+            (data) && data.forEach( student => {
+               if(student.Role == "student") {
+                  let option = new Option(student.UserEmail, student.UserEmail);
+                  elem.appendChild(option);
+               }
+            });
+         }
+      }
+   )
+}
+
+
+//this inserts the class and students in that class, the students should be seperated by a comma
+async function insertClassAndStudents() {
+
+   var name=document.getElementById("className").value;
+   var students= $("#involveStudents").val().split(",");
+
+   if(name=="") {
+      alert("Must enter a Class Name.");
+   } else {
+      // Section must be added first or will get an error adding students.
+      await backendPOST('add-section',{sectionName:name}).then(
+         (data) =>{
+            console.log('add section',data);
+         }
+      );
+
+      if(students!="") {
+         backendPOST('add-roster', {sectionName: name, studentEmails: students}).then(
+            (data) => {
+               alert("Your submission was accepted");
+               fillAssignmentPageClasses();
+               fillClassNames("#classSelectStudents");
+               fillClassNames("#classDrop");
+            }
+         );
+      }
+   }
+}
+
+// Function to add students to an existing class
+function insertStudents() {
+   var className = document.getElementById("classSelectStudents").value;
+   var students = $("#additionalStudents").val().split(",");
+
+   if(className == "") {
+      alert("Must select a class to add students to.");
+   } else {
+      if(students!="") {
+         backendPOST('add-roster', {sectionName: className, studentEmails: students}).then(
+            (data) => {
+               alert("Submission accepted.");
+            }
+         )
+      } else {
+         alert("Must enter at least one student email.");
+      }
+   }
+}
+
+// Drops an entire class, removing all student information as well.
+async function dropClass(){
+   var check = document.getElementById("classDrop");
+   if(check != null){
+      if(confirm("Are you sure you want to delete the whole class? You will also drop all of the assignments if you do!")==true){
+         var className = check.value;
+         backendPOST('remove-section',{sectionName: className});
+         fillClassNames("#classDrop");
+         alert("Class deleted");
+      }
+   } else {
+      alert("input is empty, please fill the field with the section to drop");
+   }
+}
+
+// Drops one student from a class.
+async function dropStudent(){
+   var studentCheck = document.getElementById("studentDrop");
+   if(studentCheck != null){
+      var className = document.getElementById("classDrop").value;
+      var student = studentCheck.value;
+      if(confirm("Are you sure you want to drop this student? The student won't be able to view the assignments anymore!")==true){
+         backendPOST("remove-from-roster", {sectionName: className, userEmail: student});
+         fillStudentSelector(className, "#studentDrop");
+         alert("Student removed");
+      }
+   }else{
+      alert("Please choose a student to drop.");
+   }
+   
+   
+}
+
+/***
+ * 2 of these next 4 functions need to go??????
+ */
+
+// ?????????????
+async function addAssignmentToClass(){
+   var add=document.getElementById("classAssignmentIn").value;
+   var classIn=document.getElementById("classIn").value;
+   if(add==""||classIn==""){
+      alert("At least one input is empty, please insert the class name and assignment name in their respective input boxes");
+   }else{
+
+      backendPOST('add-assignment', {sectionName: classIn, assignmentName: add});
+      alert("Assignment has been added to the class");
+   }
+}
+// ????
+async function removeAssignmentFromClass(){
+   var sub=document.getElementById("classAssignmentOut").value;
+   var classOut=document.getElementById("classOut").value;
+   if(sub==""||classOut==""){
+      alert("At least one input is empty, please insert the class name and assignment name in their respective input boxes");
+   }else{
+      backendPOST('remove-assignment',{sectionName:classOut,assignmentName:sub});
+      alert("Assignment removed from class");
+   }
+}
+
+// Adds an assignment from a class. ?????????/
+async function insertAssignment(){
+   var assignmentN=document.getElementById("assignmentName").value;
+   var classN=document.getElementById("assignedClass").value;
+   if(assignmentN==""||classN==""){
+      alert("The input is empty, please enter assignment name and class name.");
+   }else{
+      backendPOST('add-assignment', {name:assignmentN, sectionName:classN});
+      alert("Assignment Made");
+   }
+}
+
+// Removes an assignment from a class. ?????
+async function removeAssignment(){
+   var assignmentO=document.getElementById("assignmentName").value;
+   var classN=document.getElementById("assignedClass").value;
+   if(assignmentO==""||classN==""){
+      alert("The input is empty, please enter assignment name and class name.");
+   }else{
+      backendPOST('remove-assignment',{name:assignmentO, sectionName:classN});
+      alert("Assignment Removed");
+   }
+}
+
+// Function to check that a class was actually selected before filling an Assignment Selector.
+// Required to prevent null error.
+function addAssignmentSelector(sectionSelector, assignmentSelector) {
+   var check = document.getElementById(sectionSelector);
+   if(check != null) {
+      var sectionName = check.value;
+      fillAssignmentSelector(sectionName, assignmentSelector);
+   }
+}
+
+// For adding a proof to an assignment, Add Proof Div of Assignment Page.
+async function addProofAssignment(){
+   var className = document.getElementById("classAddProof").value;
+   var assignmentName=document.getElementById("proofAssignmentIn").value;
+   var proof=document.getElementById("proofIn").value;
+
+   if(assignmentName==""||proof==""){
+      alert("One or more inputs are empty, please select the proof and assignments in their respective options");
+   }else{
+      var assignment = await getAssignmentDetails(className, assignmentName);
+      var proofList = [];
+      if(assignment != null) {
+         proofList = getProofIdList(assignment.proofList);
+      }
+      proofList.push(parseInt(proof));
+      backendPOST("update-assignment",{sectionName:className, currentName:assignmentName, updatedName:assignmentName, updatedProofIds:proofList, updatedVisibility:assignment.visibility});
+      alert("Proof is added to assignment");
+   }
+}
+
+// Returns specific Assignment Details from a section.
+async function getAssignmentDetails(className, assignmentName) {
+   let data = await backendGET('assignments-by-section', {sectionName: className});
+   if(data != null) {
+      for(var i = 0; i < data.length; i++) {
+         if(data[i].name === assignmentName) {
+            return data[i];
+         }
+      }
+   } else {
+      return null;
+   }
+}
+
+// For removing a proof from an assignment, Remove Proof Div of Assignment Page.
+async function removeProofAssignment(){
+   var className = document.getElementById("classRemoveProof").value;
+   var assignmentName = document.getElementById("proofAssignmentOut").value;
+   var proof=document.getElementById("proofOut").value;
+
+   if(assignment==""||proof==""){
+      alert("One or more inputs are empty, please select the proof and assignments in their respective options");
+   }else{
+      var assignment = await getAssignmentDetails(className, assignmentName);
+      var proofList = getProofIdList(assignment.proofList);
+      var check = false;
+      for(var i = 0; i < proofList.length; i++) {
+         if(proofList[i] == proof) {
+            check = true;
+            break;
+         }
+      }
+      if(check) {
+         var index = proofList.indexOf(proof);
+         proofList = proofList.splice(index, 1);
+         backendPOST("update-assignment",{sectionName:className, currentName:assignmentName, updatedName:assignmentName, updatedProofIds:proofList, updatedVisibility:assignment.visibility});
+         alert("Proof removed from assignment");
+      } else {
+         alert("Assignment does not contain that proof.");
+      }
+      
+   }
+}
+
+// Class Selector filler function.
+async function fillClassNames(selectorName) {
+   var userEmail = document.getElementById("user-email").text;
+   await backendGET('sections', {'user': userEmail}).then(
+      (data)=>{
+         let elem = document.querySelector(selectorName);
+
+         // Remove all child nodes from the select element
+         $(elem).empty();
+
+         // Create placeholder option
+         elem.appendChild(
+            new Option('Select...', null, true, true)
+         );
+
+         // Set placeholder to disabled so it does not show as selectable
+         elem.querySelector('option').setAttribute('disabled', 'disabled');
+
+         // Add option elements for the options
+         (data) && data.forEach( section => {
+            let option = new Option(section.Name, section.Name);
+            elem.appendChild(option);
+         });
+      }, console.log
+   );
+}
+
+// Assignment Selector filler function.
+async function fillAssignmentSelector(className, divName) {
+   await backendGET('assignments-by-section', {sectionName:className}).then(
+      (data)=>{
+         console.log("fillAssignmentSelector: ", data);
+         let elem = document.querySelector(divName);
+
+         // Remove all child nodes from the select element
+         $(elem).empty();
+
+         // Create placeholder option
+         elem.appendChild(
+            new Option('Select...', null, true, true)
+         );
+
+         // Set placeholder to disabled so it does not show as selectable
+         elem.querySelector('option').setAttribute('disabled', 'disabled');
+
+         // Add option elements for the options
+         (data) && data.forEach( assignment => {
+            let option = new Option(assignment.name, assignment.name);
+            elem.appendChild(option);
+         });
+      }
+   )
+}
+
+// Fills the Publish Assignments checkboxes in the Assignments Page based on the class selected.
+async function fillAssignmentCheckboxes() {
+   var className = document.getElementById('classForPublish').value;
+   console.log(className);
+   await backendGET('assignments-by-section', {sectionName:className}).then(
+      (data)=>{
+         var i = 0;
+         document.getElementById('checkboxHolder').innerHTML = "";
+         (data) && data.forEach( assignment => {
+            var label = document.createElement("label");
+            var description = document.createTextNode(assignment.name);
+            var checkbox = document.createElement("input");
+
+            checkbox.type = "checkbox";
+            checkbox.name = "checkOption";
+            checkbox.value = assignment.name;
+            if(assignment.visibility == "true") {
+               checkbox.checked = true;
+            }
+
+            label.appendChild(checkbox);
+            label.appendChild(description);
+
+            document.getElementById('checkboxHolder').appendChild(label);
+            document.getElementById('checkboxHolder').appendChild(document.createElement("br"));
+            document.getElementById('checkboxHolder').appendChild(document.createElement("br"));
+            i++;
+         });
+      }
+   );
+}
+
+// Get list of proof ids from assignment.proofList since it's required for updating the assignment at any time.
+function getProofIdList(proofList) {
+   var proofIdList = [];
+   if(proofList != null) {
+      for(var i = 0; i < proofList.length; i++) {
+         proofIdList.push(parseInt(proofList[i].Id));
+      }
+   }
+   return proofIdList;
+}
+
+// Publishes Assignments to class based on checked boxes.
+async function publishAssignments() {
+   var checkboxes = document.getElementById('checkboxHolder');
+   var className = document.getElementById('classForPublish').value;
+   if(checkboxes.innerHTML != "") {
+      var assignments = document.querySelectorAll('input[name=checkOption]');
+      for(var i = 0; i < assignments.length; i++) {
+         let assignmentDetails = await getAssignmentDetails(className, assignments[i].value);
+         var proofIds = [];
+         if(assignmentDetails != null) {
+            proofIds = getProofIdList(assignmentDetails.proofList);
+         }
+         console.log(proofIds);
+         if(assignments[i].checked) {
+            backendPOST("update-assignment", {sectionName:className, currentName:assignments[i].value, updatedName:assignments[i].value, updatedProofIds:proofIds, updatedVisibility:"true"});
+         } else {
+            backendPOST("update-assignment", {sectionName:className, currentName:assignments[i].value, updatedName:assignments[i].value, updatedProofIds:proofIds, updatedVisibility:"false"});
+         }
+      }
+      alert("Assignment Edits Published.");
+   } else {
+      alert("Error: Please choose a class with assignments first.");
+   }
+}
+
 // Verifies signed in and valid token, then calls authenticatedBackendPOST
 // Returns a promise which resolves to the response body or undefined
 function backendPOST(path_str, data_obj) {
@@ -125,6 +530,27 @@ function backendPOST(path_str, data_obj) {
 	 (googleUser) => authenticatedBackendPOST(path_str, data_obj, googleUser.id_token));
    } else {
       return authenticatedBackendPOST(path_str, data_obj, User.getIdToken());
+   }
+}
+
+//we added this part in order to get the appropriate GET call for some other functions
+function backendGET(path_str, data_obj) {
+   if (!User.isSignedIn()) {
+      console.warn('Cannot send GET request to backend from unknown user.');
+      if (sessionStorage.getItem('loginPromptShown') == null) {
+	 alert('You are not signed in.\nTo save your work, please sign in and then try again, or refresh the page.');
+	 sessionStorage.setItem('loginPromptShown', "true");
+      }
+      
+      return Promise.reject( 'Unauthenticated user' );
+   }
+
+   if (User.isTokenExpired()) {
+      console.warn('Token expired; attempting to refresh token.');
+      return User.refreshToken().then(
+	 (googleUser) => authenticatedBackendGET(path_str, data_obj, googleUser.id_token));
+   } else {
+      return authenticatedBackendGET(path_str, data_obj, User.getIdToken());
    }
 }
 
@@ -149,9 +575,29 @@ function authenticatedBackendPOST(path_str, data_obj, id_token) {
    )
 }
 
+
+function authenticatedBackendGET(path_str, data_obj, id_token) {
+   return $.ajax({
+      url: '/backend/' + path_str,
+      method: 'GET',
+      data: new URLSearchParams(data_obj).toString(),
+      headers: {
+         'X-Auth-Token': id_token
+      }
+   }).then(
+      (data, textStatus, jqXHR) => {
+	 return data;
+      },
+      (jqXHR, textStatus, errorThrown) => {
+	 console.error(textStatus, errorThrown);
+      }
+   )
+}
+
 // For administrators only - backend requires valid admin token
 function getCSV() {
-   backendPOST('proofs', { selection: 'downloadrepo' }).then(
+   var csvClass = document.getElementById("csvClass").value;
+   backendGET('completed-proofs-by-section', { sectionName: csvClass }).then(
       (data) => {
 	 console.log("downloadRepo", data);
 
@@ -179,6 +625,162 @@ function getCSV() {
       }, console.log);
 }
 
+//the following are just menu popups based on button clicks on the admin buttons
+
+// Hides and displays the admin options
+function showProofs(){
+   var proofs=document.getElementById("proofValues");
+   var student= document.getElementById("studentPage");
+   var assignments = document.getElementById("assignmentPage");
+
+   if(proofs.style.display=== "block"){
+      proofs.style.display = "none";
+   }else{
+      proofs.style.display = "block";
+      fillClassNames("#csvClass");
+   }
+   if(student.style.display === "block") {
+      student.style.display = "none";
+   }
+   if(assignments.style.display === "block") {
+      assignments.style.display = "none";
+   }
+   
+}
+
+// Loader for the Add Class/Students Page.
+function showStudents(){
+   var proofs=document.getElementById("proofValues");
+   var student= document.getElementById("studentPage");
+   var assignments = document.getElementById("assignmentPage");
+
+   if(student.style.display=== "block"){
+      student.style.display= "none";
+   }else{
+      student.style.display="block";
+      fillClassNames("#classSelectStudents");
+      fillClassNames("#classDrop");
+      fillClassNames("#classStudentsSelector");
+   }
+   if(proofs.style.display=== "block"){
+      proofs.style.display= "none";
+   }
+   if(assignments.style.display === "block") {
+      assignments.style.display = "none";
+   }
+}
+
+
+function showDrop(){
+   var dropper= document.getElementById("hiddenDrop");
+   if(dropper.style.display=== "block"){
+      dropper.style.display= "none";
+   }else{
+      dropper.style.display="block";
+   }
+}
+
+function showDropClass(){
+   var dropper= document.getElementById("howToDropClass");
+   if(dropper.style.display=== "block"){
+      dropper.style.display= "none";
+   }else{
+      dropper.style.display="block";
+   }
+}
+
+// Refills all Class Selectors in the Assignments Page.
+function fillAssignmentPageClasses() {
+   fillClassNames("#assignedClass");
+   fillClassNames("#classAddProof");
+   fillClassNames("#classRemoveProof");
+   fillClassNames("#classForPublish");
+}
+
+// Loader for the Assignments Page.
+async function showAssignments(){
+   var proofs = document.getElementById("proofValues");
+   var student = document.getElementById("studentPage");
+   var assignment= document.getElementById("assignmentPage");
+   if(assignment.style.display=="block"){
+      assignment.style.display= "none";
+   }else{
+      assignment.style.display="block";
+      fillAssignmentPageClasses();
+      await backendGET('arguments-by-user', {}).then(   
+         (data) => {
+            var temp = JSON.parse(data);
+            let elem = document.querySelector('#proofIn');
+            $(elem).empty();
+
+            elem.appendChild(
+               new Option('Select...', null, true, true)
+            );
+
+            (temp) && temp.forEach( proof => {
+               elem.appendChild(
+                  new Option(proof.ProofName, proof.Id)
+               );
+            });
+
+         }, console.log
+      );
+      await backendGET('arguments-by-user', {}).then(   
+         (data) => {
+            var temp = JSON.parse(data);
+            let elem = document.querySelector('#proofOut');
+            $(elem).empty();
+
+            elem.appendChild(
+               new Option('Select...', null, true, true)
+            );
+
+            (temp) && temp.forEach( proof => {
+               elem.appendChild(
+                  new Option(proof.ProofName, proof.Id)
+               );
+            });
+
+            }, console.log
+      );
+   }
+   if(proofs.style.display === "block") {
+      proofs.style.display = "none";
+   }
+   if(student.style.display === "block") {
+      student.style.display = "none";
+   }
+
+}
+
+
+function showAddProofAssignment(){
+   var assignment=document.getElementById("addProofAssignmentDiv");
+   var other = document.getElementById("removeProofAssignmentDiv");
+   if(assignment.style.display=="block"){
+      assignment.style.display= "none";
+   }else{
+      assignment.style.display="block";
+      if(other.style.display === "block") {
+         other.style.display = "none";
+      }
+   }
+}
+
+function showRemoveProofAssignment(){
+   var assignment=document.getElementById("removeProofAssignmentDiv");
+   var other = document.getElementById("addProofAssignmentDiv");
+   if(assignment.style.display=="block"){
+      assignment.style.display= "none";
+   }else{
+      assignment.style.display="block";
+      if(other.style.display === "block") {
+         other.style.display = "none";
+      }
+   }
+}
+
+// From legacy code, this function only prepares the three proof selectors correctly on main page.
 const prepareSelect = (selector, options) => {
    let elem = document.querySelector(selector);
 
@@ -227,21 +829,27 @@ function loadRepoProofs() {
             new Option('Select...', null, true, true)
 	 );
 
-	 let currentRepoUser;
-	 (data) && data.forEach( proof => {
-            if (currentRepoUser !== proof.UserSubmitted) {
-               currentRepoUser = proof.UserSubmitted;
-               elem.appendChild(
-		  new Option(proof.UserSubmitted, null, false, false)
-               );
-            }
+	 let currentSectionName;
+	 (data) && data.forEach( section => {
+         if (currentSectionName !== section.SectionName) {
+            currentSectionName = section.SectionName;
+            console.log(section.SectionName);
             elem.appendChild(
-               new Option(proof.ProofName, proof.Id)
+               new Option(section.SectionName, null, false, false)
             );
+         }
+         if(section.ProofList != null) {
+            section.ProofList.forEach( proof => {
+               console.log(proof);
+               elem.appendChild(
+                  new Option(proof.ProofName, proof.Id)
+               );
+            });
+         }
 	 });
 
 	 // Make section headers not selectable
-	 $('#repoProofSelect option[value=null]').attr('disabled', 'disabled');
+	 $('#repoProofSelect option[value=null]').attr('disabled', true);
 
 	 $('#repoProofSelect').data('repositoryDataKey', 'repoProofs');
       }, console.log
@@ -277,17 +885,24 @@ $(document).ready(function() {
       let Logic = [JSON.stringify(proofData)],
           Rules = [];
 
-      let entryType = "proof"; // What is this meant to be used for?
-
       let proofName = $('.proofNameSpan').text() || "n/a";
       let repoProblem = $('#repoProblem').val() || "false";
+
+      let entryType = "";
+      if ((adminUsers.indexOf($('#user-email').text()) != -1) && (repoProblem == "true")) {
+         entryType = "argument";
+      } else {
+         entryType = "proof";
+      }
+
       let proofType = predicateSettings ? "fol" : "prop";
 
+      let everCompleted = event.detail.everCompleted;
       let proofCompleted = event.detail.proofCompleted;
       let conclusion = event.detail.wantedConc;
 
       let postData = new Proof(entryType, proofName, proofType, Premises, Logic, Rules,
-			       proofCompleted, conclusion, repoProblem);
+			       everCompleted, proofCompleted, conclusion, repoProblem);
 
       console.log('saving proof', postData);
       backendPOST('saveproof', postData).then(
@@ -305,6 +920,9 @@ $(document).ready(function() {
    });
 
    // admin users - publish problems to public repo
+   // sp22 note: publicStatus will decide whether or not a 'proof' record will by entryType 'argument' or 'proof' 
+   //            public --> argument; private --> proof
+   //            stop gap measure --> it shouldn't toggle --> just have button make the current proof record an argument
    $('.proofContainer').on('click', '#togglePublicButton', (event) => {
       let proofName = $('.proofNameSpan').text();
       if (!proofName || proofName == "") {
@@ -323,16 +941,16 @@ $(document).ready(function() {
       let publicStatus = $('#repoProblem').val() || 'false';
       if (publicStatus === 'false') {
 	 $('#repoProblem').val('true');
-	 $('#togglePublicButton').fadeOut().text('Make Private').fadeIn();
+	 $('#togglePublicButton').fadeOut().text('Remove from Database').fadeIn();
       } else {
 	 $('#repoProblem').val('false');
-	 $('#togglePublicButton').fadeOut().text('Make Public').fadeIn();
+	 $('#togglePublicButton').fadeOut().text('Add to Database').fadeIn();
       }
 
       $('#checkButton').click();
    });
 
-   // populate form when any repository proof selected
+   // populate form when selected from proof dropdown
    $('.proofSelect').change( (event) => {
       // get the name of the selected item and the selected repository
       let selectedDataId = event.target.value;
@@ -342,10 +960,78 @@ $(document).ready(function() {
       let selectedDataSet = repositoryData[selectedDataSetName];
       let selectedProof = selectedDataSet.filter( proof => proof.Id == selectedDataId );
       if (!selectedProof || selectedProof.length < 1) {
+	      console.error("Selected proof ID not found.");
+	      return;
+      }
+
+      selectedProof = selectedProof[0];
+      console.log('selected proof', selectedProof);
+
+      // set repoProblem if proof originally loaded from the repository select
+      if (selectedDataSetName == 'repoProofs' || selectedProof.repoProblem == "true") {
+	 $('#repoProblem').val('true');
+      } else {
+	 $('#repoProblem').val('false');
+      }
+
+      // attach the proof body to the proofContainer
+      if (Array.isArray(selectedProof.Logic) && Array.isArray(selectedProof.Rules)) {
+	 $('.proofContainer').data({
+            'Logic': selectedProof.Logic,
+            'Rules': selectedProof.Rules
+	 });
+      }
+
+      // set proofName, probpremises, and probconc; then click on #createProb
+      // (add a small delay to show the user what's being done)
+      let delayTime = 200;
+      $.when(
+	 $('#folradio').prop('checked', true),
+	 // Checking this radio button will uncheck the other radio button
+	 $('#tflradio').prop('checked', (selectedProof.ProofType == 'prop')),
+	 $('#proofName').delay(delayTime).val(selectedProof.ProofName),
+	 $('#probpremises').delay(delayTime).val(selectedProof.Premise.join(',')),
+	 $('#probconc').delay(delayTime).val(selectedProof.Conclusion)
+      ).then(
+	 function () {
+            $('#createProb').click();
+	 }
+      );
+   });
+
+   // populate form when any repository proof selected
+   $('#repoProofSelect').change( (event) => {
+      // get the name of the selected item and the selected repository
+      let selectedDataId = event.target.value;
+      let selectedDataSetName = $(event.target).data('repositoryDataKey');
+
+      // get the proof from the repository (== means '3' is equal to 3)
+      let selectedDataSet = repositoryData[selectedDataSetName];
+      let selectedProof = selectedDataSet.filter( section => {if(section.ProofList != null){return section.ProofList.filter(proof => proof.Id  == selectedDataId );}});
+      if (!selectedProof || selectedProof.length < 1) {
 	 console.error("Selected proof ID not found.");
 	 return;
       }
-      selectedProof = selectedProof[0];
+
+      let sectionIndex = 0;
+      for(var i = 0; i < selectedDataSet.length; i++) {
+         if(selectedDataSet[i].ProofList != null) {
+            if(selectedDataSet[i].ProofList.filter(proof => proof.Id == selectedDataId)) {
+               sectionIndex = i;
+               break;
+            }
+         }
+      }
+      selectedProof = selectedProof[sectionIndex].ProofList;
+
+      let index = 0;
+      for(var i = 0; i < selectedProof.length; i++) {
+         if(selectedProof[i].Id == selectedDataId) {
+            index = i;
+            break;
+         }
+      }
+      selectedProof = selectedProof[index];
       console.log('selected proof', selectedProof);
 
       // set repoProblem if proof originally loaded from the repository select

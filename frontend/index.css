@@ -132,3 +132,42 @@ textarea{
 		letter-spacing: .15rem;
 }
 
+#proofValues{
+	display:none;
+}
+#studentPage{
+	display: none;
+}
+
+#assignmentPage{
+	display:none;
+}
+
+#hiddenDrop{
+	display: none;
+}
+
+#howToDropClass{
+	display: none;
+}
+
+#addProofAssignmentDiv{
+	display:none;
+}
+
+#removeProofAssignmentDiv{
+	display: none;
+}
+
+#addAssignmentClassDiv{
+	display: none;
+}
+
+#removeAssignmentClassDiv{
+	display: none;
+}
+
+textarea {
+	width: 100%;
+	height: 5em;
+}
