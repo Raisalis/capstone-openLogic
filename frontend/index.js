@@ -848,6 +848,7 @@ function loadRepoProofs() {
 	       repositoryData.repoProofs.push(proof);
             });
          }
+		 console.log(repositoryData.repoProofs);
 	 });
 
 	 // Make section headers not selectable
@@ -956,6 +957,7 @@ $(document).ready(function() {
    $('.proofSelect').change( (event) => {
       // get the name of the selected item and the selected repository
       let selectedDataId = event.target.value;
+	   console.log("Proof ID:", selectedDataId);
       let selectedDataSetName = $(event.target).data('repositoryDataKey');
 
       // get the proof from the repository (== means '3' is equal to 3)
