@@ -935,7 +935,7 @@ func (env *Env) populateTestProofRow() {
 
 	err = env.ds.Store(datastore.Proof{
 		EntryType:      "proof",
-		UserSubmitted:  "bkondo@csumb.edu",
+		UserSubmitted:  "jduboiTEST@csumb.edu",
 		ProofName:      "Repository - Code Test",
 		ProofType:      "prop",
 		Premise:        []string{"P", "P → Q", "Q → R", "R → S"},
@@ -955,7 +955,7 @@ func (env *Env) populateTestProofRow() {
 
 	err = env.ds.Store(datastore.Proof{
 		EntryType:      "proof",
-		UserSubmitted:  "bkondo@csumb.edu",
+		UserSubmitted:  "jduboisTEST@csumb.edu",
 		ProofName:      "Repository - Code Test",
 		ProofType:      "prop",
 		Premise:        []string{"P", "P → Q", "Q → R", "R → S"},
@@ -970,7 +970,7 @@ func (env *Env) populateTestProofRow() {
 
 	err = env.ds.Store(datastore.Proof{
 		EntryType:      "argument",
-		UserSubmitted:  "elarson@csumb.edu",
+		UserSubmitted:  "bkondo@csumb.edu",
 		ProofName:      "Repository - Code Test 2",
 		ProofType:      "prop",
 		Premise:        []string{"P", "P → Q", "Q → R"},
@@ -985,7 +985,7 @@ func (env *Env) populateTestProofRow() {
 
 	err = env.ds.Store(datastore.Proof{
 		EntryType:      "proof",
-		UserSubmitted:  "bkondo@csumb.edu",
+		UserSubmitted:  "jduboisTEST@csumb.edu",
 		ProofName:      "Repository - Code Test 2",
 		ProofType:      "prop",
 		Premise:        []string{"P", "P → Q", "Q → R"},

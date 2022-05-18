@@ -174,27 +174,29 @@ func (p *ProofStore) GetRepoProofs(user UserWithEmail) (error, []SectionProofs) 
    var sectionAssignments []Assignment
    var assignmentProofs []Proof
    for _,section:= range sections {
-      // sectionAssignments = []Assignment{}
-      assignmentProofs = []Proof{}
-      sectionProofList.ProofList = []Proof{}
+      sectionAssignments = nil
+      // assignmentProofs = nil
+      // sectionProofList = nil
       sectionProofList.SectionName = section.Name
-      log.Println("-----")
-      log.Println("assignmentProofs at start of section: ", sectionProofList.SectionName)
-      log.Println("  ", len(assignmentProofs), "arguments held")
+
+      // rows, err := stmt.Query(section.Name)
+      // if err != nil {
+      //    return err, nil
+      // }
+      // defer rows.Close()
+
+      // _,sectionProofList.ProofList = getProofsFromRows(rows)
+      // repoList = append(repoList, sectionProofList)
 
       sectionAssignments, err = p.GetAssignmentsBySection(section.Name)
-      if err == nil { // if no errors occured
+      if err == nil {
          for _,assignment := range sectionAssignments {
             if assignment.Visibility == "true" {
                assignmentProofs, err = p.GetAssignmentProofs(assignment)
-               log.Println("  ", len(assignmentProofs), " assignmentProofs for section: ", sectionProofList.SectionName)
                sectionProofList.ProofList = append(sectionProofList.ProofList, assignmentProofs...)
-               log.Println("  sectionProofList gen info:")
-               log.Println("    ", sectionProofList.SectionName,": ", len(sectionProofList.ProofList), " arguments")
             }
          }
          repoList = append(repoList, sectionProofList)
-         log.Println("  repoList has ", len(repoList), " section assignments list")
       }
    }
 
@@ -956,20 +958,18 @@ func (p *ProofStore) getSection(name string) (*Section, error) {
 func (p *ProofStore) PopulateTestUsersSectionsRosters() {
 	fmt.Println("\n========INSERT USER RECORDS========")
 	userInfo := []User{
-		// {Email: "psmithTEST@csumb.edu", FirstName: "Paul", LastName: "Smith", Admin: 1},
-		// {Email: "rmarksTEST@csumb.edu", FirstName: "Ryan", LastName: "Marks", Admin: 0},
-		// {Email: "lramirezTEST@csumb.edu", FirstName: "LeAnne", LastName: "Ramirez", Admin: 0}, 
-		// {Email: "abookerTEST@csumb.edu", FirstName: "Annette", LastName: "Booker", Admin: 1}, 
-		// {Email: "mpotterTEST@csumb.edu", FirstName: "Maxwell", LastName: "Potter", Admin: 0}, 
-		// {Email: "jduboisTEST@csumb.edu", FirstName: "Jeanne", LastName: "Dubois", Admin: 0}, 
-      // {Email: "jdoeTEST@csumb.edu", FirstName: "John", LastName: "Doe", Admin: 0}, 
-      // {Email: "sadamsTEST@csumb.edu", FirstName: "Steven", LastName: "Adams", Admin: 0}, 
-		// {Email: "gsloneTEST@csumb.edu", FirstName: "Garrett", LastName: "Slone", Admin: 1}, 
-		// {Email: "t1deleteTEST@csumb.edu", FirstName: "t1", LastName: "delete1", Admin: 0}, 
-		// {Email: "t2deleteTEST@csumb.edu", FirstName: "t2", LastName: "delete2", Admin: 0}, 
-		// {Email: "t3deleteTEST@csumb.edu", FirstName: "t3", LastName: "delete3", Admin: 1},
-      {Email: "elarson@csumb.edu", FirstName: "Emma", LastName: "Larson", Admin: 1},
-      {Email: "bkondo@csumb.edu", FirstName: "Barbara", LastName: "Kondo", Admin: 1},
+		{Email: "psmithTEST@csumb.edu", FirstName: "Paul", LastName: "Smith", Admin: 1},
+		{Email: "rmarksTEST@csumb.edu", FirstName: "Ryan", LastName: "Marks", Admin: 0},
+		{Email: "lramirezTEST@csumb.edu", FirstName: "LeAnne", LastName: "Ramirez", Admin: 0}, 
+		{Email: "abookerTEST@csumb.edu", FirstName: "Annette", LastName: "Booker", Admin: 1}, 
+		{Email: "mpotterTEST@csumb.edu", FirstName: "Maxwell", LastName: "Potter", Admin: 0}, 
+		{Email: "jduboisTEST@csumb.edu", FirstName: "Jeanne", LastName: "Dubois", Admin: 0}, 
+      {Email: "jdoeTEST@csumb.edu", FirstName: "John", LastName: "Doe", Admin: 0}, 
+      {Email: "sadamsTEST@csumb.edu", FirstName: "Steven", LastName: "Adams", Admin: 0}, 
+		{Email: "gsloneTEST@csumb.edu", FirstName: "Garrett", LastName: "Slone", Admin: 1}, 
+		{Email: "t1deleteTEST@csumb.edu", FirstName: "t1", LastName: "delete1", Admin: 0}, 
+		{Email: "t2deleteTEST@csumb.edu", FirstName: "t2", LastName: "delete2", Admin: 0}, 
+		{Email: "t3deleteTEST@csumb.edu", FirstName: "t3", LastName: "delete3", Admin: 1},
       {Email: "mkammerer@csumb.edu", FirstName: "Michael", LastName: "Kammerer", Admin: 1},
       {Email: "jasbaker@csumb.edu", FirstName: "Jason", LastName: "Baker", Admin: 1},
 	}
@@ -1014,76 +1014,77 @@ func (p *ProofStore) PopulateTestUsersSectionsRosters() {
          UserEmail: "jasbaker@csumb.edu",
          Role: "instructor",
       },
-      // {
-      //    SectionName: "Baker Section",
-      //    UserEmail: "gsloneTEST@csumb.edu",
-      //    Role: "ta",
-      // },
+      {
+         SectionName: "Baker Section",
+         UserEmail: "gsloneTEST@csumb.edu",
+         Role: "ta",
+      },
       {
          SectionName: "Baker Section",
          UserEmail: "elarson@csumb.edu",
          Role: "student",
       },
-      {
-         SectionName: "Kondo Section",
-         UserEmail: "bkondo@csumb.edu",
-         Role: "instructor",
-      },
-      {
-         SectionName: "Kondo Section",
-         UserEmail: "mkammerer@csumb.edu",
-         Role: "student",
-      },
-      // {
-      //    SectionName: "Kondo Section",
-      //    UserEmail: "t1deleteTEST@csumb.edu",
-      //    Role: "ta",
-      // },
-      {
-         SectionName: "Kondo Section",
-         UserEmail: "elarson@csumb.edu",
-         Role: "student",
-      },
-      {
-         SectionName: "Kammerer Section",
-         UserEmail: "mkammerer@csumb.edu",
-         Role: "instructor",
-      },
-      // {
-      //    SectionName: "Kammerer Section",
-      //    UserEmail: "psmithTEST@csumb.edu",
-      //    Role: "ta",
-      // },
-      {
-         SectionName: "Kammerer Section",
-         UserEmail: "bkondo@csumb.edu",
-         Role: "student",
-      },
-      // {
-      //    SectionName: "Kammerer Section",
-      //    UserEmail: "lramirezTEST@csumb.edu",
-      //    Role: "student",
-      // },
-      {
-         SectionName: "Larson Section",
-         UserEmail: "elarson@csumb.edu",
-         Role: "instructor",
-      },
-      // {
-      //    SectionName: "Kammerer Section",
-      //    UserEmail: "abookerTEST@csumb.edu",
-      //    Role: "ta",
-      // },
-      {
-         SectionName: "Larson Section",
-         UserEmail: "bkondo@csumb.edu",
-         Role: "student",
-      },
-      // {
-      //    SectionName: "Larson Section",
-      //    UserEmail: "jduboisTEST@csumb.edu",
-      //    Role: "student",
-      // },
+	  {
+		SectionName: "Kondo Section",
+		UserEmail: "bkondo@csumb.edu",
+		Role: "instructor",
+	 },
+	 {
+		SectionName: "Kondo Section",
+		UserEmail: "mkammerer@csumb.edu",
+		Role: "student",
+	 },
+	 {
+		SectionName: "Kondo Section",
+		UserEmail: "t1deleteTEST@csumb.edu",
+		Role: "ta",
+	 },
+	 {
+		SectionName: "Kondo Section",
+		UserEmail: "elarson@csumb.edu",
+		Role: "student",
+	 },
+    {
+		SectionName: "Kammerer Section",
+		UserEmail: "mkammerer@csumb.edu",
+		Role: "instructor",
+	 },
+    {
+		SectionName: "Kammerer Section",
+		UserEmail: "psmithTEST@csumb.edu",
+		Role: "ta",
+	 },
+    {
+		SectionName: "Kammerer Section",
+		UserEmail: "bkondo@csumb.edu",
+		Role: "student",
+	 },
+    
+    {
+		SectionName: "Kammerer Section",
+		UserEmail: "lramirezTEST@csumb.edu",
+		Role: "student",
+	 },
+    {
+		SectionName: "Larson Section",
+		UserEmail: "elarson@csumb.edu",
+		Role: "instructor",
+	 },
+    {
+		SectionName: "Kammerer Section",
+		UserEmail: "abookerTEST@csumb.edu",
+		Role: "ta",
+	 },
+    {
+		SectionName: "Larson Section",
+		UserEmail: "bkondo@csumb.edu",
+		Role: "student",
+	 },
+    {
+		SectionName: "Larson Section",
+		UserEmail: "jduboisTEST@csumb.edu",
+		Role: "student",
+	 },
    }
 	fmt.Println("\n========INSERT ROSTER RECORDS========")
 	for _,v := range rosterInfo {
