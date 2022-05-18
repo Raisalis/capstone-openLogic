@@ -819,7 +819,8 @@ function loadRepoProofs() {
    backendPOST('proofs', { selection: 'repo' }).then(
       (data) => {
 	 console.log("loadRepoProofs", data);
-	 repositoryData.repoProofs = data;
+	 //repositoryData.repoProofs = data;
+	 repositoryData.repoProofs = [];
 
 	 //prepareSelect('#repoProofSelect', data);
 	 let elem = document.querySelector('#repoProofSelect');
@@ -844,6 +845,7 @@ function loadRepoProofs() {
                elem.appendChild(
                   new Option(proof.ProofName, proof.Id)
                );
+	       repositoryData.repoProofs.push(proof);
             });
          }
 	 });
