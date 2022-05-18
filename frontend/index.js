@@ -832,6 +832,7 @@ function loadRepoProofs() {
 
 	 let currentSectionName;
 	 (data) && data.forEach( section => {
+		 /*
          if (currentSectionName !== section.SectionName) {
             currentSectionName = section.SectionName;
             console.log(section.SectionName);
@@ -839,6 +840,7 @@ function loadRepoProofs() {
                new Option(section.SectionName, null, false, false)
             );
          }
+	 */
          if(section.ProofList != null) {
             section.ProofList.forEach( proof => {
                console.log(proof);
