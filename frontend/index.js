@@ -845,7 +845,7 @@ function loadRepoProofs() {
                elem.appendChild(
                   new Option(proof.ProofName, proof.Id)
                );
-		    temp.appendChild(proof);
+		    temp.push(proof);
             });
          }
 		 repositoryData.repoProofs = temp;
