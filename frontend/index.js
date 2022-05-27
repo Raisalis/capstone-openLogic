@@ -819,7 +819,8 @@ function loadRepoProofs() {
    backendPOST('proofs', { selection: 'repo' }).then(
       (data) => {
 	 console.log("loadRepoProofs", data);
-	 repositoryData.repoProofs = data;
+	 //repositoryData.repoProofs = data;
+	      let temp = [];
 
 	 //prepareSelect('#repoProofSelect', data);
 	 let elem = document.querySelector('#repoProofSelect');
@@ -844,8 +845,10 @@ function loadRepoProofs() {
                elem.appendChild(
                   new Option(proof.ProofName, proof.Id)
                );
+		    temp.appendChild(proof);
             });
          }
+		 repositoryData.repoProofs = temp;
 	 });
 
 	 // Make section headers not selectable
