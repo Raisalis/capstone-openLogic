@@ -131,7 +131,7 @@ func createTables(db *sql.DB) (error) {
 	}
 	
 	// proofs : Unique index on (userSubmitted, proofName, proofCompleted)
-	_, err = db.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_user_proof
+	_, err = db.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS index_user_proof
 			ON proof (userSubmitted, proofName, proofCompleted)`)
 	if err != nil {
 		return err
