@@ -6,7 +6,7 @@ A quick list of things that could be improved.
   - Still using basic HTML buttons/text.
 - JS code structure
   - Very disorganized, functions could be grouped better for coherency.
-- Duplicated code
+- Duplicated code (Both frontend and backend)
   - Utility functions would clean-up the code a lot.
 - Minor Bug in Backend: Unfinished Proofs
   - Finished Proofs aren't actually removed from the Unfinished Proof list. Minor because a student that has completed the proof will still be labeled as having completed it.
