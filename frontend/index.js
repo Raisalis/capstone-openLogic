@@ -10,7 +10,6 @@ const repositoryData = {
 
 let adminUsers = [];
 
-//Test comment 1
 /**
  * This function is called by the Google Sign-in Button
  * @param {*} googleUser 
