@@ -819,7 +819,8 @@ function loadRepoProofs() {
    backendPOST('proofs', { selection: 'repo' }).then(
       (data) => {
 	 console.log("loadRepoProofs", data);
-	 repositoryData.repoProofs = data;
+	 //repositoryData.repoProofs = data;
+	      let temp = [];
 
 	 //prepareSelect('#repoProofSelect', data);
 	 let elem = document.querySelector('#repoProofSelect');
@@ -844,8 +845,10 @@ function loadRepoProofs() {
                elem.appendChild(
                   new Option(proof.ProofName, proof.Id)
                );
+		    temp.push(proof);
             });
          }
+		 repositoryData.repoProofs = temp;
 	 });
 
 	 // Make section headers not selectable
@@ -1007,31 +1010,13 @@ $(document).ready(function() {
 
       // get the proof from the repository (== means '3' is equal to 3)
       let selectedDataSet = repositoryData[selectedDataSetName];
-      let selectedProof = selectedDataSet.filter( section => {if(section.ProofList != null){return section.ProofList.filter(proof => proof.Id  == selectedDataId );}});
+      let selectedProof = selectedDataSet.filter( proof => proof.Id == selectedDataId );
       if (!selectedProof || selectedProof.length < 1) {
 	 console.error("Selected proof ID not found.");
 	 return;
       }
 
-      let sectionIndex = 0;
-      for(var i = 0; i < selectedDataSet.length; i++) {
-         if(selectedDataSet[i].ProofList != null) {
-            if(selectedDataSet[i].ProofList.filter(proof => proof.Id == selectedDataId)) {
-               sectionIndex = i;
-               break;
-            }
-         }
-      }
-      selectedProof = selectedProof[sectionIndex].ProofList;
-
-      let index = 0;
-      for(var i = 0; i < selectedProof.length; i++) {
-         if(selectedProof[i].Id == selectedDataId) {
-            index = i;
-            break;
-         }
-      }
-      selectedProof = selectedProof[index];
+      selectedProof = selectedProof[0];
       console.log('selected proof', selectedProof);
 
       // set repoProblem if proof originally loaded from the repository select
